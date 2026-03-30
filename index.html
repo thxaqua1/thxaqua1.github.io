@@ -291,11 +291,6 @@
   #status-bar.processing { border-color: #ffbe32; color: #ffbe32; }
   #status-bar.up-to-date { border-color: var(--accent3); color: var(--accent3); }
 
-  #quick-refresh-btn {
-    position: fixed; right: 24px; top: 64px; z-index: 9999;
-    padding: 6px 10px; font-size: 11px;
-  }
-
   /* Toast */
   #toast {
     position: fixed; bottom: 24px; right: 24px; background: var(--bg2);
@@ -367,6 +362,7 @@
           <span class="toggle-slider"></span>
         </label>
       </div>
+      <button class="btn btn-ghost btn-sm" onclick="quickRefreshApp()">↻ Refresh</button>
       <button class="btn btn-ghost btn-sm" onclick="signOut()">Sign Out</button>
     </div>
   </div>
@@ -534,7 +530,6 @@
 
 <div id="toast"></div>
 <div id="status-bar" class="up-to-date">Status: Up To Date</div>
-<button id="quick-refresh-btn" class="btn btn-ghost btn-sm" onclick="quickRefreshApp()">↻ Refresh</button>
 
 <script>
 const SUPABASE_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
@@ -1049,6 +1044,8 @@ function renderSections(sections, pid, pageSlug) {
         <button class="toolbar-btn" onclick="fmt('insertOrderedList','${sec.id}')">1. List</button>
         <div class="toolbar-sep"></div>
         <button class="toolbar-btn" onclick="insertTable('${sec.id}')">⊞ Table</button>
+        <button class="toolbar-btn" onclick="addTableRow('${sec.id}')">+ Row</button>
+        <button class="toolbar-btn" onclick="addTableColumn('${sec.id}')">+ Col</button>
         <button class="toolbar-btn" onclick="insertDivider('${sec.id}')">― Divider</button>
         <button class="toolbar-btn" onclick="insertCode('${sec.id}')">&#60;/&#62; Code</button>
         <button class="toolbar-btn" onclick="changeTextColor('${sec.id}')">A</button>
@@ -1192,6 +1189,70 @@ function insertTable(secId) {
   el.focus();
   const html = `<table><thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th></tr></thead><tbody><tr><td>Row 1</td><td>Data</td><td>Data</td></tr><tr><td>Row 2</td><td>Data</td><td>Data</td></tr></tbody></table><p><br></p>`;
   document.execCommand('insertHTML', false, html);
+  markDirty(secId);
+}
+
+function getActiveTable(secId) {
+  const selection = window.getSelection();
+  if (selection && selection.rangeCount > 0) {
+    let node = selection.anchorNode;
+    if (node) {
+      if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+      const selectedTable = node?.closest ? node.closest('table') : null;
+      if (selectedTable) return selectedTable;
+    }
+  }
+
+  const root = document.getElementById(`content-${secId}`);
+  return root ? root.querySelector('table') : null;
+}
+
+function addTableRow(secId) {
+  const table = getActiveTable(secId);
+  if (!table) {
+    showToast('Place cursor inside a table first.', 'error');
+    return;
+  }
+
+  const tbody = table.tBodies[0] || table.createTBody();
+  const refRow = tbody.rows[tbody.rows.length - 1] || table.tHead?.rows[0] || table.rows[0];
+  const cellCount = refRow ? refRow.cells.length : 1;
+  const newRow = tbody.insertRow();
+
+  for (let i = 0; i < cellCount; i++) {
+    const cell = newRow.insertCell();
+    cell.textContent = 'Data';
+  }
+
+  markDirty(secId);
+}
+
+function addTableColumn(secId) {
+  const table = getActiveTable(secId);
+  if (!table) {
+    showToast('Place cursor inside a table first.', 'error');
+    return;
+  }
+
+  const allRows = Array.from(table.rows);
+  if (allRows.length === 0) {
+    const tbody = table.tBodies[0] || table.createTBody();
+    const row = tbody.insertRow();
+    row.insertCell().textContent = 'Data';
+    markDirty(secId);
+    return;
+  }
+
+  const headerRow = table.tHead?.rows[0] || null;
+  const nextIndex = (headerRow ? headerRow.cells.length : allRows[0].cells.length) + 1;
+
+  allRows.forEach(row => {
+    const isHeaderRow = row.parentElement && row.parentElement.tagName === 'THEAD';
+    const cell = document.createElement(isHeaderRow ? 'th' : 'td');
+    cell.textContent = isHeaderRow ? `Column ${nextIndex}` : 'Data';
+    row.appendChild(cell);
+  });
+
   markDirty(secId);
 }
 
@@ -1522,9 +1583,29 @@ function setStatus(text, mode = 'up-to-date') {
   status.classList.add(mode);
 }
 
-function quickRefreshApp() {
+async function quickRefreshApp() {
   setStatus('Processing', 'processing');
-  location.reload();
+  try {
+    const { data, error } = await sb.auth.getUser();
+    if (error || !data?.user) {
+      setStatus('Up To Date', 'up-to-date');
+      showToast('Session unavailable. Please sign in again.', 'error');
+      return;
+    }
+
+    appInitialized = false;
+    await initApp(data.user);
+
+    if (currentProject && currentPage) {
+      await openPage(currentProject, currentPage);
+    }
+
+    showToast('Content refreshed', 'success');
+  } catch (e) {
+    showToast('Refresh failed. Please try again.', 'error');
+  } finally {
+    setStatus('Up To Date', 'up-to-date');
+  }
 }
 
 // ── TOAST ──
