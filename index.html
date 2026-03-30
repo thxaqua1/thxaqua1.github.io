@@ -57,7 +57,9 @@
   .btn-sm { padding: 6px 12px; font-size: 12px; }
   .btn-success { background: #1a3a2a; color: var(--accent3); border: 1px solid #2a5a3a; }
   .btn-success:hover { background: #1f4530; }
-  #auth-error { color: #ff6b6b; font-size: 13px; margin-top: 10px; display: none; }
+  #auth-error { color: #ff6b6b; font-size: 13px; margin-top: 12px; display: none; background: rgba(255,107,107,.08); border: 1px solid rgba(255,107,107,.25); border-radius: 8px; padding: 10px 14px; line-height: 1.5; }
+  #auth-info { color: var(--accent3); font-size: 13px; margin-top: 12px; display: none; background: rgba(111,255,212,.06); border: 1px solid rgba(111,255,212,.2); border-radius: 8px; padding: 10px 14px; line-height: 1.5; }
+  .btn-loading { opacity: 0.7; pointer-events: none; cursor: not-allowed; }
 
   /* ── APP SHELL ── */
   #app { display: none; height: 100vh; flex-direction: row; }
@@ -321,8 +323,9 @@
     <input type="email" id="login-email" placeholder="you@example.com">
     <label>Password</label>
     <input type="password" id="login-password" placeholder="••••••••">
-    <button class="btn btn-primary" onclick="login()">Sign In</button>
+    <button class="btn btn-primary" id="login-btn" onclick="login()">Sign In</button>
     <div id="auth-error"></div>
+    <div id="auth-info"></div>
   </div>
 </div>
 
@@ -537,19 +540,83 @@ let currentPage = null;
 let allPages = [];
 
 // ── AUTH ──
+function setAuthError(msg) {
+  const err = document.getElementById('auth-error');
+  const info = document.getElementById('auth-info');
+  err.innerHTML = '⚠️ ' + msg;
+  err.style.display = 'block';
+  info.style.display = 'none';
+}
+function setAuthInfo(msg) {
+  const err = document.getElementById('auth-error');
+  const info = document.getElementById('auth-info');
+  info.innerHTML = 'ℹ️ ' + msg;
+  info.style.display = 'block';
+  err.style.display = 'none';
+}
+function clearAuthMessages() {
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-info').style.display = 'none';
+}
+function setLoginLoading(on) {
+  const btn = document.getElementById('login-btn');
+  btn.textContent = on ? 'Signing in...' : 'Sign In';
+  btn.classList.toggle('btn-loading', on);
+}
+
 async function login() {
   const email = document.getElementById('login-email').value.trim();
   const pw = document.getElementById('login-password').value;
-  const err = document.getElementById('auth-error');
-  err.style.display = 'none';
-  if (!email || !pw) { err.textContent = 'Please enter your email and password.'; err.style.display = 'block'; return; }
+  clearAuthMessages();
+
+  // Basic validation
+  if (!email && !pw) { setAuthError('Please enter your email and password.'); return; }
+  if (!email) { setAuthError('Please enter your email address.'); return; }
+  if (!pw) { setAuthError('Please enter your password.'); return; }
+  if (!email.includes('@')) { setAuthError('That doesn't look like a valid email address.'); return; }
+  if (pw.length < 6) { setAuthError('Password must be at least 6 characters.'); return; }
+
+  setLoginLoading(true);
+
+  // Timeout check — catches GitHub Pages cache issues and network problems
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('timeout')), 8000)
+  );
+
   try {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-    if (error) throw error;
+    const loginPromise = sb.auth.signInWithPassword({ email, password: pw });
+    const { data, error } = await Promise.race([loginPromise, timeout]);
+
+    if (error) {
+      // Map Supabase error messages to friendly ones
+      const msg = error.message?.toLowerCase() || '';
+      if (msg.includes('invalid login') || msg.includes('invalid credentials') || msg.includes('email not confirmed')) {
+        setAuthError('Incorrect email or password. Please double-check and try again.');
+      } else if (msg.includes('email') && msg.includes('not found')) {
+        setAuthError('No account found with that email address.');
+      } else if (msg.includes('too many requests') || msg.includes('rate limit')) {
+        setAuthError('Too many login attempts. Please wait a minute and try again.');
+      } else if (msg.includes('network') || msg.includes('fetch')) {
+        setAuthError('Network error — please check your internet connection and try again.');
+      } else {
+        setAuthError(error.message || 'Login failed. Please try again.');
+      }
+      setLoginLoading(false);
+      return;
+    }
+
     await initApp(data.user);
+
   } catch(e) {
-    err.textContent = e.message || 'Login failed. Please check your credentials.';
-    err.style.display = 'block';
+    setLoginLoading(false);
+    if (e.message === 'timeout') {
+      setAuthError('The server took too long to respond. This can happen right after a site update — wait 30 seconds and try again.');
+      setAuthInfo('Tip: If this keeps happening, try a hard refresh with Ctrl+Shift+R (or Cmd+Shift+R on Mac).');
+    } else if (e.message?.toLowerCase().includes('fetch') || e.message?.toLowerCase().includes('network')) {
+      setAuthError('Network error — please check your internet connection.');
+    } else {
+      setAuthError(e.message || 'Something went wrong. Please try again.');
+    }
   }
 }
 
