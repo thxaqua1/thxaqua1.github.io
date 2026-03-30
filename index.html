@@ -320,41 +320,169 @@
     </div>
 
     <!-- SMPFINDER -->
-    <div id="view-smpfinder" class="view">
-      <div class="guide-hero" style="--guide-color:#ffb300" data-name="SMPFINDER">
-        <h2>SMPFinder</h2><p>Staff guide — platform moderation and listing management.</p>
+<div id="view-smpfinder" class="view">
+  <div class="guide-hero" style="--guide-color:#ffb300" data-name="SMPFINDER">
+    <h2>SMPFinder</h2>
+    <p>Official staff guide — procedures, expectations, and moderation standards.</p>
+  </div>
+
+  <div class="guide-nav">
+    <div class="guide-tab active" onclick="switchTab(this,'smpfinder','home')">Welcome</div>
+    <div class="guide-tab" onclick="switchTab(this,'smpfinder','onboarding')">Onboarding</div>
+    <div class="guide-tab" onclick="switchTab(this,'smpfinder','rules')">Expectations</div>
+    <div class="guide-tab" onclick="switchTab(this,'smpfinder','tickets')">Ticket Systems</div>
+    <div class="guide-tab" onclick="switchTab(this,'smpfinder','moderation')">Moderation</div>
+  </div>
+
+  <!-- WELCOME -->
+  <div id="smpfinder-home" class="guide-panel active">
+    <div class="block">
+      <h3>Welcome to SMPFinder</h3>
+      <ul>
+        <li>If you're reading this, congratulations — you've officially been accepted into the SMPFinder Staff Team.</li>
+        <li>Your role is to ensure the platform remains professional, safe, and high-quality for all users.</li>
+        <li>Everything you do reflects directly on SMPFinder — always act with maturity and responsibility.</li>
+        <li>This guide will walk you through everything you need to succeed in your role.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div id="smpfinder-onboarding" class="guide-panel">
+    <div class="block">
+      <h3>Staff Systems Overview</h3>
+      <ul>
+        <li>You will primarily operate inside the SMPFinder Discord.</li>
+        <li>Staff channels are used for communication, logs, and internal discussions.</li>
+        <li>The subdivision server is where management communicates directly with you.</li>
+        <li>SRA (Senior Responsible Administrators) are high-level staff overseeing operations and decisions.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- EXPECTATIONS -->
+  <div id="smpfinder-rules" class="guide-panel">
+    <div class="two-col">
+      <div class="block">
+        <h3>General Expectations</h3>
+        <ul>
+          <li>Remain professional at all times</li>
+          <li>Use proper judgement in all situations</li>
+          <li>Respect all users and staff members</li>
+          <li>Do not abuse your permissions</li>
+          <li>Ask for help if unsure</li>
+        </ul>
       </div>
-      <div class="guide-nav">
-        <div class="guide-tab active" onclick="switchTab(this,'smpfinder','home')">Home</div>
-        <div class="guide-tab" onclick="switchTab(this,'smpfinder','onboarding')">Onboarding</div>
-        <div class="guide-tab" onclick="switchTab(this,'smpfinder','rules')">Rules</div>
-        <div class="guide-tab" onclick="switchTab(this,'smpfinder','sops')">SOPs</div>
-        <div class="guide-tab" onclick="switchTab(this,'smpfinder','team')">Team</div>
-        <div class="guide-tab" onclick="switchTab(this,'smpfinder','faq')">FAQ</div>
-      </div>
-      <div id="smpfinder-home" class="guide-panel active">
-        <div class="two-col">
-          <div class="block"><h3>Quick Links</h3><ul><li>SMPFinder dashboard</li><li>Listing review queue</li><li>Staff channel</li><li>Report submission form</li></ul></div>
-          <div class="block"><h3>Announcements</h3><ul><li>Add announcements here</li><li>Platform updates</li><li>New listing categories</li></ul></div>
-        </div>
-      </div>
-      <div id="smpfinder-onboarding" class="guide-panel">
-        <div class="block"><h3>Getting Started</h3><ul><li>Read platform moderation guidelines</li><li>Learn listing approval criteria</li><li>Join staff Discord</li><li>Review scam server identification guide</li><li>Complete moderation training</li></ul></div>
-      </div>
-      <div id="smpfinder-rules" class="guide-panel">
-        <div class="block"><h3>Staff Rules</h3><ul><li>Review listings objectively and fairly</li><li>Do not approve listings from friends without review</li><li>Keep moderation decisions confidential</li><li>Escalate suspicious listings immediately</li><li>Document all decisions with reasons</li></ul></div>
-      </div>
-      <div id="smpfinder-sops" class="guide-panel">
-        <div class="block"><h3>Standard Procedures</h3><ul><li>How to review and approve a listing</li><li>Identifying scam or fake servers</li><li>Handling listing disputes</li><li>Removing rule-breaking listings</li></ul></div>
-      </div>
-      <div id="smpfinder-team" class="guide-panel">
-        <div class="staff-grid"><div class="staff-card"><div class="staff-avatar">TH</div><div class="staff-name">thxaqua1</div><div class="staff-role">Super Admin</div><div class="staff-detail">Owner</div></div></div>
-      </div>
-      <div id="smpfinder-faq" class="guide-panel">
-        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What makes a listing approvable?<span class="faq-chevron">▼</span></div><div class="faq-a">Valid IP, accurate description, correct category, and no rule violations.</div></div>
-        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I flag a scam server?<span class="faq-chevron">▼</span></div><div class="faq-a">Escalate to a Site Admin via #scam-reports. Leave the listing as pending — do not approve or deny.</div></div>
+
+      <div class="block">
+        <h3>Quota Requirements</h3>
+        <ul>
+          <li>Admin → 18 Punishments / 6 Tickets</li>
+          <li>Senior Mod → 20 Punishments / 10 Tickets</li>
+          <li>Mod → 20 Punishments / 12 Tickets</li>
+          <li>Helper → 20 Punishments / 12 Tickets</li>
+          <li>Junior Staff → 20 Punishments / 12 Tickets</li>
+        </ul>
       </div>
     </div>
+  </div>
+
+  <!-- TICKETS -->
+  <div id="smpfinder-tickets" class="guide-panel">
+
+    <div class="block">
+      <h3>Ticket System Overview</h3>
+      <ul>
+        <li>Each ticket panel serves a different purpose.</li>
+        <li>Always identify the type of ticket before responding.</li>
+        <li>Partnership tickets are the most common and important.</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>Partnerships</h3>
+      <ul>
+        <li>Check final embed carefully</li>
+        <li>Verify screenshot is not edited</li>
+        <li>Server must have 25+ members</li>
+        <li>Ensure server name is appropriate</li>
+        <li>Advertisement must be valid and detailed</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>Report Tickets</h3>
+      <ul>
+        <li>Start with: “Hello, I’m &lt;Name&gt;, I’ll be assisting you today.”</li>
+        <li>Run command: !reportformat</li>
+        <li>Ensure proof is valid and includes full screenshots</li>
+        <li>Verify user IDs</li>
+        <li>Rename ticket → /rename awaiting process</li>
+        <li>Inform user admin will review</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>General Support</h3>
+      <ul>
+        <li>Start with: “Hello! I’m &lt;Name&gt;, how can I help you?”</li>
+        <li>Remain patient and professional</li>
+        <li>Most questions relate to partnership systems</li>
+        <li>Ask higher staff if unsure</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>Escalating Tickets</h3>
+      <ul>
+        <li>Use /switchpanel to move tickets</li>
+        <li>Staff Reports → Manager Tickets</li>
+        <li>Appeals → Manager Tickets</li>
+        <li>Wrong panel → correct panel</li>
+        <li>When unsure → escalate</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- MODERATION -->
+  <div id="smpfinder-moderation" class="guide-panel">
+
+    <div class="block">
+      <h3>Punishment Ladder</h3>
+      <ul>
+        <li>Always follow escalation steps — do NOT skip levels</li>
+        <li>Remain consistent with punishments</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>Common Offenses</h3>
+      <ul>
+        <li>Incorrect Channels → Warning → Mutes → Escalation</li>
+        <li>Advertising → Warning → Temp Mute → Perm</li>
+        <li>Toxicity → Escalating mute durations</li>
+        <li>Hate Speech → Immediate heavy punishment</li>
+        <li>NSFW / Threats → Severe punishment</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>Useful Commands</h3>
+      <ul>
+        <li>/warn — warn user</li>
+        <li>/ban — ban user</li>
+        <li>/mute — mute user</li>
+        <li>/kick — remove user</li>
+        <li>/history — view punishment history</li>
+        <li>/case — view case details</li>
+        <li>/note — add staff note</li>
+      </ul>
+    </div>
+
+  </div>
+
+</div>
 
     <!-- ADMIN PANEL -->
     <div id="view-admin" class="view">
