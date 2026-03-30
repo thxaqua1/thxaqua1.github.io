@@ -291,6 +291,11 @@
   #status-bar.processing { border-color: #ffbe32; color: #ffbe32; }
   #status-bar.up-to-date { border-color: var(--accent3); color: var(--accent3); }
 
+  #quick-refresh-btn {
+    position: fixed; right: 24px; top: 64px; z-index: 9999;
+    padding: 6px 10px; font-size: 11px;
+  }
+
   /* Toast */
   #toast {
     position: fixed; bottom: 24px; right: 24px; background: var(--bg2);
@@ -529,6 +534,7 @@
 
 <div id="toast"></div>
 <div id="status-bar" class="up-to-date">Status: Up To Date</div>
+<button id="quick-refresh-btn" class="btn btn-ghost btn-sm" onclick="quickRefreshApp()">↻ Refresh</button>
 
 <script>
 const SUPABASE_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
@@ -584,10 +590,31 @@ function hasProjectAccess(pid) {
   return (currentAccess || []).some(a => a.project === pid);
 }
 
+function getProjectAssignedRole(pid) {
+  const roles = (currentAccess || [])
+    .filter(a => a.project === pid)
+    .map(a => normalizeRole(a.role));
+  if (roles.includes('super_admin')) return 'super_admin';
+  if (roles.includes('site_admin')) return 'site_admin';
+  if (roles.includes('management')) return 'management';
+  return 'staff';
+}
+
+function isAdminUser() {
+  const globalRole = normalizeRole(currentProfile?.role);
+  if (globalRole === 'super_admin' || globalRole === 'site_admin') return true;
+  return (currentAccess || []).some(a => {
+    const r = normalizeRole(a.role);
+    return r === 'super_admin' || r === 'site_admin';
+  });
+}
+
 function canEditProject(pid) {
   const myRole = normalizeRole(currentProfile?.role);
   if (myRole === 'super_admin') return true;
   if (myRole === 'site_admin') return hasProjectAccess(pid);
+  const projectRole = getProjectAssignedRole(pid);
+  if (projectRole === 'super_admin' || projectRole === 'site_admin') return true;
   return false;
 }
 
@@ -595,6 +622,8 @@ function canManageProjectAssignments(pid) {
   const myRole = normalizeRole(currentProfile?.role);
   if (myRole === 'super_admin') return true;
   if (myRole === 'site_admin') return hasProjectAccess(pid);
+  const projectRole = getProjectAssignedRole(pid);
+  if (projectRole === 'super_admin' || projectRole === 'site_admin') return true;
   return false;
 }
 
@@ -610,10 +639,12 @@ function parsePageMetaContent(rawContent) {
   }
 }
 
-function canAccessPageMeta(metaRow) {
+function canAccessPageMeta(metaRow, pid = null) {
   const meta = parsePageMetaContent(metaRow?.content);
   const requiredRank = ROLE_RANK[normalizeRole(meta.minRole)] ?? ROLE_RANK.staff;
-  const userRank = ROLE_RANK[normalizeRole(currentProfile?.role)] ?? ROLE_RANK.staff;
+  const globalRank = ROLE_RANK[normalizeRole(currentProfile?.role)] ?? ROLE_RANK.staff;
+  const projectRank = pid ? (ROLE_RANK[getProjectAssignedRole(pid)] ?? ROLE_RANK.staff) : ROLE_RANK.staff;
+  const userRank = Math.max(globalRank, projectRank);
   return userRank >= requiredRank;
 }
 
@@ -776,7 +807,7 @@ async function initApp(user) {
   logActivity('login');
   setStatus('Up To Date', 'up-to-date');
 
-  const isAdmin = ['super_admin','site_admin'].includes(normalizeRole(currentProfile?.role));
+  const isAdmin = isAdminUser();
   if (isAdmin) {
     if (navAdmin) navAdmin.style.display = 'block';
     if (editToggleWrap) editToggleWrap.classList.add('visible');
@@ -873,7 +904,7 @@ async function loadNavPages(pid) {
   const container = document.getElementById(`nav-children-${pid}`);
   container.innerHTML = '';
 
-  const visiblePages = (pages || []).filter(canAccessPageMeta);
+  const visiblePages = (pages || []).filter(p => canAccessPageMeta(p, pid));
   
   if (visiblePages.length === 0) {
     container.innerHTML = `<div class="nav-item nav-subitem" style="color:var(--text3);font-style:italic;">No pages yet</div>`;
@@ -930,7 +961,7 @@ function showDashboard() {
 async function openFirstPage(pid) {
   const { data: pages } = await sb.from('guide_content')
     .select('page_slug, content').eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order');
-  const firstVisible = (pages || []).find(canAccessPageMeta);
+  const firstVisible = (pages || []).find(p => canAccessPageMeta(p, pid));
   if (firstVisible) openPage(pid, firstVisible.page_slug);
 }
 
@@ -951,7 +982,7 @@ async function openPage(pid, pageSlug) {
   const { data: meta } = await sb.from('guide_content')
     .select('title, content').eq('project', pid).eq('page_slug', pageSlug).eq('section_slug', '__pagemeta__').single();
 
-  if (!canAccessPageMeta(meta)) {
+  if (!canAccessPageMeta(meta, pid)) {
     showToast('You do not have permission to view this page.', 'error');
     showDashboard();
     return;
@@ -1465,6 +1496,11 @@ function setStatus(text, mode = 'up-to-date') {
   status.textContent = `Status: ${text}`;
   status.classList.remove('processing','up-to-date');
   status.classList.add(mode);
+}
+
+function quickRefreshApp() {
+  setStatus('Processing', 'processing');
+  location.reload();
 }
 
 // ── TOAST ──
