@@ -531,7 +531,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: false
   }
 });
 
@@ -626,6 +626,13 @@ async function login() {
     }
 
     await initApp(data.user);
+
+    // Final safety net: if init did not transition the UI, force the app shell visible.
+    if (document.getElementById('auth-screen').style.display !== 'none') {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      setStatus('Up To Date', 'up-to-date');
+    }
   } catch(e) {
     const msg = String(e?.message || e || '').toLowerCase();
     if (msg.includes('timed out')) {
@@ -645,55 +652,73 @@ async function login() {
 }
 
 async function initApp(user) {
-  if (appInitialized && currentUser?.id === user.id) return;
-  appInitialized = true;
+  if (appInitialized && currentUser?.id === user.id && document.getElementById('app')?.style.display === 'flex') return;
+
   currentUser = user;
+  currentProfile = { id: user.id, email: user.email, role: 'staff' };
+  currentAccess = [];
+
   try {
-    const { data: prof, error: profError } = await sb.from('profiles').select('*').eq('id', user.id).single();
-    if (profError && profError.code !== 'PGRST116') { // PGRST116 is "not found"
+    const { data: prof, error: profError } = await withTimeout(
+      sb.from('profiles').select('*').eq('id', user.id).single(),
+      8000,
+      'Profile load'
+    );
+
+    if (profError && profError.code !== 'PGRST116') {
       console.warn('Profiles select error:', profError);
-      currentProfile = { id: user.id, email: user.email, role: 'staff' };
     } else if (!prof) {
-      const { error: insertError } = await sb.from('profiles').insert({ id: user.id, email: user.email, role: 'staff' });
-      if (insertError) {
-        console.warn('Profiles insert error:', insertError);
-      }
-      currentProfile = { id: user.id, email: user.email, role: 'staff' };
+      const { error: insertError } = await withTimeout(
+        sb.from('profiles').insert({ id: user.id, email: user.email, role: 'staff' }),
+        8000,
+        'Profile create'
+      );
+      if (insertError) console.warn('Profiles insert error:', insertError);
     } else {
       currentProfile = prof;
     }
   } catch(e) {
     console.warn('Init app profiles error:', e);
-    currentProfile = { id: user.id, email: user.email, role: 'staff' };
   }
 
   try {
-    const { data: access, error: accessError } = await sb.from('project_access').select('*').eq('user_id', user.id);
+    const { data: access, error: accessError } = await withTimeout(
+      sb.from('project_access').select('*').eq('user_id', user.id),
+      8000,
+      'Project access load'
+    );
+
     if (accessError) {
       console.warn('Project access error:', accessError);
-      currentAccess = [];
     } else {
       currentAccess = access || [];
     }
   } catch(e) {
     console.warn('Init app access error:', e);
-    currentAccess = [];
   }
 
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('sidebar-email').textContent = user.email;
+  const authScreen = document.getElementById('auth-screen');
+  const appShell = document.getElementById('app');
+  const sidebarEmail = document.getElementById('sidebar-email');
+  const navAdmin = document.getElementById('nav-admin-section');
+  const editToggleWrap = document.getElementById('edit-toggle-wrap');
+
+  if (authScreen) authScreen.style.display = 'none';
+  if (appShell) appShell.style.display = 'flex';
+  if (sidebarEmail) sidebarEmail.textContent = user.email || '';
+
   logActivity('login');
   setStatus('Up To Date', 'up-to-date');
 
-  const isAdmin = ['super_admin','site_admin'].includes(currentProfile.role);
+  const isAdmin = ['super_admin','site_admin'].includes(currentProfile?.role);
   if (isAdmin) {
-    document.getElementById('nav-admin-section').style.display = 'block';
-    document.getElementById('edit-toggle-wrap').classList.add('visible');
+    if (navAdmin) navAdmin.style.display = 'block';
+    if (editToggleWrap) editToggleWrap.classList.add('visible');
   }
 
   buildNavProjects();
   showDashboard();
+  appInitialized = true;
 }
 
 async function signOut() {
