@@ -580,7 +580,9 @@ async function login() {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
     if (error) {
       const msg = error.message ? error.message.toLowerCase() : '';
-      if (msg.includes('invalid') || msg.includes('credentials')) {
+      if (msg.includes('user is not confirmed') || msg.includes('email not confirmed') || msg.includes('unconfirmed')) {
+        setAuthError('Your account email is not confirmed yet. Please check your inbox for the confirmation link.');
+      } else if (msg.includes('invalid') || msg.includes('credentials') || msg.includes('wrong password') || msg.includes('user not found')) {
         setAuthError('Incorrect email or password. Please try again.');
       } else if (msg.includes('too many') || msg.includes('rate limit')) {
         setAuthError('Too many attempts. Please wait a minute and try again.');
@@ -590,6 +592,7 @@ async function login() {
         setAuthError(error.message || 'Login failed. Please try again.');
       }
       setLoginLoading(false);
+      console.warn('Login error detail:', error);
       return;
     }
     await initApp(data.user);
