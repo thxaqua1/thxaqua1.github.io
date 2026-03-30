@@ -385,6 +385,7 @@
         <button class="admin-tab active" onclick="switchAdminTab('users')">Users</button>
         <button class="admin-tab" onclick="switchAdminTab('pages')">Pages</button>
         <button class="admin-tab" onclick="switchAdminTab('create')">Create User</button>
+        <button class="admin-tab" onclick="switchAdminTab('activity')">Activity</button>
       </div>
       <!-- Users tab -->
       <div class="admin-panel-section active" id="admin-tab-users">
@@ -432,6 +433,14 @@
           </div>
           <button class="btn btn-primary" onclick="createUser()">Create User</button>
         </div>
+      </div>
+      <!-- Activity tab -->
+      <div class="admin-panel-section" id="admin-tab-activity">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <div style="font-size:13px;color:var(--text2);">Showing recent login and action events across all staff.</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadActivity()">↻ Refresh</button>
+        </div>
+        <div id="activity-container"><div class="empty-state"><div class="empty-icon">📊</div>Loading activity...</div></div>
       </div>
     </div>
   </div>
@@ -563,6 +572,7 @@ async function initApp(user) {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('sidebar-email').textContent = user.email;
+  logActivity('login');
 
   const isAdmin = ['super_admin','site_admin'].includes(currentProfile.role);
   if (isAdmin) {
@@ -575,6 +585,7 @@ async function initApp(user) {
 }
 
 async function signOut() {
+  await logActivity('logout');
   await sb.auth.signOut();
   location.reload();
 }
@@ -797,7 +808,7 @@ async function saveSection(secId, pid, pageSlug) {
   status.textContent = 'Saving...';
   const { error } = await sb.from('guide_content').update({ content, title, updated_at: new Date().toISOString() }).eq('id', secId);
   if (error) { status.textContent = '❌ Error saving'; showToast('Save failed: ' + error.message, 'error'); }
-  else { status.textContent = '✅ Saved'; showToast('Section saved!', 'success'); }
+  else { status.textContent = '✅ Saved'; showToast('Section saved!', 'success'); logActivity('section_saved', `${pid} / ${pageSlug}`); }
 }
 
 async function addSection() {
@@ -811,6 +822,7 @@ async function addSection() {
   });
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
   showToast('Section added!', 'success');
+  logActivity('section_added', `${currentProject} / ${currentPage}`);
   openPage(currentProject, currentPage);
 }
 
@@ -916,6 +928,7 @@ async function createPage() {
   });
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
   showToast('Page created!', 'success');
+  logActivity('page_created', `${pid} / ${title}`);
   closeModal('add-page-modal');
   await loadNavPages(pid);
   loadPageManager();
@@ -957,11 +970,12 @@ function showAdmin() {
 }
 
 function switchAdminTab(tab) {
-  document.querySelectorAll('.admin-tab').forEach((t,i) => t.classList.toggle('active', ['users','pages','create'][i] === tab));
+  document.querySelectorAll('.admin-tab').forEach((t,i) => t.classList.toggle('active', ['users','pages','create','activity'][i] === tab));
   document.querySelectorAll('.admin-panel-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`admin-tab-${tab}`).classList.add('active');
   if (tab === 'users') loadUsers();
   if (tab === 'pages') loadPageManager();
+  if (tab === 'activity') loadActivity();
 }
 
 async function loadUsers() {
@@ -1009,6 +1023,7 @@ async function saveUserEdit() {
     await sb.from('project_access').insert(selected.map(pid => ({ user_id: userId, project: pid, role: projectRole })));
   }
   showToast('User updated!', 'success');
+  logActivity('user_updated', `uid:${userId}`);
   closeModal('edit-user-modal');
   loadUsers();
 }
@@ -1039,6 +1054,7 @@ async function createUser() {
     await sb.from('project_access').insert(selected.map(pid => ({ user_id: uid, project: pid, role: projectRole })));
   }
   showToast(`User ${email} created!`, 'success');
+  logActivity('user_created', email);
   document.getElementById('new-email').value = '';
   document.getElementById('new-password').value = '';
 }
@@ -1076,6 +1092,74 @@ function showToast(msg, type = 'success') {
   t.textContent = msg;
   t.className = `show ${type}`;
   setTimeout(() => { t.className = ''; }, 3000);
+}
+
+// ── ACTIVITY LOG ──
+async function logActivity(action, detail = '') {
+  try {
+    await sb.from('activity_log').insert({
+      user_id: currentUser?.id || null,
+      email: currentUser?.email || 'unknown',
+      action,
+      detail
+    });
+  } catch(e) { /* silently fail — never block the user */ }
+}
+
+async function loadActivity() {
+  const container = document.getElementById('activity-container');
+  container.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
+  const { data, error } = await sb.from('activity_log').select('*').order('created_at', { ascending: false }).limit(200);
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div>No activity recorded yet. Activity will appear here after staff log in.</div>';
+    return;
+  }
+  const actionColors = {
+    'login': 'var(--accent3)',
+    'logout': 'var(--text3)',
+    'page_created': 'var(--accent)',
+    'page_deleted': '#ff6b6b',
+    'section_saved': 'var(--accent)',
+    'section_added': 'var(--accent)',
+    'section_deleted': '#ff6b6b',
+    'user_created': 'var(--accent3)',
+    'user_updated': '#ffbe32',
+    'user_deleted': '#ff6b6b',
+  };
+  const actionIcons = {
+    'login': '🔐', 'logout': '👋', 'page_created': '📄', 'page_deleted': '🗑',
+    'section_saved': '💾', 'section_added': '➕', 'section_deleted': '🗑',
+    'user_created': '👤', 'user_updated': '✏️', 'user_deleted': '❌'
+  };
+
+  // Group by date
+  const grouped = {};
+  data.forEach(row => {
+    const date = new Date(row.created_at).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    if (!grouped[date]) grouped[date] = [];
+    grouped[date].push(row);
+  });
+
+  let html = '';
+  Object.entries(grouped).forEach(([date, rows]) => {
+    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:12px 0 8px;">${date}</div>`;
+    rows.forEach(row => {
+      const time = new Date(row.created_at).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+      const color = actionColors[row.action] || 'var(--text2)';
+      const icon = actionIcons[row.action] || '•';
+      const label = row.action.replace(/_/g, ' ');
+      html += `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+          <span style="font-size:16px;width:24px;text-align:center;">${icon}</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:var(--text);">${row.email}</div>
+            <div style="font-size:12px;color:${color};text-transform:capitalize;">${label}${row.detail ? ' — ' + row.detail : ''}</div>
+          </div>
+          <div style="font-size:12px;color:var(--text3);white-space:nowrap;">${time}</div>
+        </div>`;
+    });
+  });
+  container.innerHTML = html;
 }
 
 // ── KEYBOARD SHORTCUTS ──
