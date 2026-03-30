@@ -321,167 +321,137 @@
 
     <!-- SMPFINDER -->
 <div id="view-smpfinder" class="view">
-  <div class="guide-hero" style="--guide-color:#ffb300" data-name="SMPFINDER">
-    <h2>SMPFinder</h2>
-    <p>Official staff guide — procedures, expectations, and moderation standards.</p>
-  </div>
 
-  <div class="guide-nav">
-    <div class="guide-tab active" onclick="switchTab(this,'smpfinder','home')">Welcome</div>
-    <div class="guide-tab" onclick="switchTab(this,'smpfinder','onboarding')">Onboarding</div>
-    <div class="guide-tab" onclick="switchTab(this,'smpfinder','rules')">Expectations</div>
-    <div class="guide-tab" onclick="switchTab(this,'smpfinder','tickets')">Ticket Systems</div>
-    <div class="guide-tab" onclick="switchTab(this,'smpfinder','moderation')">Moderation</div>
-  </div>
+  <div style="max-width:1000px;margin:0 auto;">
 
-  <!-- WELCOME -->
-  <div id="smpfinder-home" class="guide-panel active">
-    <div class="block">
-      <h3>Welcome to SMPFinder</h3>
-      <ul>
-        <li>If you're reading this, congratulations — you've officially been accepted into the SMPFinder Staff Team.</li>
-        <li>Your role is to ensure the platform remains professional, safe, and high-quality for all users.</li>
-        <li>Everything you do reflects directly on SMPFinder — always act with maturity and responsibility.</li>
-        <li>This guide will walk you through everything you need to succeed in your role.</li>
-      </ul>
+    <!-- HEADER -->
+    <div style="margin-bottom:40px;">
+      <h1 style="font-size:42px;font-weight:700;letter-spacing:2px;color:#ffb300;">
+        SMPFinder Staff Guide
+      </h1>
+      <p style="color:#6b7c8f;font-family:var(--mono);margin-top:8px;">
+        Internal documentation for staff operations, moderation, and systems.
+      </p>
     </div>
-  </div>
 
-  <!-- ONBOARDING -->
-  <div id="smpfinder-onboarding" class="guide-panel">
-    <div class="block">
-      <h3>Staff Systems Overview</h3>
-      <ul>
-        <li>You will primarily operate inside the SMPFinder Discord.</li>
-        <li>Staff channels are used for communication, logs, and internal discussions.</li>
+    <!-- NAV -->
+    <div style="display:flex;gap:20px;margin-bottom:40px;border-bottom:1px solid #1e2a35;padding-bottom:10px;">
+      <div class="guide-tab active" onclick="switchTab(this,'smpfinder','welcome')">Welcome</div>
+      <div class="guide-tab" onclick="switchTab(this,'smpfinder','onboarding')">Onboarding</div>
+      <div class="guide-tab" onclick="switchTab(this,'smpfinder','expectations')">Expectations</div>
+      <div class="guide-tab" onclick="switchTab(this,'smpfinder','tickets')">Tickets</div>
+      <div class="guide-tab" onclick="switchTab(this,'smpfinder','moderation')">Moderation</div>
+    </div>
+
+    <!-- WELCOME -->
+    <div id="smpfinder-welcome" class="guide-panel active">
+      <h2 style="margin-bottom:16px;">Welcome</h2>
+      <p style="color:#9fb3c8;line-height:1.8;">
+        If you're reading this, congratulations — you've officially been accepted into the SMPFinder staff team.
+        Your role is to maintain quality, professionalism, and trust across the platform.
+        Everything you do represents SMPFinder, so always act with maturity and good judgement.
+      </p>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div id="smpfinder-onboarding" class="guide-panel">
+      <h2 style="margin-bottom:16px;">Onboarding</h2>
+      <ul style="color:#9fb3c8;line-height:1.8;">
+        <li>All work is done through the SMPFinder Discord.</li>
+        <li>Staff channels are used for logs, communication, and updates.</li>
         <li>The subdivision server is where management communicates directly with you.</li>
-        <li>SRA (Senior Responsible Administrators) are high-level staff overseeing operations and decisions.</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- EXPECTATIONS -->
-  <div id="smpfinder-rules" class="guide-panel">
-    <div class="two-col">
-      <div class="block">
-        <h3>General Expectations</h3>
-        <ul>
-          <li>Remain professional at all times</li>
-          <li>Use proper judgement in all situations</li>
-          <li>Respect all users and staff members</li>
-          <li>Do not abuse your permissions</li>
-          <li>Ask for help if unsure</li>
-        </ul>
-      </div>
-
-      <div class="block">
-        <h3>Quota Requirements</h3>
-        <ul>
-          <li>Admin → 18 Punishments / 6 Tickets</li>
-          <li>Senior Mod → 20 Punishments / 10 Tickets</li>
-          <li>Mod → 20 Punishments / 12 Tickets</li>
-          <li>Helper → 20 Punishments / 12 Tickets</li>
-          <li>Junior Staff → 20 Punishments / 12 Tickets</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- TICKETS -->
-  <div id="smpfinder-tickets" class="guide-panel">
-
-    <div class="block">
-      <h3>Ticket System Overview</h3>
-      <ul>
-        <li>Each ticket panel serves a different purpose.</li>
-        <li>Always identify the type of ticket before responding.</li>
-        <li>Partnership tickets are the most common and important.</li>
+        <li>SRA are senior-level staff responsible for major decisions and oversight.</li>
       </ul>
     </div>
 
-    <div class="block">
+    <!-- EXPECTATIONS -->
+    <div id="smpfinder-expectations" class="guide-panel">
+      <h2 style="margin-bottom:16px;">Expectations</h2>
+
+      <h3 style="margin-top:20px;">General</h3>
+      <ul style="color:#9fb3c8;line-height:1.8;">
+        <li>Remain professional at all times</li>
+        <li>Use proper judgement</li>
+        <li>Respect all users</li>
+        <li>Do not abuse permissions</li>
+      </ul>
+
+      <h3 style="margin-top:30px;">Quota</h3>
+      <ul style="color:#9fb3c8;line-height:1.8;">
+        <li>Admin → 18 Punishments / 6 Tickets</li>
+        <li>Senior Mod → 20 / 10</li>
+        <li>Mod → 20 / 12</li>
+        <li>Helper → 20 / 12</li>
+        <li>Junior → 20 / 12</li>
+      </ul>
+    </div>
+
+    <!-- TICKETS -->
+    <div id="smpfinder-tickets" class="guide-panel">
+      <h2 style="margin-bottom:16px;">Ticket Systems</h2>
+
       <h3>Partnerships</h3>
-      <ul>
+      <ul style="color:#9fb3c8;">
         <li>Check final embed carefully</li>
-        <li>Verify screenshot is not edited</li>
+        <li>Verify screenshot authenticity</li>
         <li>Server must have 25+ members</li>
-        <li>Ensure server name is appropriate</li>
-        <li>Advertisement must be valid and detailed</li>
+        <li>Ensure advertisement is valid</li>
       </ul>
-    </div>
 
-    <div class="block">
-      <h3>Report Tickets</h3>
-      <ul>
-        <li>Start with: “Hello, I’m &lt;Name&gt;, I’ll be assisting you today.”</li>
-        <li>Run command: !reportformat</li>
-        <li>Ensure proof is valid and includes full screenshots</li>
-        <li>Verify user IDs</li>
-        <li>Rename ticket → /rename awaiting process</li>
-        <li>Inform user admin will review</li>
+      <h3 style="margin-top:20px;">Report Tickets</h3>
+      <ul style="color:#9fb3c8;">
+        <li>Introduce yourself first</li>
+        <li>Run: !reportformat</li>
+        <li>Verify proof + user IDs</li>
+        <li>/rename awaiting process</li>
+        <li>Escalate to admin</li>
       </ul>
-    </div>
 
-    <div class="block">
-      <h3>General Support</h3>
-      <ul>
-        <li>Start with: “Hello! I’m &lt;Name&gt;, how can I help you?”</li>
-        <li>Remain patient and professional</li>
-        <li>Most questions relate to partnership systems</li>
+      <h3 style="margin-top:20px;">General Support</h3>
+      <ul style="color:#9fb3c8;">
+        <li>Stay professional and patient</li>
+        <li>Most issues involve partnerships</li>
         <li>Ask higher staff if unsure</li>
       </ul>
-    </div>
 
-    <div class="block">
-      <h3>Escalating Tickets</h3>
-      <ul>
-        <li>Use /switchpanel to move tickets</li>
-        <li>Staff Reports → Manager Tickets</li>
+      <h3 style="margin-top:20px;">Escalation</h3>
+      <ul style="color:#9fb3c8;">
+        <li>/switchpanel to correct panel</li>
+        <li>Reports → Manager Tickets</li>
         <li>Appeals → Manager Tickets</li>
-        <li>Wrong panel → correct panel</li>
         <li>When unsure → escalate</li>
       </ul>
     </div>
 
-  </div>
+    <!-- MODERATION -->
+    <div id="smpfinder-moderation" class="guide-panel">
+      <h2 style="margin-bottom:16px;">Moderation</h2>
 
-  <!-- MODERATION -->
-  <div id="smpfinder-moderation" class="guide-panel">
-
-    <div class="block">
       <h3>Punishment Ladder</h3>
-      <ul>
-        <li>Always follow escalation steps — do NOT skip levels</li>
-        <li>Remain consistent with punishments</li>
-      </ul>
-    </div>
+      <p style="color:#9fb3c8;">
+        Always follow escalation. Never skip levels unless instructed by management.
+      </p>
 
-    <div class="block">
-      <h3>Common Offenses</h3>
-      <ul>
-        <li>Incorrect Channels → Warning → Mutes → Escalation</li>
-        <li>Advertising → Warning → Temp Mute → Perm</li>
-        <li>Toxicity → Escalating mute durations</li>
-        <li>Hate Speech → Immediate heavy punishment</li>
-        <li>NSFW / Threats → Severe punishment</li>
+      <h3 style="margin-top:20px;">Common Offenses</h3>
+      <ul style="color:#9fb3c8;">
+        <li>Advertising → escalating mutes</li>
+        <li>Toxicity → timed punishments</li>
+        <li>Hate Speech → severe punishment</li>
+        <li>NSFW / Threats → immediate action</li>
       </ul>
-    </div>
 
-    <div class="block">
-      <h3>Useful Commands</h3>
-      <ul>
-        <li>/warn — warn user</li>
-        <li>/ban — ban user</li>
-        <li>/mute — mute user</li>
-        <li>/kick — remove user</li>
-        <li>/history — view punishment history</li>
-        <li>/case — view case details</li>
-        <li>/note — add staff note</li>
+      <h3 style="margin-top:20px;">Commands</h3>
+      <ul style="color:#9fb3c8;">
+        <li>/warn</li>
+        <li>/ban</li>
+        <li>/mute</li>
+        <li>/kick</li>
+        <li>/history</li>
+        <li>/case</li>
       </ul>
     </div>
 
   </div>
-
 </div>
 
     <!-- ADMIN PANEL -->
