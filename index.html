@@ -58,7 +58,7 @@
   .btn-success { background: #1a3a2a; color: var(--accent3); border: 1px solid #2a5a3a; }
   .btn-success:hover { background: #1f4530; }
   #auth-error { color: #ff6b6b; font-size: 13px; margin-top: 12px; display: none; background: rgba(255,107,107,.08); border: 1px solid rgba(255,107,107,.25); border-radius: 8px; padding: 10px 14px; line-height: 1.5; }
-  #auth-info  { color: var(--accent3); font-size: 13px; margin-top: 12px; display: none; background: rgba(111,255,212,.06); border: 1px solid rgba(111,255,212,.2); border-radius: 8px; padding: 10px 14px; line-height: 1.5; }
+  #auth-info { color: var(--accent3); font-size: 13px; margin-top: 12px; display: none; background: rgba(111,255,212,.06); border: 1px solid rgba(111,255,212,.2); border-radius: 8px; padding: 10px 14px; line-height: 1.5; }
   .btn-loading { opacity: 0.7; pointer-events: none; cursor: not-allowed; }
 
   /* ── APP SHELL ── */
@@ -74,7 +74,11 @@
   .sidebar-logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--text); }
   .sidebar-logo span { color: var(--accent); }
   .sidebar-user { font-size: 12px; color: var(--text3); margin-top: 4px; }
-  .sidebar-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); padding: 16px 18px 6px; }
+
+  .sidebar-section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--text3); padding: 16px 18px 6px;
+  }
   .nav-item {
     display: flex; align-items: center; gap: 9px; padding: 9px 18px;
     color: var(--text2); font-size: 13.5px; cursor: pointer; border-left: 2px solid transparent;
@@ -83,20 +87,28 @@
   .nav-item:hover { color: var(--text); background: var(--bg3); }
   .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(124,111,255,.08); }
   .nav-item .icon { font-size: 15px; width: 18px; text-align: center; }
-  .nav-subitem    { padding-left: 40px; font-size: 13px; }
+  .nav-subitem { padding-left: 40px; font-size: 13px; }
   .nav-subsubitem { padding-left: 58px; font-size: 12.5px; }
   .nav-children { display: none; }
   .nav-children.open { display: block; }
   .nav-arrow { margin-left: auto; font-size: 10px; transition: transform .2s; }
   .nav-arrow.open { transform: rotate(90deg); }
+
   .sidebar-footer { margin-top: auto; padding: 14px 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+
+  /* Edit mode toggle */
   .edit-toggle-wrap { display: none; align-items: center; justify-content: space-between; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; }
   .edit-toggle-wrap.visible { display: flex; }
   .edit-toggle-label { font-size: 12px; color: var(--text2); font-weight: 500; }
   .toggle-switch { position: relative; width: 36px; height: 20px; cursor: pointer; }
   .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider { position: absolute; inset: 0; background: var(--bg4); border-radius: 20px; transition: .2s; }
-  .toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: var(--text3); border-radius: 50%; transition: .2s; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--bg4); border-radius: 20px; transition: .2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px;
+    background: var(--text3); border-radius: 50%; transition: .2s;
+  }
   .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
   .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); background: #fff; }
 
@@ -109,8 +121,14 @@
   .dash-title { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; margin-bottom: 6px; }
   .dash-sub { color: var(--text2); margin-bottom: 36px; }
   .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-  .project-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px 22px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
-  .project-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--card-accent, var(--accent)); border-radius: 12px 12px 0 0; }
+  .project-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px 22px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
+  }
+  .project-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--card-accent, var(--accent)); border-radius: 12px 12px 0 0;
+  }
   .project-card:hover { border-color: var(--card-accent, var(--accent)); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
   .project-card-icon { font-size: 28px; margin-bottom: 12px; }
   .project-card-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
@@ -127,43 +145,93 @@
   .page-subtitle { color: var(--text2); font-size: 14px; margin-top: 2px; }
 
   /* ── SECTIONS ── */
-  .section-block { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
-  .section-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg3); }
+  .section-block {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 20px; overflow: hidden;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+    border-bottom: 1px solid var(--border); background: var(--bg3);
+  }
   .section-title-display { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; flex: 1; }
-  .section-title-input { flex: 1; background: var(--bg4); border: 1px solid var(--accent); border-radius: 6px; padding: 5px 10px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; display: none; outline: none; }
+  .section-title-input {
+    flex: 1; background: var(--bg4); border: 1px solid var(--accent); border-radius: 6px;
+    padding: 5px 10px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+    display: none; outline: none;
+  }
   .section-content { padding: 18px; }
 
   /* ── RICH TEXT EDITOR ── */
-  .editor-toolbar { display: none; flex-wrap: wrap; gap: 4px; padding: 8px 12px; background: var(--bg4); border-bottom: 1px solid var(--border); }
+  .editor-toolbar {
+    display: none; flex-wrap: wrap; gap: 4px; padding: 8px 12px;
+    background: var(--bg4); border-bottom: 1px solid var(--border);
+  }
   .editor-toolbar.visible { display: flex; }
-  .toolbar-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; color: var(--text2); padding: 4px 8px; font-size: 12px; cursor: pointer; transition: all .15s; font-family: inherit; }
+  .toolbar-btn {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 5px;
+    color: var(--text2); padding: 4px 8px; font-size: 12px; cursor: pointer;
+    transition: all .15s; font-family: inherit;
+  }
   .toolbar-btn:hover { background: var(--bg2); color: var(--text); border-color: var(--accent); }
   .toolbar-sep { width: 1px; background: var(--border); margin: 2px 4px; }
-  .editable-content { min-height: 60px; outline: none; line-height: 1.7; }
-  .editable-content[contenteditable="true"] { border: 1px dashed var(--accent); border-radius: 6px; padding: 12px; background: rgba(124,111,255,.03); }
+  .editable-content {
+    min-height: 60px; outline: none; line-height: 1.7;
+  }
+  .editable-content[contenteditable="true"] {
+    border: 1px dashed var(--accent); border-radius: 6px; padding: 12px;
+    background: rgba(124,111,255,.03);
+  }
   .editable-content[contenteditable="true"]:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,111,255,.1); }
+
+  /* Content styles */
   .editable-content h1 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin: 16px 0 8px; }
   .editable-content h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin: 14px 0 6px; color: var(--accent); }
   .editable-content h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin: 12px 0 4px; color: var(--text2); }
   .editable-content p { margin-bottom: 10px; }
   .editable-content ul, .editable-content ol { padding-left: 22px; margin-bottom: 10px; }
   .editable-content li { margin-bottom: 4px; }
-  .editable-content code { background: var(--bg4); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-family: 'Courier New', monospace; font-size: 13px; color: var(--accent3); }
-  .editable-content pre { background: var(--bg4); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 10px 0; overflow-x: auto; }
+  .editable-content code {
+    background: var(--bg4); border: 1px solid var(--border); border-radius: 4px;
+    padding: 2px 7px; font-family: 'Courier New', monospace; font-size: 13px; color: var(--accent3);
+  }
+  .editable-content pre {
+    background: var(--bg4); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; margin: 10px 0; overflow-x: auto;
+  }
   .editable-content pre code { background: none; border: none; padding: 0; }
   .editable-content table { border-collapse: collapse; width: 100%; margin: 10px 0; }
   .editable-content th { background: var(--bg3); padding: 9px 14px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text2); border: 1px solid var(--border); }
   .editable-content td { padding: 9px 14px; border: 1px solid var(--border); font-size: 14px; }
   .editable-content tr:nth-child(even) td { background: var(--bg3); }
-  .editable-content blockquote { border-left: 3px solid var(--accent); padding: 10px 16px; margin: 10px 0; background: rgba(124,111,255,.06); border-radius: 0 6px 6px 0; color: var(--text2); }
-  .info-box { background: rgba(111,255,212,.06); border: 1px solid rgba(111,255,212,.25); border-radius: 8px; padding: 14px 16px; margin: 10px 0; }
-  .warn-box { background: rgba(255,111,145,.06); border: 1px solid rgba(255,111,145,.25); border-radius: 8px; padding: 14px 16px; margin: 10px 0; }
+  .editable-content blockquote {
+    border-left: 3px solid var(--accent); padding: 10px 16px; margin: 10px 0;
+    background: rgba(124,111,255,.06); border-radius: 0 6px 6px 0; color: var(--text2);
+  }
+  .info-box {
+    background: rgba(111,255,212,.06); border: 1px solid rgba(111,255,212,.25); border-radius: 8px;
+    padding: 14px 16px; margin: 10px 0;
+  }
+  .warn-box {
+    background: rgba(255,111,145,.06); border: 1px solid rgba(255,111,145,.25); border-radius: 8px;
+    padding: 14px 16px; margin: 10px 0;
+  }
+
+  /* Section edit controls */
   .section-edit-controls { display: none; gap: 8px; }
   .section-edit-controls.visible { display: flex; }
-  .section-save-bar { display: none; padding: 10px 18px; border-top: 1px solid var(--border); background: var(--bg3); gap: 8px; align-items: center; }
+  .section-save-bar {
+    display: none; padding: 10px 18px; border-top: 1px solid var(--border);
+    background: var(--bg3); gap: 8px; align-items: center;
+  }
   .section-save-bar.visible { display: flex; }
   .save-status { font-size: 12px; color: var(--text3); margin-left: auto; }
-  .add-section-btn { display: none; width: 100%; background: transparent; border: 1px dashed var(--border); border-radius: var(--radius); padding: 12px; color: var(--text3); font-family: inherit; font-size: 13px; cursor: pointer; transition: all .2s; margin-top: 8px; }
+
+  /* Add section / add page buttons */
+  .add-section-btn {
+    display: none; width: 100%; background: transparent; border: 1px dashed var(--border);
+    border-radius: var(--radius); padding: 12px; color: var(--text3); font-family: inherit;
+    font-size: 13px; cursor: pointer; transition: all .2s; margin-top: 8px;
+  }
   .add-section-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,111,255,.04); }
   .add-section-btn.visible { display: block; }
 
@@ -180,41 +248,65 @@
   .user-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); border-bottom: 1px solid var(--border); }
   .user-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
   .user-table tr:hover td { background: var(--bg3); }
-  .role-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .role-badge {
+    display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+  }
   .role-super_admin { background: rgba(124,111,255,.15); color: var(--accent); }
-  .role-site_admin  { background: rgba(111,255,212,.12); color: var(--accent3); }
-  .role-editor { background: rgba(255,190,50,.1);  color: #ffbe32; }
-  .role-staff  { background: rgba(144,144,170,.1); color: var(--text2); }
+  .role-site_admin { background: rgba(111,255,212,.12); color: var(--accent3); }
+  .role-editor { background: rgba(255,190,50,.1); color: #ffbe32; }
+  .role-staff { background: rgba(144,144,170,.1); color: var(--text2); }
   .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
   .form-group label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); }
-  .form-group input, .form-group select { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s; }
+  .form-group input, .form-group select {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; color: var(--text); font-family: inherit; font-size: 14px; outline: none;
+    transition: border-color .2s;
+  }
   .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
   .form-group select option { background: var(--bg3); }
   .project-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .project-chip { padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); color: var(--text2); transition: all .15s; background: var(--bg3); }
+  .project-chip {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+    border: 1px solid var(--border); color: var(--text2); transition: all .15s; background: var(--bg3);
+  }
   .project-chip.selected { border-color: var(--accent); color: var(--accent); background: rgba(124,111,255,.1); }
+
+  /* Page manager */
   .page-manager-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-  .page-manager-item { display: flex; align-items: center; gap: 10px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  .page-manager-item {
+    display: flex; align-items: center; gap: 10px; background: var(--bg2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
+  }
   .page-manager-name { flex: 1; font-size: 14px; }
   .page-manager-project { font-size: 11px; color: var(--text3); }
 
-  /* ── TOAST ── */
-  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; font-size: 13px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all .3s; pointer-events: none; }
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--bg2);
+    border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px;
+    font-size: 13px; z-index: 9999; transform: translateY(80px); opacity: 0;
+    transition: all .3s; pointer-events: none;
+  }
   #toast.show { transform: translateY(0); opacity: 1; }
   #toast.success { border-color: var(--accent3); color: var(--accent3); }
-  #toast.error   { border-color: #ff6b6b; color: #ff6b6b; }
+  #toast.error { border-color: #ff6b6b; color: #ff6b6b; }
 
+  /* Misc */
   .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: var(--bg3); color: var(--text3); margin: 2px; }
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   .empty-state { text-align: center; padding: 48px; color: var(--text3); }
   .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
   select { cursor: pointer; }
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; align-items: center; justify-content: center;
+  }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 28px; width: 480px; max-width: 95vw; }
   .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
@@ -228,9 +320,9 @@
     <h1>Staff Hub</h1>
     <p>Sign in to access your staff guides</p>
     <label>Email address</label>
-    <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
+    <input type="email" id="login-email" placeholder="you@example.com">
     <label>Password</label>
-    <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    <input type="password" id="login-password" placeholder="••••••••">
     <button class="btn btn-primary" id="login-btn" onclick="login()">Sign In</button>
     <div id="auth-error"></div>
     <div id="auth-info"></div>
@@ -239,6 +331,7 @@
 
 <!-- ── APP ── -->
 <div id="app">
+  <!-- SIDEBAR -->
   <div id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">Staff<span>Hub</span></div>
@@ -263,13 +356,16 @@
     </div>
   </div>
 
+  <!-- MAIN -->
   <div id="main">
+    <!-- DASHBOARD -->
     <div id="dashboard">
       <div class="dash-title">Welcome back 👋</div>
       <div class="dash-sub" id="dash-sub">Select a project guide below to get started.</div>
       <div class="project-grid" id="project-grid"></div>
     </div>
 
+    <!-- GUIDE VIEW -->
     <div id="guide-view">
       <div class="guide-breadcrumb" id="guide-breadcrumb"></div>
       <div class="page-header">
@@ -285,6 +381,7 @@
       <button class="add-section-btn" id="add-section-btn" onclick="addSection()">＋ Add Section</button>
     </div>
 
+    <!-- ADMIN VIEW -->
     <div id="admin-view">
       <div class="admin-title">⚙ Admin Panel</div>
       <div class="admin-tabs">
@@ -293,11 +390,13 @@
         <button class="admin-tab" onclick="switchAdminTab('create')">Create User</button>
         <button class="admin-tab" onclick="switchAdminTab('activity')">Activity</button>
       </div>
+      <!-- Users tab -->
       <div class="admin-panel-section active" id="admin-tab-users">
         <div id="user-list-container"><div class="empty-state"><div class="empty-icon">👥</div>Loading users...</div></div>
       </div>
+      <!-- Pages tab -->
       <div class="admin-panel-section" id="admin-tab-pages">
-        <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <div style="margin-bottom:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <select id="page-project-filter" onchange="loadPageManager()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:14px;">
             <option value="">All Projects</option>
           </select>
@@ -305,6 +404,7 @@
         </div>
         <div id="page-manager-container"><div class="empty-state"><div class="empty-icon">📄</div>Loading pages...</div></div>
       </div>
+      <!-- Create user tab -->
       <div class="admin-panel-section" id="admin-tab-create">
         <div style="max-width:560px;">
           <div class="form-row">
@@ -337,6 +437,7 @@
           <button class="btn btn-primary" onclick="createUser()">Create User</button>
         </div>
       </div>
+      <!-- Activity tab -->
       <div class="admin-panel-section" id="admin-tab-activity">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
           <div style="font-size:13px;color:var(--text2);">Showing recent login and action events across all staff.</div>
@@ -354,7 +455,12 @@
     <div class="modal-title">➕ Add New Page</div>
     <div class="form-group" style="margin-bottom:14px;">
       <label>Project</label>
-      <select id="modal-page-project" onchange="loadParentPageOptions()"></select>
+      <select id="modal-page-project">
+        <option value="smpfinder">SMPFinder</option>
+        <option value="infuse">Infuse Network</option>
+        <option value="bliss">BlissPvP</option>
+        <option value="strength">Strength SMP</option>
+      </select>
     </div>
     <div class="form-group" style="margin-bottom:14px;">
       <label>Page Title</label>
@@ -407,51 +513,50 @@
 <div id="toast"></div>
 
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-//  AUTH FIX: The sb_publishable_ key has a known bug with signInWithPassword
-//  in some Supabase projects. Replace SUPABASE_KEY with your legacy anon key:
-//
-//  Supabase Dashboard → Project Settings → API → "Legacy API Keys" tab
-//  Copy the "anon / public" key (starts with eyJ..., ~208 chars long)
-// ─────────────────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
-const SUPABASE_KEY = 'PASTE_YOUR_ANON_KEY_HERE'; // ← swap this out
-
+const SUPABASE_KEY = 'sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false
+  }
 });
 
 const PROJECTS = {
-  smpfinder: { name: 'SMPFinder',      icon: '🔍', accent: '#7c6fff' },
+  smpfinder: { name: 'SMPFinder', icon: '🔍', accent: '#7c6fff' },
   infuse:    { name: 'Infuse Network', icon: '⚡', accent: '#ff6f91' },
-  bliss:     { name: 'BlissPvP',       icon: '⚔️', accent: '#6fffd4' },
-  strength:  { name: 'Strength SMP',   icon: '🛡️', accent: '#ffbe32' }
+  bliss:     { name: 'BlissPvP', icon: '⚔️', accent: '#6fffd4' },
+  strength:  { name: 'Strength SMP', icon: '🛡️', accent: '#ffbe32' }
 };
 
-let currentUser    = null;
+let currentUser = null;
 let currentProfile = null;
-let currentAccess  = [];
-let editMode       = false;
+let currentAccess = [];
+let editMode = false;
 let currentProject = null;
-let currentPage    = null;
+let currentPage = null;
+let allPages = [];
 
-// ── AUTH ──────────────────────────────────────────────────────────────────────
+// ── AUTH ──
 function setAuthError(msg) {
-  const el = document.getElementById('auth-error');
-  el.innerHTML = '⚠️ ' + msg;
-  el.style.display = 'block';
-  document.getElementById('auth-info').style.display = 'none';
+  const err = document.getElementById('auth-error');
+  const info = document.getElementById('auth-info');
+  err.innerHTML = '⚠️ ' + msg;
+  err.style.display = 'block';
+  info.style.display = 'none';
 }
 function setAuthInfo(msg) {
-  const el = document.getElementById('auth-info');
-  el.innerHTML = 'ℹ️ ' + msg;
-  el.style.display = 'block';
-  document.getElementById('auth-error').style.display = 'none';
+  const err = document.getElementById('auth-error');
+  const info = document.getElementById('auth-info');
+  info.innerHTML = 'ℹ️ ' + msg;
+  info.style.display = 'block';
+  err.style.display = 'none';
 }
 function clearAuthMessages() {
   document.getElementById('auth-error').style.display = 'none';
-  document.getElementById('auth-info').style.display  = 'none';
+  document.getElementById('auth-info').style.display = 'none';
 }
 function setLoginLoading(on) {
   const btn = document.getElementById('login-btn');
@@ -461,55 +566,39 @@ function setLoginLoading(on) {
 
 async function login() {
   const email = document.getElementById('login-email').value.trim();
-  const pw    = document.getElementById('login-password').value;
+  const pw = document.getElementById('login-password').value;
   clearAuthMessages();
 
   if (!email && !pw) { setAuthError('Please enter your email and password.'); return; }
-  if (!email)        { setAuthError('Please enter your email address.'); return; }
-  if (!pw)           { setAuthError('Please enter your password.'); return; }
+  if (!email) { setAuthError('Please enter your email address.'); return; }
+  if (!pw) { setAuthError('Please enter your password.'); return; }
   if (!email.includes('@')) { setAuthError('That does not look like a valid email address.'); return; }
 
   setLoginLoading(true);
 
-  // Safety net: unblock the button if the request silently hangs
-  const hangTimer = setTimeout(() => {
-    setLoginLoading(false);
-    setAuthError('Request timed out. Please check your connection and try again.');
-  }, 12000);
-
   try {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-    clearTimeout(hangTimer);
-
     if (error) {
-      setLoginLoading(false);
-      const msg = (error.message || '').toLowerCase();
-      if (msg.includes('invalid') || msg.includes('credentials') || msg.includes('email') || msg.includes('password')) {
+      const msg = error.message ? error.message.toLowerCase() : '';
+      if (msg.includes('invalid') || msg.includes('credentials')) {
         setAuthError('Incorrect email or password. Please try again.');
       } else if (msg.includes('too many') || msg.includes('rate limit')) {
         setAuthError('Too many attempts. Please wait a minute and try again.');
-      } else if (msg.includes('network') || msg.includes('fetch') || msg.includes('failed')) {
+      } else if (msg.includes('network') || msg.includes('fetch')) {
         setAuthError('Network error. Please check your connection and try again.');
       } else {
         setAuthError(error.message || 'Login failed. Please try again.');
       }
-      return;
-    }
-
-    if (!data?.user) {
       setLoginLoading(false);
-      setAuthError('Login failed — no user returned. Please try again.');
       return;
     }
-
     await initApp(data.user);
-  } catch (e) {
-    clearTimeout(hangTimer);
+  } catch(e) {
     setLoginLoading(false);
     if (!navigator.onLine) {
       setAuthError('You appear to be offline. Please check your internet connection.');
     } else {
-      setAuthError('Something went wrong. Try a hard refresh (Ctrl+Shift+R) and sign in again.');
+      setAuthError('Something went wrong. If this just updated, wait 30 seconds and do a hard refresh (Ctrl+Shift+R).');
     }
   }
 }
@@ -524,20 +613,18 @@ async function initApp(user) {
     } else {
       currentProfile = prof;
     }
-  } catch (e) {
+  } catch(e) {
     currentProfile = { id: user.id, email: user.email, role: 'staff' };
   }
-
   const { data: access } = await sb.from('project_access').select('*').eq('user_id', user.id);
   currentAccess = access || [];
 
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('sidebar-email').textContent = user.email;
-  setLoginLoading(false);
   logActivity('login');
 
-  const isAdmin = ['super_admin', 'site_admin'].includes(currentProfile.role);
+  const isAdmin = ['super_admin','site_admin'].includes(currentProfile.role);
   if (isAdmin) {
     document.getElementById('nav-admin-section').style.display = 'block';
     document.getElementById('edit-toggle-wrap').classList.add('visible');
@@ -553,16 +640,28 @@ async function signOut() {
   location.reload();
 }
 
-// Resume existing session on page load
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user && !currentUser) await initApp(session.user);
 });
 
-['login-email', 'login-password'].forEach(id => {
+async function restoreSession() {
+  const { data, error } = await sb.auth.getSession();
+  if (error) {
+    console.warn('Supabase session restore failed:', error.message || error);
+    return;
+  }
+  if (data?.session?.user && !currentUser) {
+    await initApp(data.session.user);
+  }
+}
+window.addEventListener('load', restoreSession);
+
+// Enter key on login fields
+['login-email','login-password'].forEach(id => {
   document.getElementById(id)?.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 });
 
-// ── NAVIGATION ────────────────────────────────────────────────────────────────
+// ── NAVIGATION ──
 function getAccessibleProjects() {
   if (currentProfile.role === 'super_admin') return Object.keys(PROJECTS);
   return [...new Set(currentAccess.map(a => a.project))];
@@ -580,14 +679,15 @@ function buildNavProjects() {
         <span class="icon">${p.icon}</span> ${p.name}
         <span class="nav-arrow" id="arrow-${pid}">▶</span>
       </div>
-      <div class="nav-children" id="nav-children-${pid}"></div>`;
+      <div class="nav-children" id="nav-children-${pid}"></div>
+    `;
     nav.appendChild(wrap);
   });
 }
 
 async function toggleNavProject(pid) {
   const children = document.getElementById(`nav-children-${pid}`);
-  const arrow    = document.getElementById(`arrow-${pid}`);
+  const arrow = document.getElementById(`arrow-${pid}`);
   if (children.classList.contains('open')) {
     children.classList.remove('open');
     arrow.classList.remove('open');
@@ -602,25 +702,24 @@ async function toggleNavProject(pid) {
 async function loadNavPages(pid) {
   const { data: pages } = await sb.from('guide_content')
     .select('page_slug, title, section_slug')
-    .eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order');
-
+    .eq('project', pid)
+    .eq('section_slug', '__pagemeta__')
+    .order('sort_order');
+  
   const container = document.getElementById(`nav-children-${pid}`);
-  if (!container) return; // nav shell doesn't exist yet — skip safely
-
   container.innerHTML = '';
-
+  
   if (!pages || pages.length === 0) {
     container.innerHTML = `<div class="nav-item nav-subitem" style="color:var(--text3);font-style:italic;">No pages yet</div>`;
     return;
   }
 
+  // Build tree
   const topLevel = pages.filter(p => !p.page_slug.includes('/'));
   topLevel.forEach(page => {
-    const slug     = page.page_slug;
-    const children = pages.filter(p =>
-      p.page_slug.startsWith(slug + '/') &&
-      p.page_slug.split('/').length === slug.split('/').length + 1
-    );
+    const slug = page.page_slug;
+    const children = pages.filter(p => p.page_slug.startsWith(slug + '/') && p.page_slug.split('/').length === slug.split('/').length + 1);
+    
     const item = document.createElement('div');
     item.innerHTML = `<div class="nav-item nav-subitem" id="navpage-${pid}-${slug.replace(/\//g,'_')}" onclick="openPage('${pid}','${slug}')">${page.title}</div>`;
     container.appendChild(item);
@@ -630,8 +729,10 @@ async function loadNavPages(pid) {
       ci.innerHTML = `<div class="nav-item nav-subsubitem" id="navpage-${pid}-${child.page_slug.replace(/\//g,'_')}" onclick="openPage('${pid}','${child.page_slug}')">${child.title}</div>`;
       container.appendChild(ci);
 
-      pages.filter(p => p.page_slug.startsWith(child.page_slug + '/')).forEach(gc => {
+      const grandchildren = pages.filter(p => p.page_slug.startsWith(child.page_slug + '/'));
+      grandchildren.forEach(gc => {
         const gi = document.createElement('div');
+        gi.style.paddingLeft = '74px';
         gi.innerHTML = `<div class="nav-item nav-subsubitem" style="padding-left:74px" id="navpage-${pid}-${gc.page_slug.replace(/\//g,'_')}" onclick="openPage('${pid}','${gc.page_slug}')">${gc.title}</div>`;
         container.appendChild(gi);
       });
@@ -639,7 +740,7 @@ async function loadNavPages(pid) {
   });
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+// ── DASHBOARD ──
 function showDashboard() {
   document.getElementById('dashboard').classList.add('visible');
   document.getElementById('guide-view').classList.remove('visible');
@@ -648,9 +749,8 @@ function showDashboard() {
   const grid = document.getElementById('project-grid');
   grid.innerHTML = '';
   projects.forEach(pid => {
-    const p    = PROJECTS[pid];
-    const role = currentProfile.role === 'super_admin'
-      ? 'super_admin' : (currentAccess.find(a => a.project === pid)?.role || 'staff');
+    const p = PROJECTS[pid];
+    const role = currentProfile.role === 'super_admin' ? 'super_admin' : (currentAccess.find(a=>a.project===pid)?.role || 'staff');
     const card = document.createElement('div');
     card.className = 'project-card';
     card.style.setProperty('--card-accent', p.accent);
@@ -658,57 +758,59 @@ function showDashboard() {
     card.onclick = () => { toggleNavProject(pid); openFirstPage(pid); };
     grid.appendChild(card);
   });
-  document.getElementById('dash-sub').textContent =
-    `You have access to ${projects.length} project guide${projects.length !== 1 ? 's' : ''}.`;
+  document.getElementById('dash-sub').textContent = `You have access to ${projects.length} project guide${projects.length !== 1 ? 's' : ''}.`;
 }
 
 async function openFirstPage(pid) {
   const { data: pages } = await sb.from('guide_content')
-    .select('page_slug').eq('project', pid).eq('section_slug', '__pagemeta__')
-    .order('sort_order').limit(1);
+    .select('page_slug').eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order').limit(1);
   if (pages && pages.length > 0) openPage(pid, pages[0].page_slug);
 }
 
-// ── GUIDE VIEW ────────────────────────────────────────────────────────────────
+// ── GUIDE VIEW ──
 async function openPage(pid, pageSlug) {
   currentProject = pid;
-  currentPage    = pageSlug;
+  currentPage = pageSlug;
   document.getElementById('dashboard').classList.remove('visible');
   document.getElementById('guide-view').classList.add('visible');
   document.getElementById('admin-view').classList.remove('visible');
 
+  // Active nav
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const navEl = document.getElementById(`navpage-${pid}-${pageSlug.replace(/\//g,'_')}`);
   if (navEl) navEl.classList.add('active');
 
+  // Load page meta
   const { data: meta } = await sb.from('guide_content')
     .select('title').eq('project', pid).eq('page_slug', pageSlug).eq('section_slug', '__pagemeta__').single();
 
   const p = PROJECTS[pid];
   document.getElementById('guide-breadcrumb').innerHTML = `${p.icon} ${p.name} <span>/ ${meta?.title || pageSlug}</span>`;
-  document.getElementById('page-title').textContent     = meta?.title || pageSlug;
-  document.getElementById('page-subtitle').textContent  = '';
+  document.getElementById('page-title').textContent = meta?.title || pageSlug;
+  document.getElementById('page-subtitle').textContent = '';
 
-  const isAdmin = ['super_admin', 'site_admin'].includes(currentProfile.role);
+  // Edit controls
+  const isAdmin = ['super_admin','site_admin'].includes(currentProfile.role);
   document.getElementById('page-edit-controls').classList.toggle('visible', editMode && isAdmin);
   document.getElementById('add-section-btn').classList.toggle('visible', editMode && isAdmin);
 
+  // Load sections
   const { data: sections } = await sb.from('guide_content')
-    .select('*').eq('project', pid).eq('page_slug', pageSlug)
-    .neq('section_slug', '__pagemeta__').order('sort_order');
+    .select('*').eq('project', pid).eq('page_slug', pageSlug).neq('section_slug', '__pagemeta__').order('sort_order');
+
   renderSections(sections || [], pid, pageSlug);
 }
 
 function renderSections(sections, pid, pageSlug) {
   const container = document.getElementById('sections-container');
   container.innerHTML = '';
-  const isAdmin = ['super_admin', 'site_admin'].includes(currentProfile.role);
+  const isAdmin = ['super_admin','site_admin'].includes(currentProfile.role);
 
   sections.forEach(sec => {
     const block = document.createElement('div');
-    block.className  = 'section-block';
+    block.className = 'section-block';
     block.dataset.id = sec.id;
-    block.innerHTML  = `
+    block.innerHTML = `
       <div class="editor-toolbar ${editMode && isAdmin ? 'visible' : ''}" id="toolbar-${sec.id}">
         <button class="toolbar-btn" onclick="fmt('bold','${sec.id}')" title="Bold"><b>B</b></button>
         <button class="toolbar-btn" onclick="fmt('italic','${sec.id}')" title="Italic"><i>I</i></button>
@@ -742,40 +844,39 @@ function renderSections(sections, pid, pageSlug) {
       <div class="section-save-bar ${editMode && isAdmin ? 'visible' : ''}" id="savebar-${sec.id}">
         <button class="btn btn-success btn-sm" onclick="saveSection('${sec.id}','${pid}','${pageSlug}')">💾 Save Section</button>
         <span class="save-status" id="status-${sec.id}"></span>
-      </div>`;
+      </div>
+    `;
     container.appendChild(block);
 
+    // Title input sync
     if (editMode && isAdmin) {
       document.getElementById(`title-display-${sec.id}`).style.display = 'none';
-      document.getElementById(`title-input-${sec.id}`).style.display   = 'block';
+      document.getElementById(`title-input-${sec.id}`).style.display = 'block';
       document.getElementById(`title-input-${sec.id}`).oninput = () => markDirty(sec.id);
     }
   });
 }
 
 function markDirty(secId) {
-  const s = document.getElementById(`status-${secId}`);
-  if (s) s.textContent = 'Unsaved changes';
+  const status = document.getElementById(`status-${secId}`);
+  if (status) status.textContent = 'Unsaved changes';
 }
 
 async function saveSection(secId, pid, pageSlug) {
   const content = document.getElementById(`content-${secId}`).innerHTML;
   const titleEl = document.getElementById(`title-input-${secId}`);
-  const title   = titleEl ? titleEl.value : document.getElementById(`title-display-${secId}`).textContent;
-  const status  = document.getElementById(`status-${secId}`);
+  const title = titleEl ? titleEl.value : document.getElementById(`title-display-${secId}`).textContent;
+  const status = document.getElementById(`status-${secId}`);
   status.textContent = 'Saving...';
-  const { error } = await sb.from('guide_content')
-    .update({ content, title, updated_at: new Date().toISOString() }).eq('id', secId);
+  const { error } = await sb.from('guide_content').update({ content, title, updated_at: new Date().toISOString() }).eq('id', secId);
   if (error) { status.textContent = '❌ Error saving'; showToast('Save failed: ' + error.message, 'error'); }
   else { status.textContent = '✅ Saved'; showToast('Section saved!', 'success'); logActivity('section_saved', `${pid} / ${pageSlug}`); }
 }
 
 async function addSection() {
   if (!currentPage || !currentProject) return;
-  const { data: existing } = await sb.from('guide_content')
-    .select('sort_order').eq('project', currentProject).eq('page_slug', currentPage)
-    .order('sort_order', { ascending: false }).limit(1);
-  const nextOrder = existing?.length > 0 ? existing[0].sort_order + 1 : 0;
+  const { data: existing } = await sb.from('guide_content').select('sort_order').eq('project', currentProject).eq('page_slug', currentPage).order('sort_order', {ascending:false}).limit(1);
+  const nextOrder = existing && existing.length > 0 ? (existing[0].sort_order + 1) : 0;
   const { error } = await sb.from('guide_content').insert({
     project: currentProject, page_slug: currentPage,
     section_slug: 'section_' + Date.now(),
@@ -802,87 +903,128 @@ async function deletePage() {
   showDashboard();
 }
 
-// ── EDIT MODE ─────────────────────────────────────────────────────────────────
+// ── EDIT MODE ──
 function toggleEditMode(on) {
   editMode = on;
   if (currentPage) openPage(currentProject, currentPage);
 }
 
-// ── RICH TEXT ─────────────────────────────────────────────────────────────────
+// ── RICH TEXT FORMATTING ──
 function fmt(cmd, secId) {
   document.getElementById(`content-${secId}`).focus();
   document.execCommand(cmd, false, null);
   markDirty(secId);
 }
+
 function fmtBlock(tag, secId) {
   document.getElementById(`content-${secId}`).focus();
   document.execCommand('formatBlock', false, tag);
   markDirty(secId);
 }
+
 function insertTable(secId) {
-  document.getElementById(`content-${secId}`).focus();
-  document.execCommand('insertHTML', false, `<table><thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th></tr></thead><tbody><tr><td>Row 1</td><td>Data</td><td>Data</td></tr><tr><td>Row 2</td><td>Data</td><td>Data</td></tr></tbody></table><p><br></p>`);
+  const el = document.getElementById(`content-${secId}`);
+  el.focus();
+  const html = `<table><thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th></tr></thead><tbody><tr><td>Row 1</td><td>Data</td><td>Data</td></tr><tr><td>Row 2</td><td>Data</td><td>Data</td></tr></tbody></table><p><br></p>`;
+  document.execCommand('insertHTML', false, html);
   markDirty(secId);
 }
+
 function insertCode(secId) {
-  document.getElementById(`content-${secId}`).focus();
+  const el = document.getElementById(`content-${secId}`);
+  el.focus();
   document.execCommand('insertHTML', false, `<pre><code>/command &lt;user&gt; &lt;reason&gt;</code></pre><p><br></p>`);
   markDirty(secId);
 }
+
 function insertInfoBox(secId) {
-  document.getElementById(`content-${secId}`).focus();
+  const el = document.getElementById(`content-${secId}`);
+  el.focus();
   document.execCommand('insertHTML', false, `<div class="info-box">ℹ️ Info: Your text here</div><p><br></p>`);
   markDirty(secId);
 }
+
 function insertWarnBox(secId) {
-  document.getElementById(`content-${secId}`).focus();
+  const el = document.getElementById(`content-${secId}`);
+  el.focus();
   document.execCommand('insertHTML', false, `<div class="warn-box">⚠️ Warning: Your text here</div><p><br></p>`);
   markDirty(secId);
 }
+
 function insertQuote(secId) {
-  document.getElementById(`content-${secId}`).focus();
+  const el = document.getElementById(`content-${secId}`);
+  el.focus();
   document.execCommand('insertHTML', false, `<blockquote>Quote text here</blockquote><p><br></p>`);
   markDirty(secId);
 }
 
-// ── PAGE MANAGER ──────────────────────────────────────────────────────────────
+// ── PAGE MANAGER ──
 async function openAddPageModal() {
-  // Populate project dropdown dynamically from PROJECTS constant
-  const sel = document.getElementById('modal-page-project');
-  sel.innerHTML = '';
-  Object.entries(PROJECTS).forEach(([pid, p]) => {
-    const opt = document.createElement('option');
-    opt.value = pid; opt.textContent = p.icon + ' ' + p.name;
-    sel.appendChild(opt);
-  });
   await loadParentPageOptions();
-  document.getElementById('modal-page-title').value = '';
+  populateProjectFilter(document.getElementById('modal-page-project'));
   document.getElementById('add-page-modal').classList.add('open');
 }
 
 async function loadParentPageOptions() {
   const pid = document.getElementById('modal-page-project').value;
-  const { data: pages } = await sb.from('guide_content')
-    .select('page_slug, title').eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order');
-  const parentSel = document.getElementById('modal-page-parent');
-  parentSel.innerHTML = '<option value="">None (top level)</option>';
+  const { data: pages } = await sb.from('guide_content').select('page_slug, title').eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order');
+  const sel = document.getElementById('modal-page-parent');
+  sel.innerHTML = '<option value="">None (top level)</option>';
   (pages || []).forEach(p => {
     const opt = document.createElement('option');
-    opt.value = p.page_slug; opt.textContent = p.title;
-    parentSel.appendChild(opt);
+    opt.value = p.page_slug;
+    opt.textContent = p.title;
+    sel.appendChild(opt);
   });
 }
 
 async function createPage() {
-  const pid    = document.getElementById('modal-page-project').value;
-  const title  = document.getElementById('modal-page-title').value.trim();
+  const pid = document.getElementById('modal-page-project').value;
+  const title = document.getElementById('modal-page-title').value.trim();
   const parent = document.getElementById('modal-page-parent').value;
   if (!title) { showToast('Please enter a page title', 'error'); return; }
 
-  const slug = (parent ? parent + '/' : '') + title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const slugBase = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const slug = (parent ? parent + '/' : '') + slugBase;
+
+  const { data: existingPage, error: existingError } = await sb.from('guide_content')
+    .select('id')
+    .eq('project', pid)
+    .eq('page_slug', slug)
+    .eq('section_slug', '__pagemeta__')
+    .single();
+
+  if (existingError && existingError.code !== 'PGRST116') {
+    showToast('Error checking existing page: ' + existingError.message, 'error');
+    return;
+  }
+  if (existingPage) {
+    showToast('A page with that name already exists in this project.', 'error');
+    return;
+  }
+
+  const { data: lastPage, error: lastPageError } = await sb.from('guide_content')
+    .select('sort_order')
+    .eq('project', pid)
+    .eq('section_slug', '__pagemeta__')
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (lastPageError && lastPageError.code !== 'PGRST116') {
+    showToast('Error determining sort order: ' + lastPageError.message, 'error');
+    return;
+  }
+
+  const nextOrder = lastPage ? (lastPage.sort_order + 1) : 0;
+
   const { error } = await sb.from('guide_content').insert({
-    project: pid, page_slug: slug, section_slug: '__pagemeta__',
-    title, content: '', sort_order: 999
+    project: pid,
+    page_slug: slug,
+    section_slug: '__pagemeta__',
+    title,
+    content: '',
+    sort_order: nextOrder
   });
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
 
@@ -890,36 +1032,22 @@ async function createPage() {
   logActivity('page_created', `${pid} / ${title}`);
   closeModal('add-page-modal');
 
-  // ── NAV FIX: ensure the project nav shell exists, open it, then reload pages ──
-  // If the admin went straight to the admin panel without ever clicking the
-  // project in the sidebar, nav-children-${pid} won't exist yet — rebuild nav.
-  if (!document.getElementById(`nav-children-${pid}`)) {
-    buildNavProjects();
-  }
-  // Open the project's nav section if it's collapsed
-  const navChildren = document.getElementById(`nav-children-${pid}`);
-  const navArrow    = document.getElementById(`arrow-${pid}`);
-  if (navChildren && !navChildren.classList.contains('open')) {
-    navChildren.classList.add('open');
-    if (navArrow) navArrow.classList.add('open');
-  }
-  // Reload the sidebar page list so the new page appears immediately
   await loadNavPages(pid);
-
   loadPageManager();
+
+  // If the user is currently viewing the same project, open the new page.
+  if (currentProject === pid) {
+    openPage(pid, slug);
+  }
 }
 
 async function loadPageManager() {
   const pid = document.getElementById('page-project-filter').value;
-  let query = sb.from('guide_content').select('*').eq('section_slug', '__pagemeta__')
-    .order('project').order('sort_order');
+  let query = sb.from('guide_content').select('*').eq('section_slug', '__pagemeta__').order('project').order('sort_order');
   if (pid) query = query.eq('project', pid);
   const { data: pages } = await query;
   const container = document.getElementById('page-manager-container');
-  if (!pages || pages.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div>No pages yet. Add one above!</div>';
-    return;
-  }
+  if (!pages || pages.length === 0) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div>No pages yet. Add one above!</div>'; return; }
   container.innerHTML = `<div class="page-manager-list">${pages.map(p => `
     <div class="page-manager-item">
       <span class="page-manager-name">${p.title}</span>
@@ -937,7 +1065,7 @@ async function adminDeletePage(pid, pageSlug) {
   loadPageManager();
 }
 
-// ── ADMIN PANEL ───────────────────────────────────────────────────────────────
+// ── ADMIN PANEL ──
 function showAdmin() {
   document.getElementById('dashboard').classList.remove('visible');
   document.getElementById('guide-view').classList.remove('visible');
@@ -949,28 +1077,24 @@ function showAdmin() {
 }
 
 function switchAdminTab(tab) {
-  document.querySelectorAll('.admin-tab').forEach((t, i) =>
-    t.classList.toggle('active', ['users','pages','create','activity'][i] === tab));
+  document.querySelectorAll('.admin-tab').forEach((t,i) => t.classList.toggle('active', ['users','pages','create','activity'][i] === tab));
   document.querySelectorAll('.admin-panel-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`admin-tab-${tab}`).classList.add('active');
-  if (tab === 'users')    loadUsers();
-  if (tab === 'pages')    loadPageManager();
+  if (tab === 'users') loadUsers();
+  if (tab === 'pages') loadPageManager();
   if (tab === 'activity') loadActivity();
 }
 
 async function loadUsers() {
   const { data: profiles } = await sb.from('profiles').select('*');
-  const { data: access }   = await sb.from('project_access').select('*');
+  const { data: access } = await sb.from('project_access').select('*');
   const container = document.getElementById('user-list-container');
-  if (!profiles || profiles.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>No users yet.</div>';
-    return;
-  }
+  if (!profiles || profiles.length === 0) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>No users yet.</div>'; return; }
   container.innerHTML = `<table class="user-table">
     <thead><tr><th>Email</th><th>Role</th><th>Projects</th><th>Actions</th></tr></thead>
     <tbody>${profiles.map(p => {
-      const ua       = (access || []).filter(a => a.user_id === p.id);
-      const projects = ua.map(a => `<span class="tag">${PROJECTS[a.project]?.name || a.project}</span>`).join('');
+      const userAccess = (access || []).filter(a => a.user_id === p.id);
+      const projects = userAccess.map(a => `<span class="tag">${PROJECTS[a.project]?.name || a.project}</span>`).join('');
       return `<tr>
         <td>${p.email}</td>
         <td><span class="role-badge role-${p.role}">${p.role.replace('_',' ')}</span></td>
@@ -978,26 +1102,28 @@ async function loadUsers() {
         <td style="display:flex;gap:6px;">
           <button class="btn btn-ghost btn-sm" onclick="openEditUser('${p.id}','${p.role}')">✏️ Edit</button>
           <button class="btn btn-danger btn-sm" onclick="deleteUser('${p.id}')">🗑</button>
-        </td></tr>`;
-    }).join('')}</tbody></table>`;
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
 }
 
 async function openEditUser(userId, role) {
-  document.getElementById('edit-user-id').value   = userId;
+  document.getElementById('edit-user-id').value = userId;
   document.getElementById('edit-user-role').value = role;
   const { data: access } = await sb.from('project_access').select('*').eq('user_id', userId);
   const selectedProjects = (access || []).map(a => a.project);
-  const projectRole = access?.length > 0 ? access[0].role : 'staff';
+  const projectRole = access && access.length > 0 ? access[0].role : 'staff';
   document.getElementById('edit-project-role').value = projectRole;
   populateProjectChips('edit-user-projects', selectedProjects);
   document.getElementById('edit-user-modal').classList.add('open');
 }
 
 async function saveUserEdit() {
-  const userId      = document.getElementById('edit-user-id').value;
-  const role        = document.getElementById('edit-user-role').value;
+  const userId = document.getElementById('edit-user-id').value;
+  const role = document.getElementById('edit-user-role').value;
   const projectRole = document.getElementById('edit-project-role').value;
-  const selected    = [...document.querySelectorAll('#edit-user-projects .project-chip.selected')].map(c => c.dataset.pid);
+  const selected = [...document.querySelectorAll('#edit-user-projects .project-chip.selected')].map(c => c.dataset.pid);
   await sb.from('profiles').update({ role }).eq('id', userId);
   await sb.from('project_access').delete().eq('user_id', userId);
   if (selected.length > 0) {
@@ -1018,12 +1144,14 @@ async function deleteUser(userId) {
 }
 
 async function createUser() {
-  const email       = document.getElementById('new-email').value.trim();
-  const password    = document.getElementById('new-password').value;
-  const role        = document.getElementById('new-role').value;
+  const email = document.getElementById('new-email').value.trim();
+  const password = document.getElementById('new-password').value;
+  const role = document.getElementById('new-role').value;
   const projectRole = document.getElementById('new-project-role').value;
-  const selected    = [...document.querySelectorAll('#new-user-projects .project-chip.selected')].map(c => c.dataset.pid);
+  const selected = [...document.querySelectorAll('#new-user-projects .project-chip.selected')].map(c => c.dataset.pid);
   if (!email || !password) { showToast('Email and password required', 'error'); return; }
+
+  // Use Supabase admin invite or signUp
   const { data, error } = await sb.auth.signUp({ email, password });
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
   const uid = data.user?.id;
@@ -1034,17 +1162,17 @@ async function createUser() {
   }
   showToast(`User ${email} created!`, 'success');
   logActivity('user_created', email);
-  document.getElementById('new-email').value    = '';
+  document.getElementById('new-email').value = '';
   document.getElementById('new-password').value = '';
 }
 
-// ── PROJECT CHIPS / FILTER ────────────────────────────────────────────────────
+// ── PROJECT CHIPS ──
 function populateProjectChips(containerId, selected = []) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
   Object.entries(PROJECTS).forEach(([pid, p]) => {
     const chip = document.createElement('div');
-    chip.className   = 'project-chip' + (selected.includes(pid) ? ' selected' : '');
+    chip.className = 'project-chip' + (selected.includes(pid) ? ' selected' : '');
     chip.dataset.pid = pid;
     chip.textContent = p.icon + ' ' + p.name;
     chip.onclick = () => chip.classList.toggle('selected');
@@ -1056,45 +1184,62 @@ function populateProjectFilter(selectEl) {
   selectEl.innerHTML = '<option value="">All Projects</option>';
   Object.entries(PROJECTS).forEach(([pid, p]) => {
     const opt = document.createElement('option');
-    opt.value = pid; opt.textContent = p.name;
+    opt.value = pid;
+    opt.textContent = p.name;
     selectEl.appendChild(opt);
   });
 }
 
-// ── MODALS ────────────────────────────────────────────────────────────────────
+// ── MODALS ──
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// ── TOAST ─────────────────────────────────────────────────────────────────────
+// ── TOAST ──
 function showToast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className   = `show ${type}`;
+  t.className = `show ${type}`;
   setTimeout(() => { t.className = ''; }, 3000);
 }
 
-// ── ACTIVITY LOG ──────────────────────────────────────────────────────────────
+// ── ACTIVITY LOG ──
 async function logActivity(action, detail = '') {
   try {
     await sb.from('activity_log').insert({
       user_id: currentUser?.id || null,
-      email:   currentUser?.email || 'unknown',
-      action, detail
+      email: currentUser?.email || 'unknown',
+      action,
+      detail
     });
-  } catch (e) { /* never block the user */ }
+  } catch(e) { /* silently fail — never block the user */ }
 }
 
 async function loadActivity() {
   const container = document.getElementById('activity-container');
   container.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
-  const { data, error } = await sb.from('activity_log')
-    .select('*').order('created_at', { ascending: false }).limit(200);
+  const { data, error } = await sb.from('activity_log').select('*').order('created_at', { ascending: false }).limit(200);
   if (error || !data || data.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div>No activity recorded yet.</div>';
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div>No activity recorded yet. Activity will appear here after staff log in.</div>';
     return;
   }
-  const actionColors = { login:'var(--accent3)', logout:'var(--text3)', page_created:'var(--accent)', page_deleted:'#ff6b6b', section_saved:'var(--accent)', section_added:'var(--accent)', section_deleted:'#ff6b6b', user_created:'var(--accent3)', user_updated:'#ffbe32', user_deleted:'#ff6b6b' };
-  const actionIcons  = { login:'🔐', logout:'👋', page_created:'📄', page_deleted:'🗑', section_saved:'💾', section_added:'➕', section_deleted:'🗑', user_created:'👤', user_updated:'✏️', user_deleted:'❌' };
+  const actionColors = {
+    'login': 'var(--accent3)',
+    'logout': 'var(--text3)',
+    'page_created': 'var(--accent)',
+    'page_deleted': '#ff6b6b',
+    'section_saved': 'var(--accent)',
+    'section_added': 'var(--accent)',
+    'section_deleted': '#ff6b6b',
+    'user_created': 'var(--accent3)',
+    'user_updated': '#ffbe32',
+    'user_deleted': '#ff6b6b',
+  };
+  const actionIcons = {
+    'login': '🔐', 'logout': '👋', 'page_created': '📄', 'page_deleted': '🗑',
+    'section_saved': '💾', 'section_added': '➕', 'section_deleted': '🗑',
+    'user_created': '👤', 'user_updated': '✏️', 'user_deleted': '❌'
+  };
 
+  // Group by date
   const grouped = {};
   data.forEach(row => {
     const date = new Date(row.created_at).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -1106,29 +1251,32 @@ async function loadActivity() {
   Object.entries(grouped).forEach(([date, rows]) => {
     html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:12px 0 8px;">${date}</div>`;
     rows.forEach(row => {
-      const time  = new Date(row.created_at).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+      const time = new Date(row.created_at).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
       const color = actionColors[row.action] || 'var(--text2)';
-      const icon  = actionIcons[row.action]  || '•';
-      html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
-        <span style="font-size:16px;width:24px;text-align:center;">${icon}</span>
-        <div style="flex:1;">
-          <div style="font-size:13px;color:var(--text);">${row.email}</div>
-          <div style="font-size:12px;color:${color};text-transform:capitalize;">${row.action.replace(/_/g,' ')}${row.detail ? ' — ' + row.detail : ''}</div>
-        </div>
-        <div style="font-size:12px;color:var(--text3);white-space:nowrap;">${time}</div>
-      </div>`;
+      const icon = actionIcons[row.action] || '•';
+      const label = row.action.replace(/_/g, ' ');
+      html += `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+          <span style="font-size:16px;width:24px;text-align:center;">${icon}</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:var(--text);">${row.email}</div>
+            <div style="font-size:12px;color:${color};text-transform:capitalize;">${label}${row.detail ? ' — ' + row.detail : ''}</div>
+          </div>
+          <div style="font-size:12px;color:var(--text3);white-space:nowrap;">${time}</div>
+        </div>`;
     });
   });
   container.innerHTML = html;
 }
 
-// ── KEYBOARD SHORTCUT: Ctrl/Cmd+Enter saves all sections ──────────────────────
+// ── KEYBOARD SHORTCUTS ──
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     const isAdmin = ['super_admin','site_admin'].includes(currentProfile?.role);
     if (editMode && isAdmin && currentPage) {
       document.querySelectorAll('.section-block').forEach(block => {
-        if (block.dataset.id) saveSection(block.dataset.id, currentProject, currentPage);
+        const id = block.dataset.id;
+        if (id) saveSection(id, currentProject, currentPage);
       });
     }
   }
