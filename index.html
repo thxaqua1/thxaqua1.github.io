@@ -1254,12 +1254,27 @@ function populateProjectFilter(selectEl) {
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 // ── STATUS BAR ──
-function setStatus(text, mode = 'up-to-date') {
+let statusTimeout = null;
+function setStatus(text, mode = 'up-to-date', autoResetMs = 30000) {
   const status = document.getElementById('status-bar');
   if (!status) return;
   status.textContent = `Status: ${text}`;
   status.classList.remove('processing','up-to-date');
   status.classList.add(mode);
+
+  if (statusTimeout) {
+    clearTimeout(statusTimeout);
+    statusTimeout = null;
+  }
+
+  if (mode === 'processing') {
+    statusTimeout = setTimeout(() => {
+      status.textContent = 'Status: Up To Date';
+      status.classList.remove('processing');
+      status.classList.add('up-to-date');
+      console.warn('Status bar auto-reset after timeout (processing exceeded).');
+    }, autoResetMs);
+  }
 }
 
 // ── TOAST ──
@@ -1353,4 +1368,3 @@ document.addEventListener('keydown', e => {
 </script>
 </body>
 </html>
-
