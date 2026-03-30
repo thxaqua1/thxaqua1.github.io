@@ -347,7 +347,19 @@
 
     <div id="smp-welcome" class="smp-panel active">
 
+  <div id="smp-welcome" class="smp-panel active">
+
+  <button id="edit-toggle" style="display:none;margin-bottom:15px;">
+    Enable Editing
+  </button>
+
   <div id="welcome-content"></div>
+
+  <button id="save-btn" style="display:none;margin-top:20px;">
+    Save Changes
+  </button>
+
+</div>
 
   <button id="save-btn" style="display:none;margin-top:20px;">
     Save Changes
@@ -510,196 +522,13 @@
 </div>
 
 <script>
-const{createClient}=supabase;
-const sb=createClient('https://tainbbnzenvjiidjexwa.supabase.co','sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF');
-
-const PROJECTS={
-  infuse:   {name:'Infuse Network',icon:'⚡',color:'#00e5ff',desc:'Network hub server'},
-  bliss:    {name:'BlissPvP',      icon:'⚔️',color:'#ff4444',desc:'Competitive PvP server'},
-  strength: {name:'Strength SMP', icon:'🌿',color:'#00ff88',desc:'Survival multiplayer'},
-  smpfinder:{name:'SMPFinder',    icon:'🔍',color:'#ffb300',desc:'Server listing platform'}
-};
-
-let currentUser=null,userProfile=null,userAccess=[];
-
-async function boot(){
-  const{data:{session}}=await sb.auth.getSession();
-  if(session){await loadUser(session.user);showApp();}
-  else showLogin();
-  document.getElementById('loading').style.display='none';
-}
-
-async function loadUser(user){
-  currentUser=user;
-  let{data:profile}=await sb.from('profiles').select('*').eq('id',user.id).single();
-  if(!profile){
-    await sb.from('profiles').insert({id:user.id,email:user.email,role:'staff'});
-    profile={id:user.id,email:user.email,role:'staff'};
-  }
-  userProfile=profile;
-  const{data:access}=await sb.from('project_access').select('*').eq('user_id',user.id);
-  userAccess=access||[];
-}
-
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const pass=document.getElementById('login-password').value;
-  const err=document.getElementById('login-err');
-  err.style.display='none';
-  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){err.textContent=error.message;err.style.display='block';return;}
-  await loadUser(data.user);showApp();
-}
-
-async function doLogout(){
-  await sb.auth.signOut();
-  currentUser=null;userProfile=null;userAccess=[];
-  showLogin();
-}
-
-function showLogin(){
-  document.getElementById('page-login').classList.add('active');
-  document.getElementById('page-app').classList.remove('active');
-}
-
-function showApp(){
-  document.getElementById('page-login').classList.remove('active');
-  document.getElementById('page-app').classList.add('active');
-  buildSidebar();buildDashboard();
-  if(isSuperAdmin()||isSiteAdmin())loadUserList();
-}
-
-function isSuperAdmin(){return userProfile?.role==='super_admin';}
-function isSiteAdmin(){return userProfile?.role==='site_admin'||isSuperAdmin();}
-function getProjectRole(p){if(isSuperAdmin())return'super_admin';const e=userAccess.find(a=>a.project===p);return e?e.role:null;}
-function canAccess(p){return isSuperAdmin()||!!userAccess.find(a=>a.project===p);}
-
-function buildSidebar(){
-  document.getElementById('sidebar-email').textContent=currentUser.email;
-  const g=document.getElementById('nav-projects-group');
-  g.innerHTML='<span class="nav-group-label">My Projects</span>';
-  Object.keys(PROJECTS).filter(p=>canAccess(p)).forEach(p=>{
-    const el=document.createElement('div');
-    el.className='nav-item';
-    el.innerHTML=`<div class="nav-dot"></div>${PROJECTS[p].name}`;
-    el.onclick=()=>showView(p,el);
-    g.appendChild(el);
-  });
-  if(isSuperAdmin()||isSiteAdmin())document.getElementById('nav-admin-group').style.display='block';
-}
-
-function buildDashboard(){
-  document.getElementById('dash-welcome').textContent=`Welcome back, ${currentUser.email.split('@')[0]}.`;
-  const grid=document.getElementById('project-grid');
-  grid.innerHTML='';
-  const list=Object.keys(PROJECTS).filter(p=>canAccess(p));
-  if(!list.length){grid.innerHTML='<p style="color:var(--muted);font-family:var(--mono);font-size:13px">You have not been assigned to any projects yet. Contact an admin.</p>';return;}
-  list.forEach(p=>{
-    const d=PROJECTS[p];
-    const role=(getProjectRole(p)||'super_admin').replace('_',' ');
-    const c=document.createElement('div');
-    c.className='project-card';
-    c.style.setProperty('--card-color',d.color);
-    c.innerHTML=`<div class="project-card-icon">${d.icon}</div><div class="project-card-name">${d.name}</div><div class="project-card-desc">${d.desc}</div><div class="project-card-role">${role}</div>`;
-    c.onclick=()=>showView(p);
-    grid.appendChild(c);
-  });
-}
-
-function showView(id,navEl){
-  const viewId='view-'+id;
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const v=document.getElementById(viewId);
-  if(v)v.classList.add('active');
-  if(navEl)navEl.classList.add('active');
-}
-
-function switchTab(tabEl,guide,panel){
-  tabEl.closest('.guide-nav').querySelectorAll('.guide-tab').forEach(t=>t.classList.remove('active'));
-  tabEl.classList.add('active');
-  document.querySelectorAll(`[id^="${guide}-"]`).forEach(p=>p.classList.remove('active'));
-  const t=document.getElementById(`${guide}-${panel}`);
-  if(t)t.classList.add('active');
-}
-
-function toggleFaq(el){el.parentElement.classList.toggle('open');}
-
-async function inviteUser(){
-  const email=document.getElementById('inv-email').value.trim();
-  const password=document.getElementById('inv-password').value;
-  const role=document.getElementById('inv-role').value;
-  const projects=Array.from(document.getElementById('inv-projects').selectedOptions).map(o=>o.value);
-  const projRole=document.getElementById('inv-project-role').value;
-  const msgEl=document.getElementById('inv-msg');
-  msgEl.style.display='none';
-  if(!email||!password){showMsg(msgEl,'Email and password required','err');return;}
-  const{data,error}=await sb.auth.signUp({email,password});
-  if(error){showMsg(msgEl,error.message,'err');return;}
-  const uid=data.user?.id;
-  if(!uid){showMsg(msgEl,'User created — they may need to verify their email first.','err');return;}
-  await sb.from('profiles').upsert({id:uid,email,role});
-  for(const p of projects)await sb.from('project_access').upsert({user_id:uid,project:p,role:projRole});
-  showMsg(msgEl,`User ${email} created successfully!`,'ok');
-  document.getElementById('inv-email').value='';
-  document.getElementById('inv-password').value='';
-  loadUserList();
-}
-
-async function loadUserList(){
-  const listEl=document.getElementById('user-list');
-  listEl.innerHTML='<p style="color:var(--muted);font-family:var(--mono);font-size:13px">Loading...</p>';
-  const{data:profiles}=await sb.from('profiles').select('*');
-  const{data:allAccess}=await sb.from('project_access').select('*');
-  if(!profiles?.length){listEl.innerHTML='<p style="color:var(--muted);font-family:var(--mono);font-size:13px">No users found.</p>';return;}
-  listEl.innerHTML='';
-  profiles.forEach(p=>{
-    const access=(allAccess||[]).filter(a=>a.user_id===p.id);
-    const tags=access.map(a=>`<span class="badge badge-cyan" style="margin-right:4px">${a.project}:${a.role}</span>`).join('');
-    const row=document.createElement('div');
-    row.className='user-row';
-    row.innerHTML=`
-      <div class="user-row-email">${p.email||'(no email)'}</div>
-      <span class="badge badge-amber">${p.role}</span>
-      <div style="flex:2;font-size:12px">${tags||'<span style="color:var(--muted);font-family:var(--mono);font-size:11px">no projects</span>'}</div>
-      <div class="user-row-actions">
-        <button class="btn sm" onclick="editAccess('${p.id}','${p.email||''}')">Edit</button>
-        ${p.id!==currentUser.id?`<button class="btn sm danger" onclick="removeUser('${p.id}')">Remove</button>`:''}
-      </div>`;
-    listEl.appendChild(row);
-  });
-}
-
-async function removeUser(uid){
-  if(!confirm('Remove this user? This cannot be undone.'))return;
-  await sb.from('project_access').delete().eq('user_id',uid);
-  await sb.from('profiles').delete().eq('id',uid);
-  loadUserList();
-}
-
-async function editAccess(uid,email){
-  const input=prompt(`Edit project access for ${email}\nFormat: project,role\nProjects: infuse, bliss, strength, smpfinder\nRoles: staff, editor, site_admin`);
-  if(!input)return;
-  const[p,r]=input.split(',').map(s=>s.trim());
-  if(!p||!r){alert('Invalid format. Use: project,role');return;}
-  await sb.from('project_access').upsert({user_id:uid,project:p,role:r});
-  loadUserList();
-}
-
-function showMsg(el,text,type){
-  el.textContent=text;el.className=`msg ${type}`;el.style.display='block';
-  setTimeout(()=>{el.style.display='none';},5000);
-}
-
-boot();
-</script>
-  <script>
+<script>
 const sb = supabase.createClient(
   "https://tainbbnzenvjiidjexwa.supabase.co",
   "sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF"
 );
 
-let isEditor = false;
+let isEditing = false;
 
 // Load content
 async function loadContent() {
@@ -715,19 +544,37 @@ async function loadContent() {
   }
 }
 
-// Enable editor (only admins)
-function enableEditor() {
-  const role = window.userRole; // your system already has this
+// Enable toggle button (admins only)
+function setupEditorAccess() {
+  const role = window.userRole;
 
   if (role === "super_admin" || role === "site_admin") {
-    isEditor = true;
+    document.getElementById("edit-toggle").style.display = "inline-block";
+  }
+}
 
-    const el = document.getElementById("welcome-content");
+// Toggle edit mode
+function toggleEdit() {
+  const el = document.getElementById("welcome-content");
+  const saveBtn = document.getElementById("save-btn");
+  const toggleBtn = document.getElementById("edit-toggle");
+
+  isEditing = !isEditing;
+
+  if (isEditing) {
     el.contentEditable = true;
     el.style.border = "1px solid #444";
     el.style.padding = "10px";
 
-    document.getElementById("save-btn").style.display = "block";
+    saveBtn.style.display = "inline-block";
+    toggleBtn.innerText = "Disable Editing";
+  } else {
+    el.contentEditable = false;
+    el.style.border = "none";
+    el.style.padding = "0";
+
+    saveBtn.style.display = "none";
+    toggleBtn.innerText = "Enable Editing";
   }
 }
 
@@ -744,15 +591,17 @@ async function saveContent() {
   alert("Saved!");
 }
 
-// Hook save button
+// Init
 document.addEventListener("DOMContentLoaded", () => {
   loadContent();
 
-  const btn = document.getElementById("save-btn");
-  if (btn) btn.onclick = saveContent;
+  setTimeout(setupEditorAccess, 1000);
 
-  // small delay to ensure user role is loaded
-  setTimeout(enableEditor, 1000);
+  const toggleBtn = document.getElementById("edit-toggle");
+  const saveBtn = document.getElementById("save-btn");
+
+  if (toggleBtn) toggleBtn.onclick = toggleEdit;
+  if (saveBtn) saveBtn.onclick = saveContent;
 });
 </script>
 </body>
