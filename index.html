@@ -400,6 +400,7 @@
         <button class="admin-tab" onclick="switchAdminTab('pages')">Pages</button>
         <button class="admin-tab" onclick="switchAdminTab('create')">Create User</button>
         <button class="admin-tab" onclick="switchAdminTab('activity')">Activity</button>
+        <button class="admin-tab" onclick="switchAdminTab('quota')">Quota</button>
       </div>
       <!-- Users tab -->
       <div class="admin-panel-section active" id="admin-tab-users">
@@ -421,6 +422,23 @@
           <div class="form-row">
             <div class="form-group"><label>Email</label><input type="email" id="new-email" placeholder="staff@example.com"></div>
             <div class="form-group"><label>Password</label><input type="password" id="new-password" placeholder="Min 6 chars"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Discord User ID</label><input type="text" id="new-discord-id" placeholder="e.g. 123456789012345678"></div>
+          </div>
+          <div class="form-row" id="smpfinder-rank-row" style="display:none;">
+            <div class="form-group">
+              <label>SMPFinder Staff Rank</label>
+              <select id="new-smpfinder-rank">
+                <option value="">— Not SMPFinder staff —</option>
+                <option value="admin">Admin</option>
+                <option value="senior_mod">Senior Mod</option>
+                <option value="mod">Mod</option>
+                <option value="helper">Helper</option>
+                <option value="junior_staff">Junior Staff</option>
+              </select>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">Only shown when SMPFinder is assigned. Sets quota targets.</div>
+            </div>
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -455,6 +473,23 @@
           <button class="btn btn-ghost btn-sm" onclick="loadActivity()">↻ Refresh</button>
         </div>
         <div id="activity-container"><div class="empty-state"><div class="empty-icon">📊</div>Loading activity...</div></div>
+      </div>
+      <!-- Quota tab -->
+      <div class="admin-panel-section" id="admin-tab-quota">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;">📊 Staff Quota</div>
+            <div style="font-size:13px;color:var(--text2);">Weekly quota progress for all SMPFinder staff. Resets every Monday.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <select id="quota-week-select" onchange="loadQuota()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;">
+              <option value="current">This Week</option>
+              <option value="last">Last Week</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadQuota()">↻ Refresh</button>
+          </div>
+        </div>
+        <div id="quota-container"><div class="empty-state"><div class="empty-icon">📊</div>Loading quota data...</div></div>
       </div>
     </div>
   </div>
@@ -1432,6 +1467,7 @@ function showAdmin() {
 }
 
 function switchAdminTab(tab) {
+  if (tab === 'quota') loadQuota();
   document.querySelectorAll('.admin-tab').forEach((t,i) => t.classList.toggle('active', ['users','pages','create','activity'][i] === tab));
   document.querySelectorAll('.admin-panel-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`admin-tab-${tab}`).classList.add('active');
@@ -1525,7 +1561,9 @@ async function createUser() {
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
   const uid = data.user?.id;
   if (!uid) { showToast('User created but could not get ID', 'error'); return; }
-  await sb.from('profiles').upsert({ id: uid, email, role });
+  const discordId = document.getElementById('new-discord-id')?.value?.trim() || null;
+  const smpfinderRank = document.getElementById('new-smpfinder-rank')?.value?.trim() || null;
+  await sb.from('profiles').upsert({ id: uid, email, role, discord_id: discordId, smpfinder_rank: smpfinderRank || null });
   if (selected.length > 0) {
     await sb.from('project_access').insert(selected.map(pid => ({ user_id: uid, project: pid, role: projectRole })));
   }
@@ -1545,9 +1583,20 @@ function populateProjectChips(containerId, selected = []) {
     chip.className = 'project-chip' + (selected.includes(pid) ? ' selected' : '');
     chip.dataset.pid = pid;
     chip.textContent = p.icon + ' ' + p.name;
-    chip.onclick = () => chip.classList.toggle('selected');
+    chip.onclick = () => {
+      chip.classList.toggle('selected');
+      updateSMPFinderRankVisibility(containerId);
+    };
     container.appendChild(chip);
   });
+}
+
+function updateSMPFinderRankVisibility(containerId) {
+  if (containerId !== 'new-user-projects') return;
+  const chips = document.querySelectorAll('#new-user-projects .project-chip');
+  const smpSelected = Array.from(chips).some(c => c.dataset.pid === 'smpfinder' && c.classList.contains('selected'));
+  const rankRow = document.getElementById('smpfinder-rank-row');
+  if (rankRow) rankRow.style.display = smpSelected ? 'flex' : 'none';
 }
 
 function populateProjectFilter(selectEl) {
@@ -1682,6 +1731,228 @@ async function loadActivity() {
     });
   });
   container.innerHTML = html;
+}
+
+// ── QUOTA ──
+const QUOTA_TARGETS = {
+  admin:        { punishments: 18, tickets: 6 },
+  senior_mod:   { punishments: 20, tickets: 10 },
+  mod:          { punishments: 20, tickets: 12 },
+  helper:       { punishments: 20, tickets: 12 },
+  junior_staff: { punishments: 20, tickets: 12 }
+};
+
+const QUOTA_LABELS = {
+  admin:        'Admin',
+  senior_mod:   'Senior Mod',
+  mod:          'Mod',
+  helper:       'Helper',
+  junior_staff: 'Junior Staff'
+};
+
+function getWeekBounds(offset = 0) {
+  const now = new Date();
+  const day = now.getDay();
+  const diffToMonday = (day === 0 ? -6 : 1 - day);
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday + (offset * 7));
+  monday.setHours(0,0,0,0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23,59,59,999);
+  return { start: monday.toISOString(), end: sunday.toISOString() };
+}
+
+async function loadQuota() {
+  const container = document.getElementById('quota-container');
+  if (!container) return;
+  container.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
+
+  const weekSel = document.getElementById('quota-week-select')?.value || 'current';
+  const offset = weekSel === 'last' ? -1 : 0;
+  const { start, end } = getWeekBounds(offset);
+
+  // Get all profiles with discord_id
+  const { data: profiles, error: pErr } = await sb.from('profiles').select('id,email,role,discord_id').order('email');
+  if (pErr || !profiles) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load users.</div>'; return; }
+
+  // Get quota logs for this week
+  const { data: logs, error: lErr } = await sb.from('quota_logs')
+    .select('*')
+    .eq('project', 'smpfinder')
+    .gte('logged_at', start)
+    .lte('logged_at', end);
+
+  const logList = logs || [];
+
+  // Build quota map by discord_id
+  const quotaMap = {};
+  logList.forEach(log => {
+    if (!quotaMap[log.discord_id]) quotaMap[log.discord_id] = { punishments: 0, tickets: 0 };
+    if (log.type === 'punishment') quotaMap[log.discord_id].punishments++;
+    if (log.type === 'ticket') quotaMap[log.discord_id].tickets++;
+  });
+
+  // Filter to staff with discord_id set, exclude super admins from quota display if no targets
+  const staffToShow = profiles.filter(p => p.discord_id);
+
+  if (!staffToShow.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔗</div>No staff have Discord IDs linked yet. Add Discord IDs when creating users.</div>';
+    return;
+  }
+
+  const weekLabel = offset === -1 ? 'Last Week' : 'This Week';
+  const startDate = new Date(start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const endDate = new Date(end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:20px;">${weekLabel}: ${startDate} — ${endDate}</div>`;
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">';
+
+  staffToShow.forEach(p => {
+    const smpRank = p.smpfinder_rank || null;
+    const targets = smpRank ? (QUOTA_TARGETS[smpRank] || QUOTA_TARGETS.junior_staff) : null;
+    const counts = quotaMap[p.discord_id] || { punishments: 0, tickets: 0 };
+    const noQuota = !targets;
+
+    const punPct = noQuota ? 100 : Math.min(100, targets.punishments > 0 ? Math.round((counts.punishments / targets.punishments) * 100) : 100);
+    const tikPct = noQuota ? 100 : Math.min(100, targets.tickets > 0 ? Math.round((counts.tickets / targets.tickets) * 100) : 100);
+
+    const punMet = noQuota || counts.punishments >= (targets?.punishments || 0);
+    const tikMet = noQuota || counts.tickets >= (targets?.tickets || 0);
+    const allMet = punMet && tikMet;
+
+    const punColor = punMet ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
+    const tikColor = tikMet ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
+    const statusColor = allMet ? 'var(--accent3)' : '#ff6b6b';
+    const statusText = noQuota ? 'No quota' : allMet ? 'Met' : 'Not met';
+
+    const initials = (p.email || '?').substring(0,2).toUpperCase();
+    const username = (p.email || '').split('@')[0];
+    const roleLabel2 = smpRank ? (QUOTA_LABELS[smpRank] || smpRank) : 'No rank set';
+
+    html += `
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;">
+        <div style="position:absolute;top:16px;right:16px;font-size:11px;font-weight:600;color:${statusColor};background:rgba(0,0,0,.3);border:1px solid ${statusColor};border-radius:20px;padding:2px 10px;">${statusText}</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;flex-shrink:0;">${initials}</div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">${username}</div>
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;">${roleLabel2}</div>
+          </div>
+        </div>
+        ${noQuota ? '<div style="font-size:13px;color:var(--text3);text-align:center;padding:8px 0;">No quota required for this role</div>' : `
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="font-size:12px;color:var(--text2);">⚔ Punishments</div>
+            <div style="font-size:12px;font-weight:600;color:${punColor};">${counts.punishments} / ${targets.punishments}</div>
+          </div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:3px;transition:width .5s;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="font-size:12px;color:var(--text2);">🎫 Tickets</div>
+            <div style="font-size:12px;font-weight:600;color:${tikColor};">${counts.tickets} / ${targets.tickets}</div>
+          </div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:3px;transition:width .5s;"></div>
+          </div>
+        </div>`}
+      </div>`;
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// Also add quota nav item for smpfinder staff
+function addQuotaNavItem() {
+  const navProjects = document.getElementById('nav-projects');
+  if (!navProjects) return;
+  // Check if smpfinder access
+  if (!hasProjectAccess('smpfinder')) return;
+  const existing = document.getElementById('nav-quota-item');
+  if (existing) return;
+  const item = document.createElement('div');
+  item.id = 'nav-quota-item';
+  item.className = 'nav-item nav-subitem';
+  item.innerHTML = '<span class="icon">📊</span> My Quota';
+  item.onclick = () => showMyQuota();
+  navProjects.appendChild(item);
+}
+
+async function showMyQuota() {
+  // Show a personal quota view for non-admins
+  document.querySelectorAll('#dashboard, #guide-view, #admin-view').forEach(el => {
+    el.classList.remove('visible');
+    el.style.display = 'none';
+  });
+
+  let quotaPersonal = document.getElementById('quota-personal-view');
+  if (!quotaPersonal) {
+    quotaPersonal = document.createElement('div');
+    quotaPersonal.id = 'quota-personal-view';
+    quotaPersonal.style.cssText = 'padding:40px 48px;display:block;';
+    document.getElementById('main').appendChild(quotaPersonal);
+  }
+  quotaPersonal.style.display = 'block';
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-quota-item')?.classList.add('active');
+
+  const discordId = currentProfile?.discord_id;
+  const { start, end } = getWeekBounds(0);
+  const startDate = new Date(start).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  const endDate = new Date(end).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+  let counts = { punishments: 0, tickets: 0 };
+  if (discordId) {
+    const { data: logs } = await sb.from('quota_logs')
+      .select('type')
+      .eq('discord_id', discordId)
+      .eq('project', 'smpfinder')
+      .gte('logged_at', start)
+      .lte('logged_at', end);
+    (logs || []).forEach(l => {
+      if (l.type === 'punishment') counts.punishments++;
+      if (l.type === 'ticket') counts.tickets++;
+    });
+  }
+
+  const smpRank = currentProfile?.smpfinder_rank || null;
+  const targets = smpRank ? (QUOTA_TARGETS[smpRank] || QUOTA_TARGETS.junior_staff) : QUOTA_TARGETS.junior_staff;
+  const punPct = Math.min(100, targets.punishments > 0 ? Math.round((counts.punishments / targets.punishments) * 100) : 100);
+  const tikPct = Math.min(100, targets.tickets > 0 ? Math.round((counts.tickets / targets.tickets) * 100) : 100);
+  const punColor = counts.punishments >= targets.punishments ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
+  const tikColor = counts.tickets >= targets.tickets ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
+
+  quotaPersonal.innerHTML = `
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:6px;">My Quota 📊</div>
+    <div style="color:var(--text2);font-size:14px;margin-bottom:32px;">Week of ${startDate} — ${endDate}</div>
+    ${!discordId ? '<div style="background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:16px 20px;color:#ff6b6b;font-size:14px;">⚠️ Your account does not have a Discord ID linked. Ask an admin to add your Discord ID to see your quota.</div>' : `
+    <div style="max-width:480px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;">
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:15px;font-weight:600;">⚔ Punishments</div>
+          <div style="font-size:20px;font-weight:800;color:${punColor};">${counts.punishments} <span style="font-size:14px;color:var(--text3);font-weight:400;">/ ${targets.punishments}</span></div>
+        </div>
+        <div style="height:10px;background:var(--bg4);border-radius:5px;overflow:hidden;">
+          <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:5px;transition:width .6s;"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px;">${counts.punishments >= targets.punishments ? '✓ Quota met!' : `${targets.punishments - counts.punishments} more needed`}</div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:15px;font-weight:600;">🎫 Tickets</div>
+          <div style="font-size:20px;font-weight:800;color:${tikColor};">${counts.tickets} <span style="font-size:14px;color:var(--text3);font-weight:400;">/ ${targets.tickets}</span></div>
+        </div>
+        <div style="height:10px;background:var(--bg4);border-radius:5px;overflow:hidden;">
+          <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:5px;transition:width .6s;"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px;">${counts.tickets >= targets.tickets ? '✓ Quota met!' : `${targets.tickets - counts.tickets} more needed`}</div>
+      </div>
+    </div>`}`;
 }
 
 // ── KEYBOARD SHORTCUTS ──
