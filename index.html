@@ -350,6 +350,10 @@
     <div class="sidebar-section-label">Navigation</div>
     <div class="nav-item" onclick="showDashboard()"><span class="icon">⊞</span> Dashboard</div>
     <div id="nav-projects"></div>
+    <div id="nav-quota-section" style="display:none">
+      <div class="sidebar-section-label">SMPFinder</div>
+      <div class="nav-item" id="nav-quota-item" onclick="showMyQuota()"><span class="icon">📊</span> My Quota</div>
+    </div>
     <div id="nav-admin-section" style="display:none">
       <div class="sidebar-section-label">Management</div>
       <div class="nav-item" onclick="showAdmin()"><span class="icon">⚙</span> Admin Panel</div>
@@ -1751,16 +1755,24 @@ const QUOTA_LABELS = {
 };
 
 function getWeekBounds(offset = 0) {
+  // Week runs Sunday 12:00AM EST to Saturday 11:59PM EST
+  // EST = UTC-5, EDT = UTC-4. We use UTC-5 conservatively.
+  const EST_OFFSET = 5 * 60; // minutes
   const now = new Date();
-  const day = now.getDay();
-  const diffToMonday = (day === 0 ? -6 : 1 - day);
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diffToMonday + (offset * 7));
-  monday.setHours(0,0,0,0);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23,59,59,999);
-  return { start: monday.toISOString(), end: sunday.toISOString() };
+  // Convert now to EST
+  const nowEST = new Date(now.getTime() - EST_OFFSET * 60 * 1000);
+  // Find the most recent Sunday (start of week) in EST
+  const dayEST = nowEST.getDay(); // 0=Sun, 6=Sat
+  const sunday = new Date(nowEST);
+  sunday.setDate(nowEST.getDate() - dayEST + (offset * 7));
+  sunday.setHours(0, 0, 0, 0);
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+  saturday.setHours(23, 59, 59, 999);
+  // Convert back to UTC for Supabase queries
+  const startUTC = new Date(sunday.getTime() + EST_OFFSET * 60 * 1000);
+  const endUTC = new Date(saturday.getTime() + EST_OFFSET * 60 * 1000);
+  return { start: startUTC.toISOString(), end: endUTC.toISOString() };
 }
 
 async function loadQuota() {
@@ -1772,20 +1784,13 @@ async function loadQuota() {
   const offset = weekSel === 'last' ? -1 : 0;
   const { start, end } = getWeekBounds(offset);
 
-  // Get all profiles with discord_id
   const { data: profiles, error: pErr } = await sb.from('profiles').select('id,email,role,discord_id,smpfinder_rank').order('email');
   if (pErr || !profiles) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load users.</div>'; return; }
 
-  // Get quota logs for this week
-  const { data: logs, error: lErr } = await sb.from('quota_logs')
-    .select('*')
-    .eq('project', 'smpfinder')
-    .gte('logged_at', start)
-    .lte('logged_at', end);
+  const { data: logs } = await sb.from('quota_logs')
+    .select('*').eq('project', 'smpfinder').gte('logged_at', start).lte('logged_at', end);
 
   const logList = logs || [];
-
-  // Build quota map by discord_id
   const quotaMap = {};
   logList.forEach(log => {
     if (!quotaMap[log.discord_id]) quotaMap[log.discord_id] = { punishments: 0, tickets: 0 };
@@ -1793,93 +1798,107 @@ async function loadQuota() {
     if (log.type === 'ticket') quotaMap[log.discord_id].tickets++;
   });
 
-  // Filter to staff with discord_id set, exclude super admins from quota display if no targets
-  const staffToShow = profiles.filter(p => p.discord_id);
-
+  const staffToShow = profiles.filter(p => p.discord_id && p.smpfinder_rank);
   if (!staffToShow.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔗</div>No staff have Discord IDs linked yet. Add Discord IDs when creating users.</div>';
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔗</div>No staff have Discord IDs and ranks linked yet.</div>';
     return;
   }
+
+  // Rank order for grouping
+  const RANK_ORDER = ['admin','senior_mod','mod','helper','junior_staff'];
+  const grouped = {};
+  RANK_ORDER.forEach(r => grouped[r] = []);
+  staffToShow.forEach(p => {
+    const r = p.smpfinder_rank;
+    if (grouped[r]) grouped[r].push(p);
+  });
 
   const weekLabel = offset === -1 ? 'Last Week' : 'This Week';
   const startDate = new Date(start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const endDate = new Date(end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-  let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:20px;">${weekLabel}: ${startDate} — ${endDate}</div>`;
-  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">';
+  let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:24px;">${weekLabel}: ${startDate} — ${endDate} &nbsp;·&nbsp; Resets Saturday 11:59PM EST</div>`;
 
-  staffToShow.forEach(p => {
-    const smpRank = p.smpfinder_rank || null;
-    const targets = smpRank ? (QUOTA_TARGETS[smpRank] || QUOTA_TARGETS.junior_staff) : null;
-    const counts = quotaMap[p.discord_id] || { punishments: 0, tickets: 0 };
-    const noQuota = !targets;
+  RANK_ORDER.forEach(rank => {
+    const group = grouped[rank];
+    if (!group || !group.length) return;
+    const rankName = QUOTA_LABELS[rank] || rank;
+    html += `<div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);">${rankName}</div>`;
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">';
 
-    const punPct = noQuota ? 100 : Math.min(100, targets.punishments > 0 ? Math.round((counts.punishments / targets.punishments) * 100) : 100);
-    const tikPct = noQuota ? 100 : Math.min(100, targets.tickets > 0 ? Math.round((counts.tickets / targets.tickets) * 100) : 100);
+    group.forEach(p => {
+      const targets = QUOTA_TARGETS[rank] || QUOTA_TARGETS.junior_staff;
+      const counts = quotaMap[p.discord_id] || { punishments: 0, tickets: 0 };
+      const punPct = Math.min(100, Math.round((counts.punishments / targets.punishments) * 100));
+      const tikPct = Math.min(100, Math.round((counts.tickets / targets.tickets) * 100));
+      const punMet = counts.punishments >= targets.punishments;
+      const tikMet = counts.tickets >= targets.tickets;
+      const allMet = punMet && tikMet;
+      const punColor = punMet ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
+      const tikColor = tikMet ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
+      const statusColor = allMet ? 'var(--accent3)' : '#ff6b6b';
+      const statusText = allMet ? 'Met' : 'Not met';
+      const username = (p.email || '').split('@')[0];
+      const initials = username.substring(0,2).toUpperCase();
 
-    const punMet = noQuota || counts.punishments >= (targets?.punishments || 0);
-    const tikMet = noQuota || counts.tickets >= (targets?.tickets || 0);
-    const allMet = punMet && tikMet;
+      // Build next rank for promote button
+      const rankIdx = RANK_ORDER.indexOf(rank);
+      const nextRank = rankIdx > 0 ? RANK_ORDER[rankIdx - 1] : null;
+      const promoteBtn = nextRank && isAdminUser()
+        ? `<button onclick="promoteStaff('${p.id}','${nextRank}','${username}')" style="margin-top:14px;width:100%;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent3)';this.style.color='var(--accent3)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">⬆ Promote to ${QUOTA_LABELS[nextRank]}</button>`
+        : '';
 
-    const punColor = punMet ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
-    const tikColor = tikMet ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
-    const statusColor = allMet ? 'var(--accent3)' : '#ff6b6b';
-    const statusText = noQuota ? 'No quota' : allMet ? 'Met' : 'Not met';
-
-    const initials = (p.email || '?').substring(0,2).toUpperCase();
-    const username = (p.email || '').split('@')[0];
-    const roleLabel2 = smpRank ? (QUOTA_LABELS[smpRank] || smpRank) : 'No rank set';
-
-    html += `
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;">
-        <div style="position:absolute;top:16px;right:16px;font-size:11px;font-weight:600;color:${statusColor};background:rgba(0,0,0,.3);border:1px solid ${statusColor};border-radius:20px;padding:2px 10px;">${statusText}</div>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;flex-shrink:0;">${initials}</div>
+      html += `
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;">
+          <div style="position:absolute;top:14px;right:14px;font-size:10px;font-weight:600;color:${statusColor};border:1px solid ${statusColor};border-radius:20px;padding:2px 8px;">${statusText}</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;">${initials}</div>
+            <div>
+              <div style="font-weight:600;font-size:14px;">${username}</div>
+              <div style="font-size:11px;color:var(--text3);">Discord: ${p.discord_id}</div>
+            </div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+              <div style="font-size:12px;color:var(--text2);">⚔ Punishments</div>
+              <div style="font-size:12px;font-weight:600;color:${punColor};">${counts.punishments} / ${targets.punishments}</div>
+            </div>
+            <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:3px;"></div>
+            </div>
+          </div>
           <div>
-            <div style="font-weight:600;font-size:14px;">${username}</div>
-            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;">${roleLabel2}</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+              <div style="font-size:12px;color:var(--text2);">🎫 Tickets</div>
+              <div style="font-size:12px;font-weight:600;color:${tikColor};">${counts.tickets} / ${targets.tickets}</div>
+            </div>
+            <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:3px;"></div>
+            </div>
           </div>
-        </div>
-        ${noQuota ? '<div style="font-size:13px;color:var(--text3);text-align:center;padding:8px 0;">No quota required for this role</div>' : `
-        <div style="margin-bottom:14px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <div style="font-size:12px;color:var(--text2);">⚔ Punishments</div>
-            <div style="font-size:12px;font-weight:600;color:${punColor};">${counts.punishments} / ${targets.punishments}</div>
-          </div>
-          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;">
-            <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:3px;transition:width .5s;"></div>
-          </div>
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <div style="font-size:12px;color:var(--text2);">🎫 Tickets</div>
-            <div style="font-size:12px;font-weight:600;color:${tikColor};">${counts.tickets} / ${targets.tickets}</div>
-          </div>
-          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;">
-            <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:3px;transition:width .5s;"></div>
-          </div>
-        </div>`}
-      </div>`;
+          ${promoteBtn}
+        </div>`;
+    });
+
+    html += '</div>';
   });
 
-  html += '</div>';
   container.innerHTML = html;
 }
 
-// Also add quota nav item for smpfinder staff
+async function promoteStaff(userId, newRank, username) {
+  if (!confirm(`Promote ${username} to ${QUOTA_LABELS[newRank]}? This will update their quota targets immediately.`)) return;
+  const { error } = await sb.from('profiles').update({ smpfinder_rank: newRank }).eq('id', userId);
+  if (error) { showToast('Failed to promote: ' + error.message, 'error'); return; }
+  showToast(`${username} promoted to ${QUOTA_LABELS[newRank]}!`, 'success');
+  loadQuota();
+}
+
+// Show quota section in sidebar for smpfinder staff
 function addQuotaNavItem() {
-  const navProjects = document.getElementById('nav-projects');
-  if (!navProjects) return;
-  // Check if smpfinder access
   if (!hasProjectAccess('smpfinder')) return;
-  const existing = document.getElementById('nav-quota-item');
-  if (existing) return;
-  const item = document.createElement('div');
-  item.id = 'nav-quota-item';
-  item.className = 'nav-item nav-subitem';
-  item.innerHTML = '<span class="icon">📊</span> My Quota';
-  item.onclick = () => showMyQuota();
-  navProjects.appendChild(item);
+  const section = document.getElementById('nav-quota-section');
+  if (section) section.style.display = 'block';
 }
 
 async function showMyQuota() {
