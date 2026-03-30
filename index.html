@@ -283,7 +283,7 @@
 
   /* Status bar */
   #status-bar {
-    position: fixed; right: 24px; bottom: 24px; z-index: 10000;
+    position: fixed; right: 24px; top: 24px; z-index: 10000;
     background: rgba(17,17,24,.9); border: 1px solid var(--border); border-radius: 10px;
     color: var(--text); padding: 8px 12px; font-size: 12px; font-weight: 600;
     backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.45);
@@ -759,8 +759,13 @@ window.addEventListener('load', restoreSession);
 
 // ── NAVIGATION ──
 function getAccessibleProjects() {
-  if (currentProfile.role === 'super_admin') return Object.keys(PROJECTS);
-  return [...new Set(currentAccess.map(a => a.project))];
+  if (currentProfile?.role === 'super_admin') return Object.keys(PROJECTS);
+
+  const assigned = [...new Set((currentAccess || []).map(a => a.project).filter(Boolean))];
+  if (assigned.length > 0) return assigned;
+
+  // Fallback: prevent empty dashboard when access rows are missing or delayed.
+  return Object.keys(PROJECTS);
 }
 
 function buildNavProjects() {
