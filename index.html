@@ -588,8 +588,16 @@ async function login() {
   setStatus('Processing', 'processing');
   setLoginLoading(true);
 
+  // Add timeout to prevent indefinite hanging
+  const loginTimeout = setTimeout(() => {
+    setLoginLoading(false);
+    setStatus('Up To Date', 'up-to-date');
+    setAuthError('Sign-in timed out. Check your connection or try again.');
+  }, 15000); // 15 seconds
+
   try {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+    clearTimeout(loginTimeout); // Clear timeout on success
     if (error) {
       const msg = error.message ? error.message.toLowerCase() : '';
       if (msg.includes('user is not confirmed') || msg.includes('email not confirmed') || msg.includes('unconfirmed')) {
@@ -610,6 +618,7 @@ async function login() {
     }
     await initApp(data.user);
   } catch(e) {
+    clearTimeout(loginTimeout);
     setStatus('Up To Date', 'up-to-date');
     setLoginLoading(false);
     if (!navigator.onLine) {
@@ -623,18 +632,36 @@ async function login() {
 async function initApp(user) {
   currentUser = user;
   try {
-    const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).single();
-    if (!prof) {
-      await sb.from('profiles').insert({ id: user.id, email: user.email, role: 'staff' });
+    const { data: prof, error: profError } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    if (profError && profError.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.warn('Profiles select error:', profError);
+      currentProfile = { id: user.id, email: user.email, role: 'staff' };
+    } else if (!prof) {
+      const { error: insertError } = await sb.from('profiles').insert({ id: user.id, email: user.email, role: 'staff' });
+      if (insertError) {
+        console.warn('Profiles insert error:', insertError);
+      }
       currentProfile = { id: user.id, email: user.email, role: 'staff' };
     } else {
       currentProfile = prof;
     }
   } catch(e) {
+    console.warn('Init app profiles error:', e);
     currentProfile = { id: user.id, email: user.email, role: 'staff' };
   }
-  const { data: access } = await sb.from('project_access').select('*').eq('user_id', user.id);
-  currentAccess = access || [];
+
+  try {
+    const { data: access, error: accessError } = await sb.from('project_access').select('*').eq('user_id', user.id);
+    if (accessError) {
+      console.warn('Project access error:', accessError);
+      currentAccess = [];
+    } else {
+      currentAccess = access || [];
+    }
+  } catch(e) {
+    console.warn('Init app access error:', e);
+    currentAccess = [];
+  }
 
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
@@ -1254,27 +1281,12 @@ function populateProjectFilter(selectEl) {
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 // ── STATUS BAR ──
-let statusTimeout = null;
-function setStatus(text, mode = 'up-to-date', autoResetMs = 30000) {
+function setStatus(text, mode = 'up-to-date') {
   const status = document.getElementById('status-bar');
   if (!status) return;
   status.textContent = `Status: ${text}`;
   status.classList.remove('processing','up-to-date');
   status.classList.add(mode);
-
-  if (statusTimeout) {
-    clearTimeout(statusTimeout);
-    statusTimeout = null;
-  }
-
-  if (mode === 'processing') {
-    statusTimeout = setTimeout(() => {
-      status.textContent = 'Status: Up To Date';
-      status.classList.remove('processing');
-      status.classList.add('up-to-date');
-      console.warn('Status bar auto-reset after timeout (processing exceeded).');
-    }, autoResetMs);
-  }
 }
 
 // ── TOAST ──
