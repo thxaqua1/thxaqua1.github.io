@@ -567,6 +567,37 @@
   </div>
 </div>
 
+<!-- Force Edit Quota Modal -->
+<div class="modal-overlay" id="force-quota-modal">
+  <div class="modal">
+    <div class="modal-title">✏️ Force Edit Quota</div>
+    <input type="hidden" id="force-quota-user-id">
+    <input type="hidden" id="force-quota-discord-id">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px;" id="force-quota-user-label"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Week</label>
+        <div id="force-quota-week-label" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:14px;">This Week</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Punishments</label>
+        <input type="number" id="force-quota-punishments" min="0" step="1" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>Tickets</label>
+        <input type="number" id="force-quota-tickets" min="0" step="1" placeholder="0">
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px;">This will replace all quota logs for the selected week with the exact values above.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('force-quota-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveForceQuotaEdit()">Save Quota</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div id="status-bar" class="up-to-date">Status: Up To Date</div>
 
@@ -1782,6 +1813,17 @@ function getWeekOffsetLabel(offset) {
   return `${Math.abs(offset)} Weeks Ago`;
 }
 
+function getAdminQuotaOffsetFromSelect(value) {
+  return value === 'last' ? -1 : 0;
+}
+
+function getMyQuotaOffsetFromSelect(value) {
+  if (value === 'last') return -1;
+  if (value === '2ago') return -2;
+  if (value === '3ago') return -3;
+  return 0;
+}
+
 async function loadQuota() {
   const container = document.getElementById('quota-container');
   if (!container) return;
@@ -1851,9 +1893,13 @@ async function loadQuota() {
       // Build next rank for promote button
       const rankIdx = RANK_ORDER.indexOf(rank);
       const nextRank = rankIdx > 0 ? RANK_ORDER[rankIdx - 1] : null;
-      const promoteBtn = nextRank && isAdminUser()
-        ? `<button onclick="promoteStaff('${p.id}','${nextRank}','${username}')" style="margin-top:14px;width:100%;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent3)';this.style.color='var(--accent3)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">⬆ Promote to ${QUOTA_LABELS[nextRank]}</button>`
-        : '';
+      const demoteRank = rankIdx < (RANK_ORDER.length - 1) ? RANK_ORDER[rankIdx + 1] : null;
+      const quotaActions = isAdminUser() ? `
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+          <button onclick="openForceQuotaEdit('${p.id}','${p.discord_id}','${username}',${counts.punishments},${counts.tickets})" style="flex:1;min-width:130px;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">✏ Force Edit</button>
+          ${nextRank ? `<button onclick="promoteStaff('${p.id}','${nextRank}','${username}')" style="flex:1;min-width:130px;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent3)';this.style.color='var(--accent3)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">⬆ Promote</button>` : ''}
+          ${demoteRank ? `<button onclick="demoteStaff('${p.id}','${demoteRank}','${username}')" style="flex:1;min-width:130px;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#ffbe32';this.style.color='#ffbe32'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">⬇ Demote</button>` : ''}
+        </div>` : '';
 
       html += `
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;">
@@ -1883,7 +1929,7 @@ async function loadQuota() {
               <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:3px;"></div>
             </div>
           </div>
-          ${promoteBtn}
+          ${quotaActions}
         </div>`;
     });
 
@@ -1899,6 +1945,103 @@ async function promoteStaff(userId, newRank, username) {
   if (error) { showToast('Failed to promote: ' + error.message, 'error'); return; }
   showToast(`${username} promoted to ${QUOTA_LABELS[newRank]}!`, 'success');
   loadQuota();
+}
+
+async function demoteStaff(userId, newRank, username) {
+  if (!confirm(`Demote ${username} to ${QUOTA_LABELS[newRank]}? This will update their quota targets immediately.`)) return;
+  const { error } = await sb.from('profiles').update({ smpfinder_rank: newRank }).eq('id', userId);
+  if (error) { showToast('Failed to demote: ' + error.message, 'error'); return; }
+  showToast(`${username} demoted to ${QUOTA_LABELS[newRank]}.`, 'success');
+  loadQuota();
+}
+
+function openForceQuotaEdit(userId, discordId, username, punishments, tickets) {
+  if (!isAdminUser()) {
+    showToast('Only admins can force edit quota.', 'error');
+    return;
+  }
+
+  const weekSel = document.getElementById('quota-week-select')?.value || 'current';
+  document.getElementById('force-quota-user-id').value = userId;
+  document.getElementById('force-quota-discord-id').value = discordId;
+  document.getElementById('force-quota-user-label').textContent = `User: ${username} (${discordId})`;
+  document.getElementById('force-quota-week-label').textContent = weekSel === 'last' ? 'Last Week' : 'This Week';
+  document.getElementById('force-quota-punishments').value = punishments;
+  document.getElementById('force-quota-tickets').value = tickets;
+  document.getElementById('force-quota-modal').classList.add('open');
+}
+
+async function saveForceQuotaEdit() {
+  if (!isAdminUser()) {
+    showToast('Only admins can force edit quota.', 'error');
+    return;
+  }
+
+  const discordId = (document.getElementById('force-quota-discord-id').value || '').trim();
+  const punishments = Math.max(0, parseInt(document.getElementById('force-quota-punishments').value || '0', 10));
+  const tickets = Math.max(0, parseInt(document.getElementById('force-quota-tickets').value || '0', 10));
+
+  if (!discordId) {
+    showToast('Missing Discord ID for this user.', 'error');
+    return;
+  }
+  if (!Number.isFinite(punishments) || !Number.isFinite(tickets)) {
+    showToast('Please enter valid non-negative numbers.', 'error');
+    return;
+  }
+
+  const weekSel = document.getElementById('quota-week-select')?.value || 'current';
+  const offset = getAdminQuotaOffsetFromSelect(weekSel);
+  const { start, end } = getWeekBounds(offset);
+
+  setStatus('Processing', 'processing');
+
+  const { error: delError } = await sb.from('quota_logs')
+    .delete()
+    .eq('project', 'smpfinder')
+    .eq('discord_id', discordId)
+    .gte('logged_at', start)
+    .lte('logged_at', end);
+
+  if (delError) {
+    showToast('Failed to clear existing logs: ' + delError.message, 'error');
+    setStatus('Up To Date', 'up-to-date');
+    return;
+  }
+
+  const startMs = new Date(start).getTime();
+  const newLogs = [];
+  for (let i = 0; i < punishments; i++) {
+    newLogs.push({
+      project: 'smpfinder',
+      discord_id: discordId,
+      type: 'punishment',
+      logged_at: new Date(startMs + (i * 1000)).toISOString()
+    });
+  }
+  for (let i = 0; i < tickets; i++) {
+    newLogs.push({
+      project: 'smpfinder',
+      discord_id: discordId,
+      type: 'ticket',
+      logged_at: new Date(startMs + ((punishments + i) * 1000)).toISOString()
+    });
+  }
+
+  if (newLogs.length > 0) {
+    const { error: insError } = await sb.from('quota_logs').insert(newLogs);
+    if (insError) {
+      showToast('Failed to write new quota logs: ' + insError.message, 'error');
+      setStatus('Up To Date', 'up-to-date');
+      return;
+    }
+  }
+
+  closeModal('force-quota-modal');
+  showToast('Quota updated successfully.', 'success');
+  logActivity('quota_force_edit', `${discordId} ${weekSel} P:${punishments} T:${tickets}`);
+  await loadQuota();
+  setStatus('Up To Date', 'up-to-date');
 }
 
 // Show quota section in sidebar for smpfinder staff
@@ -1927,74 +2070,100 @@ async function showMyQuota() {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-quota-item')?.classList.add('active');
 
+  quotaPersonal.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px;">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:6px;">My Quota Overview</div>
+        <div style="color:var(--text2);font-size:14px;">Track weekly progress against your SMPFinder quota target.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <select id="my-quota-week-select" onchange="loadMyQuotaPersonal()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;">
+          <option value="current">This Week</option>
+          <option value="last">Last Week</option>
+          <option value="2ago">2 Weeks Ago</option>
+          <option value="3ago">3 Weeks Ago</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadMyQuotaPersonal()">Refresh</button>
+      </div>
+    </div>
+    <div id="my-quota-content"><div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div></div>`;
+
+  await loadMyQuotaPersonal();
+}
+
+async function loadMyQuotaPersonal() {
+  const quotaContent = document.getElementById('my-quota-content');
+  if (!quotaContent) return;
+  quotaContent.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
+
   const discordId = currentProfile?.discord_id;
   const smpRank = currentProfile?.smpfinder_rank || null;
   const targets = smpRank ? (QUOTA_TARGETS[smpRank] || QUOTA_TARGETS.junior_staff) : QUOTA_TARGETS.junior_staff;
 
-  const weekOffsets = [0, -1, -2, -3];
-  const history = [];
-
-  if (discordId) {
-    const results = await Promise.all(weekOffsets.map(async (offset) => {
-      const { start, end } = getWeekBounds(offset);
-      const { data: logs } = await sb.from('quota_logs')
-        .select('type')
-        .eq('discord_id', discordId)
-        .eq('project', 'smpfinder')
-        .gte('logged_at', start)
-        .lte('logged_at', end);
-
-      const counts = { punishments: 0, tickets: 0 };
-      (logs || []).forEach(l => {
-        if (l.type === 'punishment') counts.punishments++;
-        if (l.type === 'ticket') counts.tickets++;
-      });
-
-      return { offset, start, end, counts };
-    }));
-    history.push(...results);
+  if (!discordId) {
+    quotaContent.innerHTML = '<div style="background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:16px 20px;color:#ff6b6b;font-size:14px;">Your account does not have a Discord ID linked. Ask an admin to add your Discord ID to see your quota.</div>';
+    return;
   }
 
-  quotaPersonal.innerHTML = `
-    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:6px;">My Quota 📊</div>
-    <div style="color:var(--text2);font-size:14px;margin-bottom:24px;">Showing your last 4 weeks of progress (current week + previous 3).</div>
-    ${!discordId ? '<div style="background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:16px 20px;color:#ff6b6b;font-size:14px;">⚠️ Your account does not have a Discord ID linked. Ask an admin to add your Discord ID to see your quota.</div>' : `
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
-      ${history.map(item => {
-        const startDate = new Date(item.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const endDate = new Date(item.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const punPct = Math.min(100, targets.punishments > 0 ? Math.round((item.counts.punishments / targets.punishments) * 100) : 100);
-        const tikPct = Math.min(100, targets.tickets > 0 ? Math.round((item.counts.tickets / targets.tickets) * 100) : 100);
-        const punColor = item.counts.punishments >= targets.punishments ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
-        const tikColor = item.counts.tickets >= targets.tickets ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
-        return `
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;">${getWeekOffsetLabel(item.offset)}</div>
-              <div style="font-size:11px;color:var(--text3);">${startDate} - ${endDate}</div>
-            </div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">Rank target: ${QUOTA_LABELS[smpRank] || 'Staff'}</div>
-            <div style="margin-bottom:12px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <div style="font-size:13px;font-weight:600;">⚔ Punishments</div>
-                <div style="font-size:14px;font-weight:700;color:${punColor};">${item.counts.punishments} / ${targets.punishments}</div>
-              </div>
-              <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;">
-                <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:4px;"></div>
-              </div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <div style="font-size:13px;font-weight:600;">🎫 Tickets</div>
-                <div style="font-size:14px;font-weight:700;color:${tikColor};">${item.counts.tickets} / ${targets.tickets}</div>
-              </div>
-              <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;">
-                <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:4px;"></div>
-              </div>
-            </div>
-          </div>`;
-      }).join('')}
-    </div>`}`;
+  const selected = document.getElementById('my-quota-week-select')?.value || 'current';
+  const selectedOffset = getMyQuotaOffsetFromSelect(selected);
+
+  const weekOffsets = [0, -1, -2, -3];
+  const results = await Promise.all(weekOffsets.map(async (offset) => {
+    const { start, end } = getWeekBounds(offset);
+    const { data: logs } = await sb.from('quota_logs')
+      .select('type')
+      .eq('discord_id', discordId)
+      .eq('project', 'smpfinder')
+      .gte('logged_at', start)
+      .lte('logged_at', end);
+
+    const counts = { punishments: 0, tickets: 0 };
+    (logs || []).forEach(l => {
+      if (l.type === 'punishment') counts.punishments++;
+      if (l.type === 'ticket') counts.tickets++;
+    });
+
+    return { offset, start, end, counts };
+  }));
+
+  const selectedWeek = results.find(r => r.offset === selectedOffset) || results[0];
+  const punPct = Math.min(100, targets.punishments > 0 ? Math.round((selectedWeek.counts.punishments / targets.punishments) * 100) : 100);
+  const tikPct = Math.min(100, targets.tickets > 0 ? Math.round((selectedWeek.counts.tickets / targets.tickets) * 100) : 100);
+  const punColor = selectedWeek.counts.punishments >= targets.punishments ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
+  const tikColor = selectedWeek.counts.tickets >= targets.tickets ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
+  const startDate = new Date(selectedWeek.start).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  const endDate = new Date(selectedWeek.end).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+  quotaContent.innerHTML = `
+    <div style="max-width:980px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:26px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">${getWeekOffsetLabel(selectedWeek.offset)}</div>
+        <div style="font-size:12px;color:var(--text3);">${startDate} - ${endDate}</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">Rank target: ${QUOTA_LABELS[smpRank] || 'Staff'}</div>
+
+      <div style="margin-bottom:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:15px;font-weight:600;">Punishments</div>
+          <div style="font-size:20px;font-weight:800;color:${punColor};">${selectedWeek.counts.punishments} <span style="font-size:14px;color:var(--text3);font-weight:400;">/ ${targets.punishments}</span></div>
+        </div>
+        <div style="height:12px;background:var(--bg4);border-radius:8px;overflow:hidden;">
+          <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:8px;transition:width .4s;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:15px;font-weight:600;">Tickets</div>
+          <div style="font-size:20px;font-weight:800;color:${tikColor};">${selectedWeek.counts.tickets} <span style="font-size:14px;color:var(--text3);font-weight:400;">/ ${targets.tickets}</span></div>
+        </div>
+        <div style="height:12px;background:var(--bg4);border-radius:8px;overflow:hidden;">
+          <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:8px;transition:width .4s;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:18px;font-size:12px;color:var(--text3);">History window retained: current week plus previous 3 weeks via dropdown.</div>`;
 }
 
 // ── KEYBOARD SHORTCUTS ──
