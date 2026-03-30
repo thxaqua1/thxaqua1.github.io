@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:#080b0f;--bg2:#0e1318;--bg3:#151c24;--border:#1e2a35;
+      --accent:#00e5ff;--accent2:#0099bb;--green:#00ff88;--amber:#ffb300;--red:#ff4444;
+      --text:#d4e8f0;--muted:#4a6070;
+      --font:'Rajdhani',sans-serif;--mono:'DM Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.6;min-height:100vh;}
+    .page{display:none;position:relative;z-index:1;min-height:100vh;}
+    .page.active{display:flex;flex-direction:column;}
+
+    /* LOGIN */
+    #page-login{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,rgba(0,229,255,0.07) 0%,transparent 70%);}
+    .login-box{width:100%;max-width:400px;padding:48px 40px;background:var(--bg2);border:1px solid var(--border);border-top:2px solid var(--accent);animation:slideUp .4s ease;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+    .login-logo{font-size:28px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:4px;}
+    .login-sub{font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:36px;}
+    .field{margin-bottom:18px;}
+    .field label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:var(--mono);}
+    .field input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s;}
+    .field input:focus{border-color:var(--accent);}
+    .field input::placeholder{color:var(--muted);}
+    .btn{width:100%;padding:13px;background:var(--accent);color:var(--bg);font-family:var(--font);font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s;margin-top:8px;}
+    .btn:hover{background:#33ecff;transform:translateY(-1px);}
+    .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-size:13px;padding:9px;margin-top:4px;letter-spacing:1px;}
+    .btn.ghost:hover{border-color:var(--accent);color:var(--accent);background:transparent;}
+    .btn.sm{width:auto;padding:7px 14px;font-size:12px;margin-top:0;}
+    .btn.green{background:var(--green);}
+    .btn.danger{background:var(--red);color:#fff;}
+    .login-err{display:none;background:rgba(255,68,68,0.1);border:1px solid var(--red);color:var(--red);font-family:var(--mono);font-size:12px;padding:10px 14px;margin-top:14px;}
+
+    /* APP SHELL */
+    #page-app{flex-direction:row;}
+    .sidebar{width:240px;min-width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:24px 20px 20px;font-size:18px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--border);}
+    .sidebar-logo span{color:var(--muted);font-size:11px;display:block;letter-spacing:1px;font-weight:400;margin-top:2px;font-family:var(--mono);}
+    .nav-group{padding:20px 0 8px;}
+    .nav-group-label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:0 20px 8px;display:block;font-family:var(--mono);}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:14px;font-weight:600;letter-spacing:0.5px;color:var(--muted);cursor:pointer;border-left:2px solid transparent;transition:all .15s;text-transform:uppercase;}
+    .nav-item:hover{color:var(--text);background:var(--bg3);}
+    .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,229,255,0.05);}
+    .nav-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+    .nav-item.active .nav-dot{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+    .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+    .user-chip{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .main{flex:1;overflow-y:auto;padding:40px 48px 80px;}
+
+    /* VIEWS */
+    .view{display:none;animation:fadeIn .2s ease;}
+    .view.active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .view-header{margin-bottom:36px;}
+    .view-tag{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;display:block;}
+    .view-header h1{font-size:36px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text);line-height:1;}
+    .view-header p{color:var(--muted);font-size:13px;margin-top:8px;font-family:var(--mono);}
+
+    /* PROJECT CARDS */
+    .project-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+    .project-card{background:var(--bg2);border:1px solid var(--border);padding:28px 24px;cursor:pointer;position:relative;overflow:hidden;transition:all .2s;}
+    .project-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--card-color,var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .3s;}
+    .project-card:hover{border-color:var(--card-color,var(--accent));transform:translateY(-3px);}
+    .project-card:hover::before{transform:scaleX(1);}
+    .project-card-icon{font-size:28px;margin-bottom:14px;}
+    .project-card-name{font-size:18px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text);margin-bottom:4px;}
+    .project-card-desc{font-size:12px;color:var(--muted);font-family:var(--mono);}
+    .project-card-role{display:inline-block;margin-top:14px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border:1px solid currentColor;color:var(--card-color,var(--accent));font-family:var(--mono);}
+
+    /* CONTENT */
+    .block{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--accent2);padding:24px 28px;margin-bottom:14px;}
+    .block h3{font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text);margin-bottom:14px;}
+    .block ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+    .block ul li{font-size:13px;color:var(--muted);display:flex;align-items:flex-start;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--border);font-family:var(--mono);}
+    .block ul li:last-child{border-bottom:none;padding-bottom:0;}
+    .block ul li::before{content:'>';color:var(--accent);flex-shrink:0;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+    @media(max-width:700px){.two-col,.three-col{grid-template-columns:1fr;}}
+
+    /* TABLE */
+    .tbl-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{background:var(--bg3);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);}
+    td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:var(--bg3);}
+
+    /* BADGE */
+    .badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border:1px solid currentColor;font-family:var(--mono);}
+    .badge-cyan{color:var(--accent);}
+    .badge-green{color:var(--green);}
+    .badge-amber{color:var(--amber);}
+    .badge-red{color:var(--red);}
+    .badge-muted{color:var(--muted);}
+
+    /* FAQ */
+    .faq-item{border:1px solid var(--border);margin-bottom:8px;}
+    .faq-q{padding:14px 18px;font-size:14px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:var(--bg2);transition:background .15s;user-select:none;}
+    .faq-q:hover{background:var(--bg3);}
+    .faq-chevron{font-size:11px;color:var(--muted);transition:transform .2s;font-family:var(--mono);}
+    .faq-item.open .faq-chevron{transform:rotate(180deg);}
+    .faq-a{display:none;padding:14px 18px;font-size:13px;color:var(--muted);background:var(--bg2);border-top:1px solid var(--border);font-family:var(--mono);line-height:1.7;}
+    .faq-item.open .faq-a{display:block;}
+
+    /* STAFF CARDS */
+    .staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+    .staff-card{background:var(--bg2);border:1px solid var(--border);padding:18px;}
+    .staff-avatar{width:40px;height:40px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-family:var(--font);font-weight:700;font-size:15px;color:var(--bg);margin-bottom:10px;}
+    .staff-name{font-size:15px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+    .staff-role{font-size:11px;color:var(--accent);font-family:var(--mono);margin-bottom:6px;}
+    .staff-detail{font-size:11px;color:var(--muted);font-family:var(--mono);}
+
+    /* GUIDE */
+    .guide-hero{background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--guide-color,var(--accent));padding:32px 36px;margin-bottom:28px;position:relative;overflow:hidden;}
+    .guide-hero::after{content:attr(data-name);position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:80px;font-weight:700;color:rgba(255,255,255,0.03);letter-spacing:4px;text-transform:uppercase;pointer-events:none;}
+    .guide-hero h2{font-size:28px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--guide-color,var(--accent));}
+    .guide-hero p{font-size:13px;color:var(--muted);font-family:var(--mono);margin-top:6px;}
+    .guide-nav{display:flex;gap:0;margin-bottom:28px;border:1px solid var(--border);overflow-x:auto;}
+    .guide-tab{padding:11px 20px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-right:1px solid var(--border);white-space:nowrap;transition:all .15s;}
+    .guide-tab:last-child{border-right:none;}
+    .guide-tab:hover{background:var(--bg3);color:var(--text);}
+    .guide-tab.active{background:var(--bg3);color:var(--accent);}
+    .guide-panel{display:none;}
+    .guide-panel.active{display:block;animation:fadeIn .2s ease;}
+
+    /* ADMIN */
+    .admin-section{margin-bottom:40px;}
+    .admin-section h2{font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:20px;font-family:var(--mono);}
+    .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end;}
+    .form-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
+    .form-field label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-family:var(--mono);}
+    .form-field input,.form-field select{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s;}
+    .form-field input:focus,.form-field select:focus{border-color:var(--accent);}
+    .form-field select option{background:var(--bg3);}
+    .user-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);margin-bottom:6px;flex-wrap:wrap;}
+    .user-row-email{font-family:var(--mono);font-size:13px;flex:1;min-width:160px;}
+    .user-row-actions{display:flex;gap:8px;flex-wrap:wrap;}
+    .msg{font-family:var(--mono);font-size:12px;padding:10px 14px;margin-top:10px;display:none;}
+    .msg.ok{background:rgba(0,255,136,0.08);border:1px solid var(--green);color:var(--green);}
+    .msg.err{background:rgba(255,68,68,0.08);border:1px solid var(--red);color:var(--red);}
+
+    /* LOADING */
+    #loading{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+    .loader{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #loading p{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:2px;}
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--border);}
+  </style>
+</head>
+<body>
+
+<div id="loading"><div class="loader"></div><p>INITIALISING...</p></div>
+
+<!-- LOGIN -->
+<div id="page-login" class="page">
+  <div class="login-box">
+    <div class="login-logo">Staff Hub</div>
+    <div class="login-sub">// secure staff portal</div>
+    <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@domain.com"/></div>
+    <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="page-app" class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo">Staff Hub<span>// minecraft network</span></div>
+    <div class="nav-group">
+      <span class="nav-group-label">General</span>
+      <div class="nav-item active" onclick="showView('dashboard',this)"><div class="nav-dot"></div>Dashboard</div>
+    </div>
+    <div class="nav-group" id="nav-projects-group">
+      <span class="nav-group-label">My Projects</span>
+    </div>
+    <div class="nav-group" id="nav-admin-group" style="display:none">
+      <span class="nav-group-label">Admin</span>
+      <div class="nav-item" onclick="showView('admin',this)"><div class="nav-dot"></div>Admin Panel</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-chip" id="sidebar-email">—</div>
+      <button class="btn ghost" onclick="doLogout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div class="view-header">
+        <span class="view-tag">// overview</span>
+        <h1>Dashboard</h1>
+        <p id="dash-welcome">Welcome back.</p>
+      </div>
+      <div class="project-grid" id="project-grid"></div>
+    </div>
+
+    <!-- INFUSE NETWORK -->
+    <div id="view-infuse" class="view">
+      <div class="guide-hero" style="--guide-color:#00e5ff" data-name="INFUSE">
+        <h2>Infuse Network</h2><p>Staff guide — roles and procedures for Infuse Network.</p>
+      </div>
+      <div class="guide-nav">
+        <div class="guide-tab active" onclick="switchTab(this,'infuse','home')">Home</div>
+        <div class="guide-tab" onclick="switchTab(this,'infuse','onboarding')">Onboarding</div>
+        <div class="guide-tab" onclick="switchTab(this,'infuse','rules')">Rules</div>
+        <div class="guide-tab" onclick="switchTab(this,'infuse','sops')">SOPs</div>
+        <div class="guide-tab" onclick="switchTab(this,'infuse','team')">Team</div>
+        <div class="guide-tab" onclick="switchTab(this,'infuse','faq')">FAQ</div>
+      </div>
+      <div id="infuse-home" class="guide-panel active">
+        <div class="two-col">
+          <div class="block"><h3>Quick Links</h3><ul><li>Discord server invite</li><li>Ticket system</li><li>Staff channel</li><li>Ban appeal form</li></ul></div>
+          <div class="block"><h3>Announcements</h3><ul><li>Add announcements here</li><li>Upcoming events</li><li>Maintenance windows</li></ul></div>
+        </div>
+      </div>
+      <div id="infuse-onboarding" class="guide-panel">
+        <div class="block"><h3>Getting Started</h3><ul><li>Read the full rules document</li><li>Join the staff Discord</li><li>Introduce yourself in #staff-intro</li><li>Complete your trial period tasks</li><li>Shadow a senior staff member</li></ul></div>
+      </div>
+      <div id="infuse-rules" class="guide-panel">
+        <div class="block"><h3>Staff Rules</h3><ul><li>Always remain professional with players</li><li>Do not abuse staff permissions</li><li>Keep staff matters confidential</li><li>Respond to tickets within 24 hours</li><li>Log all punishments correctly</li></ul></div>
+      </div>
+      <div id="infuse-sops" class="guide-panel">
+        <div class="block"><h3>Standard Procedures</h3><ul><li>How to handle a player report</li><li>Issuing warnings and bans</li><li>Escalating serious issues</li><li>How to run an investigation</li></ul></div>
+      </div>
+      <div id="infuse-team" class="guide-panel">
+        <div class="staff-grid"><div class="staff-card"><div class="staff-avatar">TH</div><div class="staff-name">thxaqua1</div><div class="staff-role">Super Admin</div><div class="staff-detail">Owner</div></div></div>
+      </div>
+      <div id="infuse-faq" class="guide-panel">
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I issue a ban?<span class="faq-chevron">▼</span></div><div class="faq-a">Use /ban [player] [reason]. Always log it in the punishment channel.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Who do I escalate to?<span class="faq-chevron">▼</span></div><div class="faq-a">Contact a Site Admin or Super Admin via Discord DM for anything serious.</div></div>
+      </div>
+    </div>
+
+    <!-- BLISSPVP -->
+    <div id="view-bliss" class="view">
+      <div class="guide-hero" style="--guide-color:#ff4444" data-name="BLISS">
+        <h2>BlissPvP</h2><p>Staff guide — combat server rules, procedures, and team info.</p>
+      </div>
+      <div class="guide-nav">
+        <div class="guide-tab active" onclick="switchTab(this,'bliss','home')">Home</div>
+        <div class="guide-tab" onclick="switchTab(this,'bliss','onboarding')">Onboarding</div>
+        <div class="guide-tab" onclick="switchTab(this,'bliss','rules')">Rules</div>
+        <div class="guide-tab" onclick="switchTab(this,'bliss','sops')">SOPs</div>
+        <div class="guide-tab" onclick="switchTab(this,'bliss','team')">Team</div>
+        <div class="guide-tab" onclick="switchTab(this,'bliss','faq')">FAQ</div>
+      </div>
+      <div id="bliss-home" class="guide-panel active">
+        <div class="two-col">
+          <div class="block"><h3>Quick Links</h3><ul><li>Discord server invite</li><li>Ticket system</li><li>Staff channel</li><li>Hacker report form</li></ul></div>
+          <div class="block"><h3>Announcements</h3><ul><li>Add announcements here</li><li>Season updates or resets</li><li>Anti-cheat updates</li></ul></div>
+        </div>
+      </div>
+      <div id="bliss-onboarding" class="guide-panel">
+        <div class="block"><h3>Getting Started</h3><ul><li>Read PvP server rules thoroughly</li><li>Familiarise yourself with anti-cheat flags</li><li>Join staff Discord</li><li>Complete screenshare training</li><li>Shadow a senior moderator</li></ul></div>
+      </div>
+      <div id="bliss-rules" class="guide-panel">
+        <div class="block"><h3>Staff Rules</h3><ul><li>Never spawn items for players</li><li>Do not interfere with active PvP</li><li>Handle hacker reports promptly</li><li>Always record evidence before banning</li><li>Use correct punishment lengths</li></ul></div>
+      </div>
+      <div id="bliss-sops" class="guide-panel">
+        <div class="block"><h3>Standard Procedures</h3><ul><li>How to conduct a screenshare</li><li>Identifying common hacks</li><li>Processing ban appeals</li><li>Handling combat logger reports</li></ul></div>
+      </div>
+      <div id="bliss-team" class="guide-panel">
+        <div class="staff-grid"><div class="staff-card"><div class="staff-avatar">TH</div><div class="staff-name">thxaqua1</div><div class="staff-role">Super Admin</div><div class="staff-detail">Owner</div></div></div>
+      </div>
+      <div id="bliss-faq" class="guide-panel">
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I screenshare a player?<span class="faq-chevron">▼</span></div><div class="faq-a">Freeze the player with /freeze first, then proceed via Discord screenshare.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What counts as enough evidence?<span class="faq-chevron">▼</span></div><div class="faq-a">Video evidence is required for most bans. Screenshots alone are not sufficient for serious offences.</div></div>
+      </div>
+    </div>
+
+    <!-- STRENGTH SMP -->
+    <div id="view-strength" class="view">
+      <div class="guide-hero" style="--guide-color:#00ff88" data-name="STRENGTH">
+        <h2>Strength SMP</h2><p>Staff guide — SMP server management and community procedures.</p>
+      </div>
+      <div class="guide-nav">
+        <div class="guide-tab active" onclick="switchTab(this,'strength','home')">Home</div>
+        <div class="guide-tab" onclick="switchTab(this,'strength','onboarding')">Onboarding</div>
+        <div class="guide-tab" onclick="switchTab(this,'strength','rules')">Rules</div>
+        <div class="guide-tab" onclick="switchTab(this,'strength','sops')">SOPs</div>
+        <div class="guide-tab" onclick="switchTab(this,'strength','team')">Team</div>
+        <div class="guide-tab" onclick="switchTab(this,'strength','faq')">FAQ</div>
+      </div>
+      <div id="strength-home" class="guide-panel active">
+        <div class="two-col">
+          <div class="block"><h3>Quick Links</h3><ul><li>Discord server invite</li><li>Ticket system</li><li>Staff channel</li><li>Grief report form</li></ul></div>
+          <div class="block"><h3>Announcements</h3><ul><li>Add announcements here</li><li>Season info and world borders</li><li>Event schedule</li></ul></div>
+        </div>
+      </div>
+      <div id="strength-onboarding" class="guide-panel">
+        <div class="block"><h3>Getting Started</h3><ul><li>Read SMP community guidelines</li><li>Learn CoreProtect rollback commands</li><li>Join staff Discord</li><li>Review grief investigation process</li><li>Complete 1 week trial period</li></ul></div>
+      </div>
+      <div id="strength-rules" class="guide-panel">
+        <div class="block"><h3>Staff Rules</h3><ul><li>Do not use staff powers in personal disputes</li><li>Always investigate before punishing</li><li>Log all grief rollbacks</li><li>Be neutral and fair with all players</li><li>Respect player privacy</li></ul></div>
+      </div>
+      <div id="strength-sops" class="guide-panel">
+        <div class="block"><h3>Standard Procedures</h3><ul><li>How to investigate a grief report</li><li>CoreProtect rollback process</li><li>Handling toxic player behaviour</li><li>Processing ban appeals</li></ul></div>
+      </div>
+      <div id="strength-team" class="guide-panel">
+        <div class="staff-grid"><div class="staff-card"><div class="staff-avatar">TH</div><div class="staff-name">thxaqua1</div><div class="staff-role">Super Admin</div><div class="staff-detail">Owner</div></div></div>
+      </div>
+      <div id="strength-faq" class="guide-panel">
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I roll back a grief?<span class="faq-chevron">▼</span></div><div class="faq-a">Use /co rollback u:[username] t:1h r:20. Always screenshot before and after.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can staff play on the server?<span class="faq-chevron">▼</span></div><div class="faq-a">Yes, but you must not use staff permissions to benefit your own gameplay.</div></div>
+      </div>
+    </div>
+
+    <!-- SMPFINDER -->
+    <div id="view-smpfinder" class="view">
+      <div class="guide-hero" style="--guide-color:#ffb300" data-name="SMPFINDER">
+        <h2>SMPFinder</h2><p>Staff guide — platform moderation and listing management.</p>
+      </div>
+      <div class="guide-nav">
+        <div class="guide-tab active" onclick="switchTab(this,'smpfinder','home')">Home</div>
+        <div class="guide-tab" onclick="switchTab(this,'smpfinder','onboarding')">Onboarding</div>
+        <div class="guide-tab" onclick="switchTab(this,'smpfinder','rules')">Rules</div>
+        <div class="guide-tab" onclick="switchTab(this,'smpfinder','sops')">SOPs</div>
+        <div class="guide-tab" onclick="switchTab(this,'smpfinder','team')">Team</div>
+        <div class="guide-tab" onclick="switchTab(this,'smpfinder','faq')">FAQ</div>
+      </div>
+      <div id="smpfinder-home" class="guide-panel active">
+        <div class="two-col">
+          <div class="block"><h3>Quick Links</h3><ul><li>SMPFinder dashboard</li><li>Listing review queue</li><li>Staff channel</li><li>Report submission form</li></ul></div>
+          <div class="block"><h3>Announcements</h3><ul><li>Add announcements here</li><li>Platform updates</li><li>New listing categories</li></ul></div>
+        </div>
+      </div>
+      <div id="smpfinder-onboarding" class="guide-panel">
+        <div class="block"><h3>Getting Started</h3><ul><li>Read platform moderation guidelines</li><li>Learn listing approval criteria</li><li>Join staff Discord</li><li>Review scam server identification guide</li><li>Complete moderation training</li></ul></div>
+      </div>
+      <div id="smpfinder-rules" class="guide-panel">
+        <div class="block"><h3>Staff Rules</h3><ul><li>Review listings objectively and fairly</li><li>Do not approve listings from friends without review</li><li>Keep moderation decisions confidential</li><li>Escalate suspicious listings immediately</li><li>Document all decisions with reasons</li></ul></div>
+      </div>
+      <div id="smpfinder-sops" class="guide-panel">
+        <div class="block"><h3>Standard Procedures</h3><ul><li>How to review and approve a listing</li><li>Identifying scam or fake servers</li><li>Handling listing disputes</li><li>Removing rule-breaking listings</li></ul></div>
+      </div>
+      <div id="smpfinder-team" class="guide-panel">
+        <div class="staff-grid"><div class="staff-card"><div class="staff-avatar">TH</div><div class="staff-name">thxaqua1</div><div class="staff-role">Super Admin</div><div class="staff-detail">Owner</div></div></div>
+      </div>
+      <div id="smpfinder-faq" class="guide-panel">
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What makes a listing approvable?<span class="faq-chevron">▼</span></div><div class="faq-a">Valid IP, accurate description, correct category, and no rule violations.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I flag a scam server?<span class="faq-chevron">▼</span></div><div class="faq-a">Escalate to a Site Admin via #scam-reports. Leave the listing as pending — do not approve or deny.</div></div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="view-admin" class="view">
+      <div class="view-header">
+        <span class="view-tag">// restricted</span>
+        <h1>Admin Panel</h1>
+        <p>Manage users, roles, and project access.</p>
+      </div>
+      <div class="admin-section">
+        <h2>// Create New User</h2>
+        <div class="form-row">
+          <div class="form-field"><label>Email</label><input type="email" id="inv-email" placeholder="staff@domain.com"/></div>
+          <div class="form-field"><label>Password</label><input type="password" id="inv-password" placeholder="Set a password"/></div>
+          <div class="form-field"><label>Global Role</label>
+            <select id="inv-role">
+              <option value="staff">Staff</option>
+              <option value="editor">Editor</option>
+              <option value="site_admin">Site Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Assign Projects (Ctrl = multi-select)</label>
+            <select id="inv-projects" multiple style="height:90px">
+              <option value="infuse">Infuse Network</option>
+              <option value="bliss">BlissPvP</option>
+              <option value="strength">Strength SMP</option>
+              <option value="smpfinder">SMPFinder</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Role on those projects</label>
+            <select id="inv-project-role">
+              <option value="staff">Staff</option>
+              <option value="editor">Editor</option>
+              <option value="site_admin">Site Admin</option>
+            </select>
+          </div>
+          <div class="form-field" style="justify-content:flex-end">
+            <button class="btn sm green" onclick="inviteUser()">Create User</button>
+          </div>
+        </div>
+        <div class="msg" id="inv-msg"></div>
+      </div>
+      <div class="admin-section">
+        <h2>// All Users</h2>
+        <div id="user-list"><p style="color:var(--muted);font-family:var(--mono);font-size:13px">Loading...</p></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const{createClient}=supabase;
+const sb=createClient('https://tainbbnzenvjiidjexwa.supabase.co','sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF');
+
+const PROJECTS={
+  infuse:   {name:'Infuse Network',icon:'⚡',color:'#00e5ff',desc:'Network hub server'},
+  bliss:    {name:'BlissPvP',      icon:'⚔️',color:'#ff4444',desc:'Competitive PvP server'},
+  strength: {name:'Strength SMP', icon:'🌿',color:'#00ff88',desc:'Survival multiplayer'},
+  smpfinder:{name:'SMPFinder',    icon:'🔍',color:'#ffb300',desc:'Server listing platform'}
+};
+
+let currentUser=null,userProfile=null,userAccess=[];
+
+async function boot(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){await loadUser(session.user);showApp();}
+  else showLogin();
+  document.getElementById('loading').style.display='none';
+}
+
+async function loadUser(user){
+  currentUser=user;
+  let{data:profile}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  if(!profile){
+    await sb.from('profiles').insert({id:user.id,email:user.email,role:'staff'});
+    profile={id:user.id,email:user.email,role:'staff'};
+  }
+  userProfile=profile;
+  const{data:access}=await sb.from('project_access').select('*').eq('user_id',user.id);
+  userAccess=access||[];
+}
+
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  const err=document.getElementById('login-err');
+  err.style.display='none';
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){err.textContent=error.message;err.style.display='block';return;}
+  await loadUser(data.user);showApp();
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  currentUser=null;userProfile=null;userAccess=[];
+  showLogin();
+}
+
+function showLogin(){
+  document.getElementById('page-login').classList.add('active');
+  document.getElementById('page-app').classList.remove('active');
+}
+
+function showApp(){
+  document.getElementById('page-login').classList.remove('active');
+  document.getElementById('page-app').classList.add('active');
+  buildSidebar();buildDashboard();
+  if(isSuperAdmin()||isSiteAdmin())loadUserList();
+}
+
+function isSuperAdmin(){return userProfile?.role==='super_admin';}
+function isSiteAdmin(){return userProfile?.role==='site_admin'||isSuperAdmin();}
+function getProjectRole(p){if(isSuperAdmin())return'super_admin';const e=userAccess.find(a=>a.project===p);return e?e.role:null;}
+function canAccess(p){return isSuperAdmin()||!!userAccess.find(a=>a.project===p);}
+
+function buildSidebar(){
+  document.getElementById('sidebar-email').textContent=currentUser.email;
+  const g=document.getElementById('nav-projects-group');
+  g.innerHTML='<span class="nav-group-label">My Projects</span>';
+  Object.keys(PROJECTS).filter(p=>canAccess(p)).forEach(p=>{
+    const el=document.createElement('div');
+    el.className='nav-item';
+    el.innerHTML=`<div class="nav-dot"></div>${PROJECTS[p].name}`;
+    el.onclick=()=>showView(p,el);
+    g.appendChild(el);
+  });
+  if(isSuperAdmin()||isSiteAdmin())document.getElementById('nav-admin-group').style.display='block';
+}
+
+function buildDashboard(){
+  document.getElementById('dash-welcome').textContent=`Welcome back, ${currentUser.email.split('@')[0]}.`;
+  const grid=document.getElementById('project-grid');
+  grid.innerHTML='';
+  const list=Object.keys(PROJECTS).filter(p=>canAccess(p));
+  if(!list.length){grid.innerHTML='<p style="color:var(--muted);font-family:var(--mono);font-size:13px">You have not been assigned to any projects yet. Contact an admin.</p>';return;}
+  list.forEach(p=>{
+    const d=PROJECTS[p];
+    const role=(getProjectRole(p)||'super_admin').replace('_',' ');
+    const c=document.createElement('div');
+    c.className='project-card';
+    c.style.setProperty('--card-color',d.color);
+    c.innerHTML=`<div class="project-card-icon">${d.icon}</div><div class="project-card-name">${d.name}</div><div class="project-card-desc">${d.desc}</div><div class="project-card-role">${role}</div>`;
+    c.onclick=()=>showView(p);
+    grid.appendChild(c);
+  });
+}
+
+function showView(id,navEl){
+  const viewId='view-'+id;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const v=document.getElementById(viewId);
+  if(v)v.classList.add('active');
+  if(navEl)navEl.classList.add('active');
+}
+
+function switchTab(tabEl,guide,panel){
+  tabEl.closest('.guide-nav').querySelectorAll('.guide-tab').forEach(t=>t.classList.remove('active'));
+  tabEl.classList.add('active');
+  document.querySelectorAll(`[id^="${guide}-"]`).forEach(p=>p.classList.remove('active'));
+  const t=document.getElementById(`${guide}-${panel}`);
+  if(t)t.classList.add('active');
+}
+
+function toggleFaq(el){el.parentElement.classList.toggle('open');}
+
+async function inviteUser(){
+  const email=document.getElementById('inv-email').value.trim();
+  const password=document.getElementById('inv-password').value;
+  const role=document.getElementById('inv-role').value;
+  const projects=Array.from(document.getElementById('inv-projects').selectedOptions).map(o=>o.value);
+  const projRole=document.getElementById('inv-project-role').value;
+  const msgEl=document.getElementById('inv-msg');
+  msgEl.style.display='none';
+  if(!email||!password){showMsg(msgEl,'Email and password required','err');return;}
+  const{data,error}=await sb.auth.signUp({email,password});
+  if(error){showMsg(msgEl,error.message,'err');return;}
+  const uid=data.user?.id;
+  if(!uid){showMsg(msgEl,'User created — they may need to verify their email first.','err');return;}
+  await sb.from('profiles').upsert({id:uid,email,role});
+  for(const p of projects)await sb.from('project_access').upsert({user_id:uid,project:p,role:projRole});
+  showMsg(msgEl,`User ${email} created successfully!`,'ok');
+  document.getElementById('inv-email').value='';
+  document.getElementById('inv-password').value='';
+  loadUserList();
+}
+
+async function loadUserList(){
+  const listEl=document.getElementById('user-list');
+  listEl.innerHTML='<p style="color:var(--muted);font-family:var(--mono);font-size:13px">Loading...</p>';
+  const{data:profiles}=await sb.from('profiles').select('*');
+  const{data:allAccess}=await sb.from('project_access').select('*');
+  if(!profiles?.length){listEl.innerHTML='<p style="color:var(--muted);font-family:var(--mono);font-size:13px">No users found.</p>';return;}
+  listEl.innerHTML='';
+  profiles.forEach(p=>{
+    const access=(allAccess||[]).filter(a=>a.user_id===p.id);
+    const tags=access.map(a=>`<span class="badge badge-cyan" style="margin-right:4px">${a.project}:${a.role}</span>`).join('');
+    const row=document.createElement('div');
+    row.className='user-row';
+    row.innerHTML=`
+      <div class="user-row-email">${p.email||'(no email)'}</div>
+      <span class="badge badge-amber">${p.role}</span>
+      <div style="flex:2;font-size:12px">${tags||'<span style="color:var(--muted);font-family:var(--mono);font-size:11px">no projects</span>'}</div>
+      <div class="user-row-actions">
+        <button class="btn sm" onclick="editAccess('${p.id}','${p.email||''}')">Edit</button>
+        ${p.id!==currentUser.id?`<button class="btn sm danger" onclick="removeUser('${p.id}')">Remove</button>`:''}
+      </div>`;
+    listEl.appendChild(row);
+  });
+}
+
+async function removeUser(uid){
+  if(!confirm('Remove this user? This cannot be undone.'))return;
+  await sb.from('project_access').delete().eq('user_id',uid);
+  await sb.from('profiles').delete().eq('id',uid);
+  loadUserList();
+}
+
+async function editAccess(uid,email){
+  const input=prompt(`Edit project access for ${email}\nFormat: project,role\nProjects: infuse, bliss, strength, smpfinder\nRoles: staff, editor, site_admin`);
+  if(!input)return;
+  const[p,r]=input.split(',').map(s=>s.trim());
+  if(!p||!r){alert('Invalid format. Use: project,role');return;}
+  await sb.from('project_access').upsert({user_id:uid,project:p,role:r});
+  loadUserList();
+}
+
+function showMsg(el,text,type){
+  el.textContent=text;el.className=`msg ${type}`;el.style.display='block';
+  setTimeout(()=>{el.style.display='none';},5000);
+}
+
+boot();
+</script>
+</body>
+</html>
