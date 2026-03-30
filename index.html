@@ -253,7 +253,7 @@
   }
   .role-super_admin { background: rgba(124,111,255,.15); color: var(--accent); }
   .role-site_admin { background: rgba(111,255,212,.12); color: var(--accent3); }
-  .role-editor { background: rgba(255,190,50,.1); color: #ffbe32; }
+  .role-management, .role-editor { background: rgba(255,190,50,.1); color: #ffbe32; }
   .role-staff { background: rgba(144,144,170,.1); color: var(--text2); }
   .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
@@ -426,9 +426,9 @@
               <label>Global Role</label>
               <select id="new-role">
                 <option value="staff">Staff</option>
-                <option value="editor">Editor</option>
+                <option value="management">Management</option>
                 <option value="site_admin">Site Admin</option>
-                <option value="super_admin">Super Admin</option>
+                <option value="super_admin">Manager</option>
               </select>
             </div>
           </div>
@@ -440,7 +440,7 @@
             <label>Project Role</label>
             <select id="new-project-role">
               <option value="staff">Staff</option>
-              <option value="editor">Editor</option>
+              <option value="management">Management</option>
               <option value="site_admin">Site Admin</option>
             </select>
           </div>
@@ -465,7 +465,7 @@
     <div class="modal-title">➕ Add New Page</div>
     <div class="form-group" style="margin-bottom:14px;">
       <label>Project</label>
-      <select id="modal-page-project">
+      <select id="modal-page-project" onchange="loadParentPageOptions()">
         <option value="smpfinder">SMPFinder</option>
         <option value="infuse">Infuse Network</option>
         <option value="bliss">BlissPvP</option>
@@ -479,6 +479,13 @@
     <div class="form-group" style="margin-bottom:14px;">
       <label>Parent Page (optional — leave blank for top level)</label>
       <select id="modal-page-parent"><option value="">None (top level)</option></select>
+    </div>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label>Visibility</label>
+      <select id="modal-page-visibility">
+        <option value="staff">Staff and above</option>
+        <option value="management">Management and above</option>
+      </select>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('add-page-modal')">Cancel</button>
@@ -496,9 +503,9 @@
       <label>Global Role</label>
       <select id="edit-user-role">
         <option value="staff">Staff</option>
-        <option value="editor">Editor</option>
+        <option value="management">Management</option>
         <option value="site_admin">Site Admin</option>
-        <option value="super_admin">Super Admin</option>
+        <option value="super_admin">Manager</option>
       </select>
     </div>
     <div class="form-group" style="margin-bottom:14px;">
@@ -509,7 +516,7 @@
       <label>Project Role</label>
       <select id="edit-project-role">
         <option value="staff">Staff</option>
-        <option value="editor">Editor</option>
+        <option value="management">Management</option>
         <option value="site_admin">Site Admin</option>
       </select>
     </div>
@@ -550,6 +557,65 @@ let currentProject = null;
 let currentPage = null;
 let allPages = [];
 let appInitialized = false;
+
+const ROLE_RANK = {
+  staff: 0,
+  management: 1,
+  site_admin: 2,
+  super_admin: 3
+};
+
+function normalizeRole(role) {
+  if (role === 'editor') return 'management';
+  if (role === 'manager') return 'super_admin';
+  return role || 'staff';
+}
+
+function roleLabel(role) {
+  const r = normalizeRole(role);
+  if (r === 'super_admin') return 'Manager';
+  if (r === 'site_admin') return 'Site Admin';
+  if (r === 'management') return 'Management';
+  return 'Staff';
+}
+
+function hasProjectAccess(pid) {
+  if (normalizeRole(currentProfile?.role) === 'super_admin') return true;
+  return (currentAccess || []).some(a => a.project === pid);
+}
+
+function canEditProject(pid) {
+  const myRole = normalizeRole(currentProfile?.role);
+  if (myRole === 'super_admin') return true;
+  if (myRole === 'site_admin') return hasProjectAccess(pid);
+  return false;
+}
+
+function canManageProjectAssignments(pid) {
+  const myRole = normalizeRole(currentProfile?.role);
+  if (myRole === 'super_admin') return true;
+  if (myRole === 'site_admin') return hasProjectAccess(pid);
+  return false;
+}
+
+function parsePageMetaContent(rawContent) {
+  if (!rawContent) return { minRole: 'staff' };
+  try {
+    const parsed = JSON.parse(rawContent);
+    return {
+      minRole: normalizeRole(parsed?.minRole || 'staff')
+    };
+  } catch (_) {
+    return { minRole: 'staff' };
+  }
+}
+
+function canAccessPageMeta(metaRow) {
+  const meta = parsePageMetaContent(metaRow?.content);
+  const requiredRank = ROLE_RANK[normalizeRole(meta.minRole)] ?? ROLE_RANK.staff;
+  const userRank = ROLE_RANK[normalizeRole(currentProfile?.role)] ?? ROLE_RANK.staff;
+  return userRank >= requiredRank;
+}
 
 // ── AUTH ──
 function setAuthError(msg) {
@@ -710,7 +776,7 @@ async function initApp(user) {
   logActivity('login');
   setStatus('Up To Date', 'up-to-date');
 
-  const isAdmin = ['super_admin','site_admin'].includes(currentProfile?.role);
+  const isAdmin = ['super_admin','site_admin'].includes(normalizeRole(currentProfile?.role));
   if (isAdmin) {
     if (navAdmin) navAdmin.style.display = 'block';
     if (editToggleWrap) editToggleWrap.classList.add('visible');
@@ -759,13 +825,10 @@ window.addEventListener('load', restoreSession);
 
 // ── NAVIGATION ──
 function getAccessibleProjects() {
-  if (currentProfile?.role === 'super_admin') return Object.keys(PROJECTS);
+  if (normalizeRole(currentProfile?.role) === 'super_admin') return Object.keys(PROJECTS);
 
   const assigned = [...new Set((currentAccess || []).map(a => a.project).filter(Boolean))];
-  if (assigned.length > 0) return assigned;
-
-  // Fallback: prevent empty dashboard when access rows are missing or delayed.
-  return Object.keys(PROJECTS);
+  return assigned;
 }
 
 function buildNavProjects() {
@@ -802,24 +865,26 @@ async function toggleNavProject(pid) {
 
 async function loadNavPages(pid) {
   const { data: pages } = await sb.from('guide_content')
-    .select('page_slug, title, section_slug')
+    .select('page_slug, title, section_slug, content')
     .eq('project', pid)
     .eq('section_slug', '__pagemeta__')
     .order('sort_order');
   
   const container = document.getElementById(`nav-children-${pid}`);
   container.innerHTML = '';
+
+  const visiblePages = (pages || []).filter(canAccessPageMeta);
   
-  if (!pages || pages.length === 0) {
+  if (visiblePages.length === 0) {
     container.innerHTML = `<div class="nav-item nav-subitem" style="color:var(--text3);font-style:italic;">No pages yet</div>`;
     return;
   }
 
   // Build tree
-  const topLevel = pages.filter(p => !p.page_slug.includes('/'));
+  const topLevel = visiblePages.filter(p => !p.page_slug.includes('/'));
   topLevel.forEach(page => {
     const slug = page.page_slug;
-    const children = pages.filter(p => p.page_slug.startsWith(slug + '/') && p.page_slug.split('/').length === slug.split('/').length + 1);
+    const children = visiblePages.filter(p => p.page_slug.startsWith(slug + '/') && p.page_slug.split('/').length === slug.split('/').length + 1);
     
     const item = document.createElement('div');
     item.innerHTML = `<div class="nav-item nav-subitem" id="navpage-${pid}-${slug.replace(/\//g,'_')}" onclick="openPage('${pid}','${slug}')">${page.title}</div>`;
@@ -830,7 +895,7 @@ async function loadNavPages(pid) {
       ci.innerHTML = `<div class="nav-item nav-subsubitem" id="navpage-${pid}-${child.page_slug.replace(/\//g,'_')}" onclick="openPage('${pid}','${child.page_slug}')">${child.title}</div>`;
       container.appendChild(ci);
 
-      const grandchildren = pages.filter(p => p.page_slug.startsWith(child.page_slug + '/'));
+      const grandchildren = visiblePages.filter(p => p.page_slug.startsWith(child.page_slug + '/'));
       grandchildren.forEach(gc => {
         const gi = document.createElement('div');
         gi.style.paddingLeft = '74px';
@@ -851,11 +916,11 @@ function showDashboard() {
   grid.innerHTML = '';
   projects.forEach(pid => {
     const p = PROJECTS[pid];
-    const role = currentProfile.role === 'super_admin' ? 'super_admin' : (currentAccess.find(a=>a.project===pid)?.role || 'staff');
+    const role = normalizeRole(currentProfile.role) === 'super_admin' ? 'super_admin' : normalizeRole(currentAccess.find(a=>a.project===pid)?.role || 'staff');
     const card = document.createElement('div');
     card.className = 'project-card';
     card.style.setProperty('--card-accent', p.accent);
-    card.innerHTML = `<div class="project-card-icon">${p.icon}</div><div class="project-card-name">${p.name}</div><div class="project-card-role">${role.replace('_',' ')}</div>`;
+    card.innerHTML = `<div class="project-card-icon">${p.icon}</div><div class="project-card-name">${p.name}</div><div class="project-card-role">${roleLabel(role)}</div>`;
     card.onclick = () => { toggleNavProject(pid); openFirstPage(pid); };
     grid.appendChild(card);
   });
@@ -864,8 +929,9 @@ function showDashboard() {
 
 async function openFirstPage(pid) {
   const { data: pages } = await sb.from('guide_content')
-    .select('page_slug').eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order').limit(1);
-  if (pages && pages.length > 0) openPage(pid, pages[0].page_slug);
+    .select('page_slug, content').eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order');
+  const firstVisible = (pages || []).find(canAccessPageMeta);
+  if (firstVisible) openPage(pid, firstVisible.page_slug);
 }
 
 // ── GUIDE VIEW ──
@@ -883,7 +949,13 @@ async function openPage(pid, pageSlug) {
 
   // Load page meta
   const { data: meta } = await sb.from('guide_content')
-    .select('title').eq('project', pid).eq('page_slug', pageSlug).eq('section_slug', '__pagemeta__').single();
+    .select('title, content').eq('project', pid).eq('page_slug', pageSlug).eq('section_slug', '__pagemeta__').single();
+
+  if (!canAccessPageMeta(meta)) {
+    showToast('You do not have permission to view this page.', 'error');
+    showDashboard();
+    return;
+  }
 
   const p = PROJECTS[pid];
   document.getElementById('guide-breadcrumb').innerHTML = `${p.icon} ${p.name} <span>/ ${meta?.title || pageSlug}</span>`;
@@ -891,9 +963,9 @@ async function openPage(pid, pageSlug) {
   document.getElementById('page-subtitle').textContent = '';
 
   // Edit controls
-  const isAdmin = ['super_admin','site_admin'].includes(currentProfile.role);
-  document.getElementById('page-edit-controls').classList.toggle('visible', editMode && isAdmin);
-  document.getElementById('add-section-btn').classList.toggle('visible', editMode && isAdmin);
+  const isPageEditor = canEditProject(pid);
+  document.getElementById('page-edit-controls').classList.toggle('visible', editMode && isPageEditor);
+  document.getElementById('add-section-btn').classList.toggle('visible', editMode && isPageEditor);
 
   // Load sections
   const { data: sections } = await sb.from('guide_content')
@@ -905,14 +977,14 @@ async function openPage(pid, pageSlug) {
 function renderSections(sections, pid, pageSlug) {
   const container = document.getElementById('sections-container');
   container.innerHTML = '';
-  const isAdmin = ['super_admin','site_admin'].includes(currentProfile.role);
+  const isPageEditor = canEditProject(pid);
 
   sections.forEach(sec => {
     const block = document.createElement('div');
     block.className = 'section-block';
     block.dataset.id = sec.id;
     block.innerHTML = `
-      <div class="editor-toolbar ${editMode && isAdmin ? 'visible' : ''}" id="toolbar-${sec.id}">
+      <div class="editor-toolbar ${editMode && isPageEditor ? 'visible' : ''}" id="toolbar-${sec.id}">
         <button class="toolbar-btn" onclick="fmt('bold','${sec.id}')" title="Bold"><b>B</b></button>
         <button class="toolbar-btn" onclick="fmt('italic','${sec.id}')" title="Italic"><i>I</i></button>
         <button class="toolbar-btn" onclick="fmt('underline','${sec.id}')" title="Underline"><u>U</u></button>
@@ -935,16 +1007,16 @@ function renderSections(sections, pid, pageSlug) {
       <div class="section-header">
         <div class="section-title-display" id="title-display-${sec.id}">${sec.title || 'Untitled Section'}</div>
         <input class="section-title-input" id="title-input-${sec.id}" value="${sec.title || ''}" placeholder="Section title">
-        <div class="section-edit-controls ${editMode && isAdmin ? 'visible' : ''}" id="sec-controls-${sec.id}">
+        <div class="section-edit-controls ${editMode && isPageEditor ? 'visible' : ''}" id="sec-controls-${sec.id}">
           <button class="btn btn-danger btn-sm" onclick="deleteSection('${sec.id}')">🗑</button>
         </div>
       </div>
       <div class="section-content">
         <div class="editable-content" id="content-${sec.id}"
-          contenteditable="${editMode && isAdmin ? 'true' : 'false'}"
+          contenteditable="${editMode && isPageEditor ? 'true' : 'false'}"
           oninput="markDirty('${sec.id}')">${sec.content || '<p>Start writing here...</p>'}</div>
       </div>
-      <div class="section-save-bar ${editMode && isAdmin ? 'visible' : ''}" id="savebar-${sec.id}">
+      <div class="section-save-bar ${editMode && isPageEditor ? 'visible' : ''}" id="savebar-${sec.id}">
         <button class="btn btn-success btn-sm" onclick="saveSection('${sec.id}','${pid}','${pageSlug}')">💾 Save Section</button>
         <span class="save-status" id="status-${sec.id}"></span>
       </div>
@@ -952,7 +1024,7 @@ function renderSections(sections, pid, pageSlug) {
     container.appendChild(block);
 
     // Title input sync
-    if (editMode && isAdmin) {
+    if (editMode && isPageEditor) {
       document.getElementById(`title-display-${sec.id}`).style.display = 'none';
       document.getElementById(`title-input-${sec.id}`).style.display = 'block';
       document.getElementById(`title-input-${sec.id}`).oninput = () => markDirty(sec.id);
@@ -966,6 +1038,10 @@ function markDirty(secId) {
 }
 
 async function saveSection(secId, pid, pageSlug) {
+  if (!canEditProject(pid)) {
+    showToast('You can only edit sections in projects you are assigned to.', 'error');
+    return;
+  }
   const content = document.getElementById(`content-${secId}`).innerHTML;
   const titleEl = document.getElementById(`title-input-${secId}`);
   const title = titleEl ? titleEl.value : document.getElementById(`title-display-${secId}`).textContent;
@@ -987,6 +1063,10 @@ async function saveSection(secId, pid, pageSlug) {
 
 async function addSection() {
   if (!currentPage || !currentProject) return;
+  if (!canEditProject(currentProject)) {
+    showToast('You can only add sections in projects you are assigned to.', 'error');
+    return;
+  }
   setStatus('Processing', 'processing');
   const { data: existing } = await sb.from('guide_content').select('sort_order').eq('project', currentProject).eq('page_slug', currentPage).order('sort_order', {ascending:false}).limit(1);
   const nextOrder = existing && existing.length > 0 ? (existing[0].sort_order + 1) : 0;
@@ -1007,6 +1087,10 @@ async function addSection() {
 }
 
 async function deleteSection(secId) {
+  if (!canEditProject(currentProject)) {
+    showToast('You can only delete sections in projects you are assigned to.', 'error');
+    return;
+  }
   if (!confirm('Delete this section? This cannot be undone.')) return;
   await sb.from('guide_content').delete().eq('id', secId);
   showToast('Section deleted', 'success');
@@ -1014,6 +1098,10 @@ async function deleteSection(secId) {
 }
 
 async function deletePage() {
+  if (!canEditProject(currentProject)) {
+    showToast('You can only delete pages in projects you are assigned to.', 'error');
+    return;
+  }
   if (!confirm('Delete this entire page and all its sections? This cannot be undone.')) return;
   setStatus('Processing', 'processing');
   await sb.from('guide_content').delete().eq('project', currentProject).eq('page_slug', currentPage);
@@ -1025,6 +1113,11 @@ async function deletePage() {
 
 // ── EDIT MODE ──
 function toggleEditMode(on) {
+  if (on && currentProject && !canEditProject(currentProject)) {
+    showToast('Edit mode is only available for projects you are assigned to.', 'error');
+    document.getElementById('edit-mode-toggle').checked = false;
+    return;
+  }
   editMode = on;
   if (currentPage) openPage(currentProject, currentPage);
 }
@@ -1096,8 +1189,8 @@ function changeTextColor(secId) {
 
 // ── PAGE MANAGER ──
 async function openAddPageModal() {
+  populateEditableProjectFilter(document.getElementById('modal-page-project'));
   await loadParentPageOptions();
-  populateProjectFilter(document.getElementById('modal-page-project'));
   document.getElementById('add-page-modal').classList.add('open');
 }
 
@@ -1118,6 +1211,11 @@ async function createPage() {
   const pid = document.getElementById('modal-page-project').value;
   const title = document.getElementById('modal-page-title').value.trim();
   const parent = document.getElementById('modal-page-parent').value;
+  const visibility = normalizeRole(document.getElementById('modal-page-visibility').value);
+  if (!canEditProject(pid)) {
+    showToast('You can only create pages in projects you are assigned to.', 'error');
+    return;
+  }
   if (!title) { showToast('Please enter a page title', 'error'); return; }
   setStatus('Processing', 'processing');
 
@@ -1160,7 +1258,7 @@ async function createPage() {
     page_slug: slug,
     section_slug: '__pagemeta__',
     title,
-    content: '',
+    content: JSON.stringify({ minRole: visibility }),
     sort_order: nextOrder
   });
   if (error) { showToast('Error: ' + error.message, 'error'); return; }
@@ -1192,11 +1290,15 @@ async function loadPageManager() {
       <span class="page-manager-name">${p.title}</span>
       <span class="tag">${p.page_slug}</span>
       <span class="page-manager-project tag">${PROJECTS[p.project]?.name || p.project}</span>
-      <button class="btn btn-danger btn-sm" onclick="adminDeletePage('${p.project}','${p.page_slug}')">🗑 Delete</button>
+      <button class="btn btn-danger btn-sm" ${canEditProject(p.project) ? '' : 'disabled title="Not assigned to this project" style="opacity:.5;cursor:not-allowed;"'} onclick="adminDeletePage('${p.project}','${p.page_slug}')">🗑 Delete</button>
     </div>`).join('')}</div>`;
 }
 
 async function adminDeletePage(pid, pageSlug) {
+  if (!canEditProject(pid)) {
+    showToast('You can only delete pages in projects you are assigned to.', 'error');
+    return;
+  }
   if (!confirm(`Delete page "${pageSlug}" and all its sections?`)) return;
   await sb.from('guide_content').delete().eq('project', pid).eq('page_slug', pageSlug);
   showToast('Page deleted', 'success');
@@ -1236,7 +1338,7 @@ async function loadUsers() {
       const projects = userAccess.map(a => `<span class="tag">${PROJECTS[a.project]?.name || a.project}</span>`).join('');
       return `<tr>
         <td>${p.email}</td>
-        <td><span class="role-badge role-${p.role}">${p.role.replace('_',' ')}</span></td>
+        <td><span class="role-badge role-${normalizeRole(p.role)}">${roleLabel(p.role)}</span></td>
         <td>${projects || '<span style="color:var(--text3)">None</span>'}</td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-ghost btn-sm" onclick="openEditUser('${p.id}','${p.role}')">✏️ Edit</button>
@@ -1249,10 +1351,14 @@ async function loadUsers() {
 
 async function openEditUser(userId, role) {
   document.getElementById('edit-user-id').value = userId;
-  document.getElementById('edit-user-role').value = role;
+  const roleSelect = document.getElementById('edit-user-role');
+  roleSelect.value = normalizeRole(role);
+  const editingSelf = currentUser?.id === userId;
+  roleSelect.disabled = editingSelf;
+  roleSelect.title = editingSelf ? 'You cannot change your own global role.' : '';
   const { data: access } = await sb.from('project_access').select('*').eq('user_id', userId);
-  const selectedProjects = (access || []).map(a => a.project);
-  const projectRole = access && access.length > 0 ? access[0].role : 'staff';
+  const selectedProjects = (access || []).map(a => a.project).filter(canManageProjectAssignments);
+  const projectRole = normalizeRole(access && access.length > 0 ? access[0].role : 'staff');
   document.getElementById('edit-project-role').value = projectRole;
   populateProjectChips('edit-user-projects', selectedProjects);
   document.getElementById('edit-user-modal').classList.add('open');
@@ -1260,9 +1366,17 @@ async function openEditUser(userId, role) {
 
 async function saveUserEdit() {
   const userId = document.getElementById('edit-user-id').value;
-  const role = document.getElementById('edit-user-role').value;
-  const projectRole = document.getElementById('edit-project-role').value;
-  const selected = [...document.querySelectorAll('#edit-user-projects .project-chip.selected')].map(c => c.dataset.pid);
+  const existingRole = normalizeRole((await sb.from('profiles').select('role').eq('id', userId).single()).data?.role || 'staff');
+  const role = normalizeRole(document.getElementById('edit-user-role').value);
+  const projectRole = normalizeRole(document.getElementById('edit-project-role').value);
+  const selected = [...document.querySelectorAll('#edit-user-projects .project-chip.selected')].map(c => c.dataset.pid).filter(canManageProjectAssignments);
+
+  if (currentUser?.id === userId && role !== existingRole) {
+    showToast('You cannot change your own global role.', 'error');
+    document.getElementById('edit-user-role').value = existingRole;
+    return;
+  }
+
   await sb.from('profiles').update({ role }).eq('id', userId);
   await sb.from('project_access').delete().eq('user_id', userId);
   if (selected.length > 0) {
@@ -1285,9 +1399,9 @@ async function deleteUser(userId) {
 async function createUser() {
   const email = document.getElementById('new-email').value.trim();
   const password = document.getElementById('new-password').value;
-  const role = document.getElementById('new-role').value;
-  const projectRole = document.getElementById('new-project-role').value;
-  const selected = [...document.querySelectorAll('#new-user-projects .project-chip.selected')].map(c => c.dataset.pid);
+  const role = normalizeRole(document.getElementById('new-role').value);
+  const projectRole = normalizeRole(document.getElementById('new-project-role').value);
+  const selected = [...document.querySelectorAll('#new-user-projects .project-chip.selected')].map(c => c.dataset.pid).filter(canManageProjectAssignments);
   if (!email || !password) { showToast('Email and password required', 'error'); return; }
 
   // Use Supabase admin invite or signUp
@@ -1309,7 +1423,8 @@ async function createUser() {
 function populateProjectChips(containerId, selected = []) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
-  Object.entries(PROJECTS).forEach(([pid, p]) => {
+  const allowedProjects = Object.entries(PROJECTS).filter(([pid]) => canManageProjectAssignments(pid));
+  allowedProjects.forEach(([pid, p]) => {
     const chip = document.createElement('div');
     chip.className = 'project-chip' + (selected.includes(pid) ? ' selected' : '');
     chip.dataset.pid = pid;
@@ -1322,6 +1437,17 @@ function populateProjectChips(containerId, selected = []) {
 function populateProjectFilter(selectEl) {
   selectEl.innerHTML = '<option value="">All Projects</option>';
   Object.entries(PROJECTS).forEach(([pid, p]) => {
+    const opt = document.createElement('option');
+    opt.value = pid;
+    opt.textContent = p.name;
+    selectEl.appendChild(opt);
+  });
+}
+
+function populateEditableProjectFilter(selectEl) {
+  const allowedProjects = Object.entries(PROJECTS).filter(([pid]) => canEditProject(pid));
+  selectEl.innerHTML = '';
+  allowedProjects.forEach(([pid, p]) => {
     const opt = document.createElement('option');
     opt.value = pid;
     opt.textContent = p.name;
@@ -1420,8 +1546,7 @@ async function loadActivity() {
 // ── KEYBOARD SHORTCUTS ──
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    const isAdmin = ['super_admin','site_admin'].includes(currentProfile?.role);
-    if (editMode && isAdmin && currentPage) {
+    if (editMode && currentPage && canEditProject(currentProject)) {
       document.querySelectorAll('.section-block').forEach(block => {
         const id = block.dataset.id;
         if (id) saveSection(id, currentProject, currentPage);
