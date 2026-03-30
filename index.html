@@ -869,6 +869,7 @@ async function initApp(user) {
   }
 
   buildNavProjects();
+  addQuotaNavItem();
   showDashboard();
   appInitialized = true;
 }
@@ -1775,6 +1776,12 @@ function getWeekBounds(offset = 0) {
   return { start: startUTC.toISOString(), end: endUTC.toISOString() };
 }
 
+function getWeekOffsetLabel(offset) {
+  if (offset === 0) return 'This Week';
+  if (offset === -1) return 'Last Week';
+  return `${Math.abs(offset)} Weeks Ago`;
+}
+
 async function loadQuota() {
   const container = document.getElementById('quota-container');
   if (!container) return;
@@ -1896,7 +1903,7 @@ async function promoteStaff(userId, newRank, username) {
 
 // Show quota section in sidebar for smpfinder staff
 function addQuotaNavItem() {
-  if (!hasProjectAccess('smpfinder')) return;
+  if (!currentProfile?.smpfinder_rank) return;
   const section = document.getElementById('nav-quota-section');
   if (section) section.style.display = 'block';
 }
@@ -1921,56 +1928,72 @@ async function showMyQuota() {
   document.getElementById('nav-quota-item')?.classList.add('active');
 
   const discordId = currentProfile?.discord_id;
-  const { start, end } = getWeekBounds(0);
-  const startDate = new Date(start).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-  const endDate = new Date(end).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-
-  let counts = { punishments: 0, tickets: 0 };
-  if (discordId) {
-    const { data: logs } = await sb.from('quota_logs')
-      .select('type')
-      .eq('discord_id', discordId)
-      .eq('project', 'smpfinder')
-      .gte('logged_at', start)
-      .lte('logged_at', end);
-    (logs || []).forEach(l => {
-      if (l.type === 'punishment') counts.punishments++;
-      if (l.type === 'ticket') counts.tickets++;
-    });
-  }
-
   const smpRank = currentProfile?.smpfinder_rank || null;
   const targets = smpRank ? (QUOTA_TARGETS[smpRank] || QUOTA_TARGETS.junior_staff) : QUOTA_TARGETS.junior_staff;
-  const punPct = Math.min(100, targets.punishments > 0 ? Math.round((counts.punishments / targets.punishments) * 100) : 100);
-  const tikPct = Math.min(100, targets.tickets > 0 ? Math.round((counts.tickets / targets.tickets) * 100) : 100);
-  const punColor = counts.punishments >= targets.punishments ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
-  const tikColor = counts.tickets >= targets.tickets ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
+
+  const weekOffsets = [0, -1, -2, -3];
+  const history = [];
+
+  if (discordId) {
+    const results = await Promise.all(weekOffsets.map(async (offset) => {
+      const { start, end } = getWeekBounds(offset);
+      const { data: logs } = await sb.from('quota_logs')
+        .select('type')
+        .eq('discord_id', discordId)
+        .eq('project', 'smpfinder')
+        .gte('logged_at', start)
+        .lte('logged_at', end);
+
+      const counts = { punishments: 0, tickets: 0 };
+      (logs || []).forEach(l => {
+        if (l.type === 'punishment') counts.punishments++;
+        if (l.type === 'ticket') counts.tickets++;
+      });
+
+      return { offset, start, end, counts };
+    }));
+    history.push(...results);
+  }
 
   quotaPersonal.innerHTML = `
     <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:6px;">My Quota 📊</div>
-    <div style="color:var(--text2);font-size:14px;margin-bottom:32px;">Week of ${startDate} — ${endDate}</div>
+    <div style="color:var(--text2);font-size:14px;margin-bottom:24px;">Showing your last 4 weeks of progress (current week + previous 3).</div>
     ${!discordId ? '<div style="background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:16px 20px;color:#ff6b6b;font-size:14px;">⚠️ Your account does not have a Discord ID linked. Ask an admin to add your Discord ID to see your quota.</div>' : `
-    <div style="max-width:480px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;">
-      <div style="margin-bottom:24px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:15px;font-weight:600;">⚔ Punishments</div>
-          <div style="font-size:20px;font-weight:800;color:${punColor};">${counts.punishments} <span style="font-size:14px;color:var(--text3);font-weight:400;">/ ${targets.punishments}</span></div>
-        </div>
-        <div style="height:10px;background:var(--bg4);border-radius:5px;overflow:hidden;">
-          <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:5px;transition:width .6s;"></div>
-        </div>
-        <div style="font-size:12px;color:var(--text3);margin-top:6px;">${counts.punishments >= targets.punishments ? '✓ Quota met!' : `${targets.punishments - counts.punishments} more needed`}</div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:15px;font-weight:600;">🎫 Tickets</div>
-          <div style="font-size:20px;font-weight:800;color:${tikColor};">${counts.tickets} <span style="font-size:14px;color:var(--text3);font-weight:400;">/ ${targets.tickets}</span></div>
-        </div>
-        <div style="height:10px;background:var(--bg4);border-radius:5px;overflow:hidden;">
-          <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:5px;transition:width .6s;"></div>
-        </div>
-        <div style="font-size:12px;color:var(--text3);margin-top:6px;">${counts.tickets >= targets.tickets ? '✓ Quota met!' : `${targets.tickets - counts.tickets} more needed`}</div>
-      </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
+      ${history.map(item => {
+        const startDate = new Date(item.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endDate = new Date(item.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const punPct = Math.min(100, targets.punishments > 0 ? Math.round((item.counts.punishments / targets.punishments) * 100) : 100);
+        const tikPct = Math.min(100, targets.tickets > 0 ? Math.round((item.counts.tickets / targets.tickets) * 100) : 100);
+        const punColor = item.counts.punishments >= targets.punishments ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
+        const tikColor = item.counts.tickets >= targets.tickets ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
+        return `
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;">${getWeekOffsetLabel(item.offset)}</div>
+              <div style="font-size:11px;color:var(--text3);">${startDate} - ${endDate}</div>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">Rank target: ${QUOTA_LABELS[smpRank] || 'Staff'}</div>
+            <div style="margin-bottom:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <div style="font-size:13px;font-weight:600;">⚔ Punishments</div>
+                <div style="font-size:14px;font-weight:700;color:${punColor};">${item.counts.punishments} / ${targets.punishments}</div>
+              </div>
+              <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;">
+                <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:4px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <div style="font-size:13px;font-weight:600;">🎫 Tickets</div>
+                <div style="font-size:14px;font-weight:700;color:${tikColor};">${item.counts.tickets} / ${targets.tickets}</div>
+              </div>
+              <div style="height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;">
+                <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:4px;"></div>
+              </div>
+            </div>
+          </div>`;
+      }).join('')}
     </div>`}`;
 }
 
