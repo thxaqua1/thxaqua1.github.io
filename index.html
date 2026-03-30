@@ -504,7 +504,13 @@
 const SUPABASE_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF';
 const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false
+  }
+});
 
 const PROJECTS = {
   smpfinder: { name: 'SMPFinder', icon: '🔍', accent: '#7c6fff' },
@@ -527,20 +533,29 @@ async function login() {
   const pw = document.getElementById('login-password').value;
   const err = document.getElementById('auth-error');
   err.style.display = 'none';
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
-  await initApp(data.user);
+  if (!email || !pw) { err.textContent = 'Please enter your email and password.'; err.style.display = 'block'; return; }
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+    if (error) throw error;
+    await initApp(data.user);
+  } catch(e) {
+    err.textContent = e.message || 'Login failed. Please check your credentials.';
+    err.style.display = 'block';
+  }
 }
 
 async function initApp(user) {
   currentUser = user;
-  // Upsert profile
-  const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).single();
-  if (!prof) {
-    await sb.from('profiles').insert({ id: user.id, email: user.email, role: 'staff' });
+  try {
+    const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    if (!prof) {
+      await sb.from('profiles').insert({ id: user.id, email: user.email, role: 'staff' });
+      currentProfile = { id: user.id, email: user.email, role: 'staff' };
+    } else {
+      currentProfile = prof;
+    }
+  } catch(e) {
     currentProfile = { id: user.id, email: user.email, role: 'staff' };
-  } else {
-    currentProfile = prof;
   }
   const { data: access } = await sb.from('project_access').select('*').eq('user_id', user.id);
   currentAccess = access || [];
@@ -566,6 +581,11 @@ async function signOut() {
 
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user && !currentUser) await initApp(session.user);
+});
+
+// Enter key on login fields
+['login-email','login-password'].forEach(id => {
+  document.getElementById(id)?.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 });
 
 // ── NAVIGATION ──
