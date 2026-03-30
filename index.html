@@ -1773,7 +1773,7 @@ async function loadQuota() {
   const { start, end } = getWeekBounds(offset);
 
   // Get all profiles with discord_id
-  const { data: profiles, error: pErr } = await sb.from('profiles').select('id,email,role,discord_id').order('email');
+  const { data: profiles, error: pErr } = await sb.from('profiles').select('id,email,role,discord_id,smpfinder_rank').order('email');
   if (pErr || !profiles) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load users.</div>'; return; }
 
   // Get quota logs for this week
