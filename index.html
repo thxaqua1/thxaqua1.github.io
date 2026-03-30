@@ -346,6 +346,14 @@
     <!-- PANELS -->
 
     <div id="smp-welcome" class="smp-panel active">
+
+  <div id="welcome-content"></div>
+
+  <button id="save-btn" style="display:none;margin-top:20px;">
+    Save Changes
+  </button>
+
+</div>
       <h2>Welcome</h2>
       <p style="color:#9fb3c8;line-height:1.8;">
         If you're reading this, congratulations — you've officially been accepted into the SMPFinder staff team.
@@ -684,6 +692,68 @@ function showMsg(el,text,type){
 }
 
 boot();
+</script>
+  <script>
+const sb = supabase.createClient(
+  "https://tainbbnzenvjiidjexwa.supabase.co",
+  "sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF"
+);
+
+let isEditor = false;
+
+// Load content
+async function loadContent() {
+  const { data } = await sb
+    .from("guide_content")
+    .select("*")
+    .eq("project", "smpfinder")
+    .eq("section", "welcome")
+    .single();
+
+  if (data) {
+    document.getElementById("welcome-content").innerHTML = data.content;
+  }
+}
+
+// Enable editor (only admins)
+function enableEditor() {
+  const role = window.userRole; // your system already has this
+
+  if (role === "super_admin" || role === "site_admin") {
+    isEditor = true;
+
+    const el = document.getElementById("welcome-content");
+    el.contentEditable = true;
+    el.style.border = "1px solid #444";
+    el.style.padding = "10px";
+
+    document.getElementById("save-btn").style.display = "block";
+  }
+}
+
+// Save content
+async function saveContent() {
+  const content = document.getElementById("welcome-content").innerHTML;
+
+  await sb.from("guide_content").upsert({
+    project: "smpfinder",
+    section: "welcome",
+    content: content
+  });
+
+  alert("Saved!");
+}
+
+// Hook save button
+document.addEventListener("DOMContentLoaded", () => {
+  loadContent();
+
+  const btn = document.getElementById("save-btn");
+  if (btn) btn.onclick = saveContent;
+
+  // small delay to ensure user role is loaded
+  setTimeout(enableEditor, 1000);
+});
 </script>
 </body>
 </html>
