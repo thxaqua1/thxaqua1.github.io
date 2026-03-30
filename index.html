@@ -281,6 +281,16 @@
   .page-manager-name { flex: 1; font-size: 14px; }
   .page-manager-project { font-size: 11px; color: var(--text3); }
 
+  /* Status bar */
+  #status-bar {
+    position: fixed; right: 24px; bottom: 24px; z-index: 10000;
+    background: rgba(17,17,24,.9); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); padding: 8px 12px; font-size: 12px; font-weight: 600;
+    backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.45);
+  }
+  #status-bar.processing { border-color: #ffbe32; color: #ffbe32; }
+  #status-bar.up-to-date { border-color: var(--accent3); color: var(--accent3); }
+
   /* Toast */
   #toast {
     position: fixed; bottom: 24px; right: 24px; background: var(--bg2);
@@ -511,6 +521,7 @@
 </div>
 
 <div id="toast"></div>
+<div id="status-bar" class="up-to-date">Status: Up To Date</div>
 
 <script>
 const SUPABASE_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
@@ -574,6 +585,7 @@ async function login() {
   if (!pw) { setAuthError('Please enter your password.'); return; }
   if (!email.includes('@')) { setAuthError('That does not look like a valid email address.'); return; }
 
+  setStatus('Processing', 'processing');
   setLoginLoading(true);
 
   try {
@@ -592,11 +604,13 @@ async function login() {
         setAuthError(error.message || 'Login failed. Please try again.');
       }
       setLoginLoading(false);
+      setStatus('Up To Date', 'up-to-date');
       console.warn('Login error detail:', error);
       return;
     }
     await initApp(data.user);
   } catch(e) {
+    setStatus('Up To Date', 'up-to-date');
     setLoginLoading(false);
     if (!navigator.onLine) {
       setAuthError('You appear to be offline. Please check your internet connection.');
@@ -626,6 +640,7 @@ async function initApp(user) {
   document.getElementById('app').style.display = 'flex';
   document.getElementById('sidebar-email').textContent = user.email;
   logActivity('login');
+  setStatus('Up To Date', 'up-to-date');
 
   const isAdmin = ['super_admin','site_admin'].includes(currentProfile.role);
   if (isAdmin) {
@@ -648,13 +663,17 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 async function restoreSession() {
+  setStatus('Processing', 'processing');
   const { data, error } = await sb.auth.getSession();
   if (error) {
     console.warn('Supabase session restore failed:', error.message || error);
+    setStatus('Up To Date', 'up-to-date');
     return;
   }
   if (data?.session?.user && !currentUser) {
     await initApp(data.session.user);
+  } else {
+    setStatus('Up To Date', 'up-to-date');
   }
 }
 window.addEventListener('load', restoreSession);
@@ -871,13 +890,23 @@ async function saveSection(secId, pid, pageSlug) {
   const title = titleEl ? titleEl.value : document.getElementById(`title-display-${secId}`).textContent;
   const status = document.getElementById(`status-${secId}`);
   status.textContent = 'Saving...';
+  setStatus('Processing', 'processing');
   const { error } = await sb.from('guide_content').update({ content, title, updated_at: new Date().toISOString() }).eq('id', secId);
-  if (error) { status.textContent = '❌ Error saving'; showToast('Save failed: ' + error.message, 'error'); }
-  else { status.textContent = '✅ Saved'; showToast('Section saved!', 'success'); logActivity('section_saved', `${pid} / ${pageSlug}`); }
+  if (error) {
+    status.textContent = '❌ Error saving';
+    showToast('Save failed: ' + error.message, 'error');
+    setStatus('Up To Date', 'up-to-date');
+  } else {
+    status.textContent = '✅ Saved';
+    showToast('Section saved!', 'success');
+    logActivity('section_saved', `${pid} / ${pageSlug}`);
+    setStatus('Up To Date', 'up-to-date');
+  }
 }
 
 async function addSection() {
   if (!currentPage || !currentProject) return;
+  setStatus('Processing', 'processing');
   const { data: existing } = await sb.from('guide_content').select('sort_order').eq('project', currentProject).eq('page_slug', currentPage).order('sort_order', {ascending:false}).limit(1);
   const nextOrder = existing && existing.length > 0 ? (existing[0].sort_order + 1) : 0;
   const { error } = await sb.from('guide_content').insert({
@@ -885,8 +914,13 @@ async function addSection() {
     section_slug: 'section_' + Date.now(),
     title: 'New Section', content: '<p>Start writing here...</p>', sort_order: nextOrder
   });
-  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  if (error) {
+    showToast('Error: ' + error.message, 'error');
+    setStatus('Up To Date', 'up-to-date');
+    return;
+  }
   showToast('Section added!', 'success');
+  setStatus('Up To Date', 'up-to-date');
   logActivity('section_added', `${currentProject} / ${currentPage}`);
   openPage(currentProject, currentPage);
 }
@@ -900,8 +934,10 @@ async function deleteSection(secId) {
 
 async function deletePage() {
   if (!confirm('Delete this entire page and all its sections? This cannot be undone.')) return;
+  setStatus('Processing', 'processing');
   await sb.from('guide_content').delete().eq('project', currentProject).eq('page_slug', currentPage);
   showToast('Page deleted', 'success');
+  setStatus('Up To Date', 'up-to-date');
   await loadNavPages(currentProject);
   showDashboard();
 }
@@ -986,6 +1022,7 @@ async function createPage() {
   const title = document.getElementById('modal-page-title').value.trim();
   const parent = document.getElementById('modal-page-parent').value;
   if (!title) { showToast('Please enter a page title', 'error'); return; }
+  setStatus('Processing', 'processing');
 
   const slugBase = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const slug = (parent ? parent + '/' : '') + slugBase;
@@ -1042,6 +1079,8 @@ async function createPage() {
   if (currentProject === pid) {
     openPage(pid, slug);
   }
+
+  setStatus('Up To Date', 'up-to-date');
 }
 
 async function loadPageManager() {
@@ -1195,6 +1234,15 @@ function populateProjectFilter(selectEl) {
 
 // ── MODALS ──
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── STATUS BAR ──
+function setStatus(text, mode = 'up-to-date') {
+  const status = document.getElementById('status-bar');
+  if (!status) return;
+  status.textContent = `Status: ${text}`;
+  status.classList.remove('processing','up-to-date');
+  status.classList.add(mode);
+}
 
 // ── TOAST ──
 function showToast(msg, type = 'success') {
