@@ -319,7 +319,7 @@
       </div>
     </div>
 
-    <!-- SMPFINDER -->
+<!-- SMPFINDER -->
 <div id="view-smpfinder" class="view">
 
   <div style="max-width:1000px;margin:0 auto;">
@@ -335,17 +335,18 @@
     </div>
 
     <!-- NAV -->
-    <div style="display:flex;gap:20px;margin-bottom:40px;border-bottom:1px solid #1e2a35;padding-bottom:10px;">
-      <div class="guide-tab active" onclick="switchTab(this,'smpfinder','welcome')">Welcome</div>
-      <div class="guide-tab" onclick="switchTab(this,'smpfinder','onboarding')">Onboarding</div>
-      <div class="guide-tab" onclick="switchTab(this,'smpfinder','expectations')">Expectations</div>
-      <div class="guide-tab" onclick="switchTab(this,'smpfinder','tickets')">Tickets</div>
-      <div class="guide-tab" onclick="switchTab(this,'smpfinder','moderation')">Moderation</div>
+    <div id="smp-tabs" style="display:flex;gap:20px;margin-bottom:40px;border-bottom:1px solid #1e2a35;padding-bottom:10px;">
+      <div class="guide-tab active" onclick="smpTab('welcome', this)">Welcome</div>
+      <div class="guide-tab" onclick="smpTab('onboarding', this)">Onboarding</div>
+      <div class="guide-tab" onclick="smpTab('expectations', this)">Expectations</div>
+      <div class="guide-tab" onclick="smpTab('tickets', this)">Tickets</div>
+      <div class="guide-tab" onclick="smpTab('moderation', this)">Moderation</div>
     </div>
 
-    <!-- WELCOME -->
-    <div id="smpfinder-welcome" class="guide-panel active">
-      <h2 style="margin-bottom:16px;">Welcome</h2>
+    <!-- PANELS -->
+
+    <div id="smp-welcome" class="smp-panel active">
+      <h2>Welcome</h2>
       <p style="color:#9fb3c8;line-height:1.8;">
         If you're reading this, congratulations — you've officially been accepted into the SMPFinder staff team.
         Your role is to maintain quality, professionalism, and trust across the platform.
@@ -353,31 +354,29 @@
       </p>
     </div>
 
-    <!-- ONBOARDING -->
-    <div id="smpfinder-onboarding" class="guide-panel">
-      <h2 style="margin-bottom:16px;">Onboarding</h2>
+    <div id="smp-onboarding" class="smp-panel">
+      <h2>Onboarding</h2>
       <ul style="color:#9fb3c8;line-height:1.8;">
         <li>All work is done through the SMPFinder Discord.</li>
         <li>Staff channels are used for logs, communication, and updates.</li>
         <li>The subdivision server is where management communicates directly with you.</li>
-        <li>SRA are senior-level staff responsible for major decisions and oversight.</li>
+        <li>SRA are senior-level staff responsible for oversight.</li>
       </ul>
     </div>
 
-    <!-- EXPECTATIONS -->
-    <div id="smpfinder-expectations" class="guide-panel">
-      <h2 style="margin-bottom:16px;">Expectations</h2>
+    <div id="smp-expectations" class="smp-panel">
+      <h2>Expectations</h2>
 
-      <h3 style="margin-top:20px;">General</h3>
-      <ul style="color:#9fb3c8;line-height:1.8;">
-        <li>Remain professional at all times</li>
-        <li>Use proper judgement</li>
+      <h3>General</h3>
+      <ul style="color:#9fb3c8;">
+        <li>Remain professional</li>
+        <li>Use good judgement</li>
         <li>Respect all users</li>
-        <li>Do not abuse permissions</li>
+        <li>No abuse of permissions</li>
       </ul>
 
-      <h3 style="margin-top:30px;">Quota</h3>
-      <ul style="color:#9fb3c8;line-height:1.8;">
+      <h3 style="margin-top:20px;">Quota</h3>
+      <ul style="color:#9fb3c8;">
         <li>Admin → 18 Punishments / 6 Tickets</li>
         <li>Senior Mod → 20 / 10</li>
         <li>Mod → 20 / 12</li>
@@ -386,58 +385,41 @@
       </ul>
     </div>
 
-    <!-- TICKETS -->
-    <div id="smpfinder-tickets" class="guide-panel">
-      <h2 style="margin-bottom:16px;">Ticket Systems</h2>
+    <div id="smp-tickets" class="smp-panel">
+      <h2>Ticket Systems</h2>
 
       <h3>Partnerships</h3>
       <ul style="color:#9fb3c8;">
-        <li>Check final embed carefully</li>
-        <li>Verify screenshot authenticity</li>
-        <li>Server must have 25+ members</li>
-        <li>Ensure advertisement is valid</li>
+        <li>Verify embed + screenshot</li>
+        <li>Must have 25+ members</li>
+        <li>Ensure valid advertisement</li>
       </ul>
 
       <h3 style="margin-top:20px;">Report Tickets</h3>
       <ul style="color:#9fb3c8;">
-        <li>Introduce yourself first</li>
+        <li>Introduce yourself</li>
         <li>Run: !reportformat</li>
-        <li>Verify proof + user IDs</li>
+        <li>Verify proof + IDs</li>
         <li>/rename awaiting process</li>
-        <li>Escalate to admin</li>
-      </ul>
-
-      <h3 style="margin-top:20px;">General Support</h3>
-      <ul style="color:#9fb3c8;">
-        <li>Stay professional and patient</li>
-        <li>Most issues involve partnerships</li>
-        <li>Ask higher staff if unsure</li>
+        <li>Escalate</li>
       </ul>
 
       <h3 style="margin-top:20px;">Escalation</h3>
       <ul style="color:#9fb3c8;">
-        <li>/switchpanel to correct panel</li>
-        <li>Reports → Manager Tickets</li>
-        <li>Appeals → Manager Tickets</li>
-        <li>When unsure → escalate</li>
+        <li>/switchpanel</li>
+        <li>Reports → Manager</li>
+        <li>Appeals → Manager</li>
       </ul>
     </div>
 
-    <!-- MODERATION -->
-    <div id="smpfinder-moderation" class="guide-panel">
-      <h2 style="margin-bottom:16px;">Moderation</h2>
+    <div id="smp-moderation" class="smp-panel">
+      <h2>Moderation</h2>
 
-      <h3>Punishment Ladder</h3>
-      <p style="color:#9fb3c8;">
-        Always follow escalation. Never skip levels unless instructed by management.
-      </p>
-
-      <h3 style="margin-top:20px;">Common Offenses</h3>
+      <h3>Rules</h3>
       <ul style="color:#9fb3c8;">
-        <li>Advertising → escalating mutes</li>
-        <li>Toxicity → timed punishments</li>
-        <li>Hate Speech → severe punishment</li>
-        <li>NSFW / Threats → immediate action</li>
+        <li>Follow punishment ladder</li>
+        <li>Stay consistent</li>
+        <li>Do not skip steps</li>
       </ul>
 
       <h3 style="margin-top:20px;">Commands</h3>
@@ -447,11 +429,24 @@
         <li>/mute</li>
         <li>/kick</li>
         <li>/history</li>
-        <li>/case</li>
       </ul>
     </div>
 
   </div>
+
+  <!-- INTERNAL SCRIPT -->
+  <script>
+    function smpTab(tab, el) {
+      // switch active tab
+      document.querySelectorAll('#smp-tabs .guide-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+
+      // switch panels
+      document.querySelectorAll('#view-smpfinder .smp-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('smp-' + tab).classList.add('active');
+    }
+  </script>
+
 </div>
 
     <!-- ADMIN PANEL -->
