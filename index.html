@@ -609,6 +609,27 @@ function isAdminUser() {
   });
 }
 
+function canAssignGlobalRoleOnCreate() {
+  const globalRole = normalizeRole(currentProfile?.role);
+  if (globalRole === 'super_admin') return true;
+  return (currentAccess || []).some(a => normalizeRole(a.role) === 'super_admin');
+}
+
+function syncCreateUserRoleControl() {
+  const roleSelect = document.getElementById('new-role');
+  if (!roleSelect) return;
+
+  if (canAssignGlobalRoleOnCreate()) {
+    roleSelect.disabled = false;
+    roleSelect.title = '';
+    return;
+  }
+
+  roleSelect.value = 'staff';
+  roleSelect.disabled = true;
+  roleSelect.title = 'Site Admins can only create users with Staff global role.';
+}
+
 function canEditProject(pid) {
   const myRole = normalizeRole(currentProfile?.role);
   if (myRole === 'super_admin') return true;
@@ -1342,6 +1363,7 @@ function showAdmin() {
   document.getElementById('dashboard').classList.remove('visible');
   document.getElementById('guide-view').classList.remove('visible');
   document.getElementById('admin-view').classList.add('visible');
+  syncCreateUserRoleControl();
   loadUsers();
   loadPageManager();
   populateProjectChips('new-user-projects');
@@ -1352,6 +1374,7 @@ function switchAdminTab(tab) {
   document.querySelectorAll('.admin-tab').forEach((t,i) => t.classList.toggle('active', ['users','pages','create','activity'][i] === tab));
   document.querySelectorAll('.admin-panel-section').forEach(s => s.classList.remove('active'));
   document.getElementById(`admin-tab-${tab}`).classList.add('active');
+  if (tab === 'create') syncCreateUserRoleControl();
   if (tab === 'users') loadUsers();
   if (tab === 'pages') loadPageManager();
   if (tab === 'activity') loadActivity();
@@ -1430,7 +1453,8 @@ async function deleteUser(userId) {
 async function createUser() {
   const email = document.getElementById('new-email').value.trim();
   const password = document.getElementById('new-password').value;
-  const role = normalizeRole(document.getElementById('new-role').value);
+  const requestedRole = normalizeRole(document.getElementById('new-role').value);
+  const role = canAssignGlobalRoleOnCreate() ? requestedRole : 'staff';
   const projectRole = normalizeRole(document.getElementById('new-project-role').value);
   const selected = [...document.querySelectorAll('#new-user-projects .project-chip.selected')].map(c => c.dataset.pid).filter(canManageProjectAssignments);
   if (!email || !password) { showToast('Email and password required', 'error'); return; }
