@@ -846,7 +846,9 @@ function renderSections(sections, pid, pageSlug) {
         <button class="toolbar-btn" onclick="fmt('insertOrderedList','${sec.id}')">1. List</button>
         <div class="toolbar-sep"></div>
         <button class="toolbar-btn" onclick="insertTable('${sec.id}')">⊞ Table</button>
+        <button class="toolbar-btn" onclick="insertDivider('${sec.id}')">― Divider</button>
         <button class="toolbar-btn" onclick="insertCode('${sec.id}')">&#60;/&#62; Code</button>
+        <button class="toolbar-btn" onclick="changeTextColor('${sec.id}')">A</button>
         <button class="toolbar-btn" onclick="insertInfoBox('${sec.id}')">ℹ Info Box</button>
         <button class="toolbar-btn" onclick="insertWarnBox('${sec.id}')">⚠ Warn Box</button>
         <button class="toolbar-btn" onclick="insertQuote('${sec.id}')">❝ Quote</button>
@@ -994,6 +996,22 @@ function insertQuote(secId) {
   const el = document.getElementById(`content-${secId}`);
   el.focus();
   document.execCommand('insertHTML', false, `<blockquote>Quote text here</blockquote><p><br></p>`);
+  markDirty(secId);
+}
+
+function insertDivider(secId) {
+  const el = document.getElementById(`content-${secId}`);
+  el.focus();
+  document.execCommand('insertHTML', false, `<hr style="border-color: var(--border); margin: 12px 0;"/><p><br></p>`);
+  markDirty(secId);
+}
+
+function changeTextColor(secId) {
+  const color = prompt('Enter text color (name, hex, rgb):', '#7c6fff');
+  if (!color) return;
+  const el = document.getElementById(`content-${secId}`);
+  el.focus();
+  document.execCommand('foreColor', false, color);
   markDirty(secId);
 }
 
@@ -1335,3 +1353,4 @@ document.addEventListener('keydown', e => {
 </script>
 </body>
 </html>
+
