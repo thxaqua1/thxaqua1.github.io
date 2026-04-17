@@ -3,2199 +3,808 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Staff Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<title>SMPFinder · Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --bg2: #111118;
-    --bg3: #1a1a24;
-    --bg4: #22222f;
-    --border: #2a2a3a;
-    --accent: #7c6fff;
-    --accent2: #ff6f91;
-    --accent3: #6fffd4;
-    --text: #e8e8f0;
-    --text2: #9090aa;
-    --text3: #5a5a72;
-    --radius: 10px;
-    --sidebar: 260px;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+:root {
+  --bg:      #09090f;
+  --surf:    #0e0e18;
+  --s2:      #131320;
+  --s3:      #191928;
+  --s4:      #1f1f32;
+  --border:  rgba(255,255,255,.07);
+  --b2:      rgba(255,255,255,.12);
+  --accent:  #6c5ce7;
+  --ah:      #5a4dd6;
+  --ag:      linear-gradient(135deg,#6c5ce7,#a855f7);
+  --green:   #00d68f;
+  --yellow:  #f6c90e;
+  --red:     #ff4757;
+  --text:    #ebebf5;
+  --t2:      #72728a;
+  --t3:      #38384e;
+  --sidebar: 224px;
+  --r:       7px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;font-size:inherit}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px}
 
-  /* ── AUTH ── */
-  #auth-screen {
-    min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(ellipse at 30% 50%, #1a1040 0%, var(--bg) 60%);
-  }
-  .auth-card {
-    background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
-    padding: 48px 40px; width: 100%; max-width: 420px;
-  }
-  .auth-card h1 { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 4px; }
-  .auth-card p { color: var(--text2); margin-bottom: 32px; font-size: 14px; }
-  .auth-card label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
-  .auth-card input {
-    width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
-    padding: 11px 14px; color: var(--text); font-family: inherit; font-size: 14px; margin-bottom: 18px; outline: none;
-    transition: border-color .2s;
-  }
-  .auth-card input:focus { border-color: var(--accent); }
-  .btn {
-    display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px;
-    border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 500;
-    cursor: pointer; border: none; transition: all .18s; text-decoration: none;
-  }
-  .btn-primary { background: var(--accent); color: #fff; width: 100%; justify-content: center; padding: 12px; }
-  .btn-primary:hover { background: #6a5ef0; }
-  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-danger { background: #3a1a1f; color: #ff6b6b; border: 1px solid #5a2a2f; }
-  .btn-danger:hover { background: #4a2025; }
-  .btn-sm { padding: 6px 12px; font-size: 12px; }
-  .btn-success { background: #1a3a2a; color: var(--accent3); border: 1px solid #2a5a3a; }
-  .btn-success:hover { background: #1f4530; }
-  #auth-error { color: #ff6b6b; font-size: 13px; margin-top: 12px; display: none; background: rgba(255,107,107,.08); border: 1px solid rgba(255,107,107,.25); border-radius: 8px; padding: 10px 14px; line-height: 1.5; }
-  #auth-info { color: var(--accent3); font-size: 13px; margin-top: 12px; display: none; background: rgba(111,255,212,.06); border: 1px solid rgba(111,255,212,.2); border-radius: 8px; padding: 10px 14px; line-height: 1.5; }
-  .btn-loading { opacity: 0.7; pointer-events: none; cursor: not-allowed; }
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 15px;border-radius:var(--r);border:none;font-size:13px;font-weight:500;cursor:pointer;transition:all .14s;white-space:nowrap;user-select:none}
+.btn:disabled{opacity:.38;pointer-events:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--ah)}
+.btn-primary:active{transform:scale(.98)}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--b2);background:var(--s3)}
+.btn-danger{background:rgba(255,71,87,.07);color:var(--red);border:1px solid rgba(255,71,87,.18)}
+.btn-danger:hover{background:rgba(255,71,87,.14)}
+.btn-sm{padding:6px 13px;font-size:12.5px}
+.btn-xs{padding:4px 10px;font-size:11.5px}
 
-  /* ── APP SHELL ── */
-  #app { display: none; height: 100vh; flex-direction: row; }
+/* ── AUTH ── */
+#auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(ellipse 55% 50% at 12% 55%,rgba(108,92,231,.09),transparent),radial-gradient(ellipse 40% 40% at 88% 18%,rgba(168,85,247,.06),transparent);z-index:1000}
+.auth-wrap{width:348px}
+.auth-logo{display:flex;align-items:center;gap:9px;margin-bottom:30px}
+.auth-mark{width:34px;height:34px;border-radius:9px;background:var(--ag);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.auth-wordmark{font-size:15px;font-weight:700;letter-spacing:-.4px}
+.auth-wordmark em{color:var(--accent);font-style:normal}
+.auth-card{background:var(--surf);border:1px solid var(--b2);border-radius:13px;padding:32px 30px;box-shadow:0 40px 90px rgba(0,0,0,.7)}
+.auth-head{font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+.auth-sub{font-size:12px;color:var(--t2);margin-bottom:26px}
+.field-group{margin-bottom:13px}
+.field-label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:5px}
+.field{display:block;width:100%;background:var(--s3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;transition:border-color .14s}
+.field:focus{border-color:var(--accent)}
+.field::placeholder{color:var(--t3)}
+.auth-btn{width:100%;margin-top:6px;padding:10px;font-size:13.5px;font-weight:600}
+.a-err{display:none;font-size:12px;padding:9px 12px;border-radius:var(--r);margin-top:11px;background:rgba(255,71,87,.07);border:1px solid rgba(255,71,87,.2);color:var(--red);line-height:1.5}
 
-  /* ── SIDEBAR ── */
-  #sidebar {
-    width: var(--sidebar); min-width: var(--sidebar); background: var(--bg2);
-    border-right: 1px solid var(--border); display: flex; flex-direction: column;
-    overflow-y: auto; z-index: 10;
-  }
-  .sidebar-header { padding: 22px 18px 16px; border-bottom: 1px solid var(--border); }
-  .sidebar-logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--text); }
-  .sidebar-logo span { color: var(--accent); }
-  .sidebar-user { font-size: 12px; color: var(--text3); margin-top: 4px; }
+/* ── SHELL ── */
+#shell{display:none;height:100vh;flex-direction:row}
 
-  .sidebar-section-label {
-    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
-    color: var(--text3); padding: 16px 18px 6px;
-  }
-  .nav-item {
-    display: flex; align-items: center; gap: 9px; padding: 9px 18px;
-    color: var(--text2); font-size: 13.5px; cursor: pointer; border-left: 2px solid transparent;
-    transition: all .15s; user-select: none;
-  }
-  .nav-item:hover { color: var(--text); background: var(--bg3); }
-  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(124,111,255,.08); }
-  .nav-item .icon { font-size: 15px; width: 18px; text-align: center; }
-  .nav-subitem { padding-left: 40px; font-size: 13px; }
-  .nav-subsubitem { padding-left: 58px; font-size: 12.5px; }
-  .nav-children { display: none; }
-  .nav-children.open { display: block; }
-  .nav-arrow { margin-left: auto; font-size: 10px; transition: transform .2s; }
-  .nav-arrow.open { transform: rotate(90deg); }
+/* ── SIDEBAR ── */
+#sbar{width:var(--sidebar);min-width:var(--sidebar);background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sb-hd{padding:16px 14px 13px;border-bottom:1px solid var(--border)}
+.sb-brand{display:flex;align-items:center;gap:8px}
+.sb-mark{width:26px;height:26px;border-radius:6px;flex-shrink:0;background:var(--ag);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.sb-wm{font-size:13px;font-weight:700;letter-spacing:-.3px}
+.sb-wm em{color:var(--accent);font-style:normal}
+.sb-who{font-size:11px;color:var(--t3);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-sec{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);padding:15px 14px 5px}
+.nav{display:flex;align-items:center;gap:7px;padding:7px 14px;color:var(--t2);font-size:12.5px;font-weight:500;cursor:pointer;border-left:2px solid transparent;transition:all .12s;user-select:none}
+.nav:hover{color:var(--text);background:var(--s2)}
+.nav.on{color:var(--text);border-left-color:var(--accent);background:rgba(108,92,231,.09)}
+.nav-ic{width:15px;text-align:center;font-size:12px}
+.sb-ft{margin-top:auto;padding:11px 14px;border-top:1px solid var(--border)}
 
-  .sidebar-footer { margin-top: auto; padding: 14px 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+/* ── MAIN ── */
+#main{flex:1;overflow-y:auto}
+.view{padding:32px 38px;display:none}
+.view.on{display:block}
 
-  /* Edit mode toggle */
-  .edit-toggle-wrap { display: none; align-items: center; justify-content: space-between; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; }
-  .edit-toggle-wrap.visible { display: flex; }
-  .edit-toggle-label { font-size: 12px; color: var(--text2); font-weight: 500; }
-  .toggle-switch { position: relative; width: 36px; height: 20px; cursor: pointer; }
-  .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; inset: 0; background: var(--bg4); border-radius: 20px; transition: .2s;
-  }
-  .toggle-slider::before {
-    content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px;
-    background: var(--text3); border-radius: 50%; transition: .2s;
-  }
-  .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
-  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); background: #fff; }
+/* ── ACCESS DENIED ── */
+#denied{display:none;flex:1;min-height:100vh;align-items:center;justify-content:center;padding:40px;background:var(--bg)}
+.denied-box{background:var(--surf);border:1px solid rgba(255,71,87,.18);border-radius:12px;padding:36px 32px;text-align:center;max-width:340px}
+.denied-ic{font-size:32px;margin-bottom:12px}
+.denied-h{font-size:17px;font-weight:700;margin-bottom:6px}
+.denied-p{font-size:12.5px;color:var(--t2);line-height:1.6}
 
-  /* ── MAIN ── */
-  #main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+/* ── PAGE HEADER ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:26px}
+.ph-h{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:2px}
+.ph-s{font-size:12px;color:var(--t2)}
+.ph-r{display:flex;gap:8px;align-items:center}
+.sel{background:var(--s3);border:1px solid var(--border);border-radius:var(--r);padding:7px 11px;color:var(--text);outline:none;font-size:12.5px}
+.sel:focus{border-color:var(--accent)}
+.sel option{background:var(--s2)}
 
-  /* ── DASHBOARD ── */
-  #dashboard { padding: 40px 48px; display: none; }
-  #dashboard.visible { display: block; }
-  .dash-title { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; margin-bottom: 6px; }
-  .dash-sub { color: var(--text2); margin-bottom: 36px; }
-  .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-  .project-card {
-    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
-    padding: 24px 22px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
-  }
-  .project-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: var(--card-accent, var(--accent)); border-radius: 12px 12px 0 0;
-  }
-  .project-card:hover { border-color: var(--card-accent, var(--accent)); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
-  .project-card-icon { font-size: 28px; margin-bottom: 12px; }
-  .project-card-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-  .project-card-role { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; }
+/* ── STAT STRIP ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:22px}
+.stat{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:14px 13px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--c,var(--accent))}
+.stat-n{font-size:24px;font-weight:700;letter-spacing:-.5px;color:var(--c,var(--text));line-height:1}
+.stat-l{font-size:11px;color:var(--t2);margin-top:3px}
 
-  /* ── GUIDE VIEW ── */
-  #guide-view { padding: 40px 48px; display: none; flex: 1; }
-  #guide-view.visible { display: block; }
-  .guide-breadcrumb { font-size: 12px; color: var(--text3); margin-bottom: 20px; }
-  .guide-breadcrumb span { color: var(--text2); }
-  .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
-  .page-title-wrap { flex: 1; }
-  .page-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; }
-  .page-subtitle { color: var(--text2); font-size: 14px; margin-top: 2px; }
+/* ── WEEK BAR ── */
+.wbar{display:flex;align-items:center;gap:9px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:7px 13px;font-size:11.5px;color:var(--t2);margin-bottom:18px}
+.wbar strong{color:var(--text);font-weight:600}
+.wdot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
-  /* ── SECTIONS ── */
-  .section-block {
-    background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
-    margin-bottom: 20px; overflow: hidden;
-  }
-  .section-header {
-    display: flex; align-items: center; gap: 10px; padding: 14px 18px;
-    border-bottom: 1px solid var(--border); background: var(--bg3);
-  }
-  .section-title-display { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; flex: 1; }
-  .section-title-input {
-    flex: 1; background: var(--bg4); border: 1px solid var(--accent); border-radius: 6px;
-    padding: 5px 10px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
-    display: none; outline: none;
-  }
-  .section-content { padding: 18px; }
+/* ── RANK DIVIDER ── */
+.rdiv{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin:22px 0 9px}
+.rdiv::after{content:'';flex:1;height:1px;background:var(--border)}
 
-  /* ── RICH TEXT EDITOR ── */
-  .editor-toolbar {
-    display: none; flex-wrap: wrap; gap: 4px; padding: 8px 12px;
-    background: var(--bg4); border-bottom: 1px solid var(--border);
-  }
-  .editor-toolbar.visible { display: flex; }
-  .toolbar-btn {
-    background: var(--bg3); border: 1px solid var(--border); border-radius: 5px;
-    color: var(--text2); padding: 4px 8px; font-size: 12px; cursor: pointer;
-    transition: all .15s; font-family: inherit;
-  }
-  .toolbar-btn:hover { background: var(--bg2); color: var(--text); border-color: var(--accent); }
-  .toolbar-sep { width: 1px; background: var(--border); margin: 2px 4px; }
-  .editable-content {
-    min-height: 60px; outline: none; line-height: 1.7;
-  }
-  .editable-content[contenteditable="true"] {
-    border: 1px dashed var(--accent); border-radius: 6px; padding: 12px;
-    background: rgba(124,111,255,.03);
-  }
-  .editable-content[contenteditable="true"]:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,111,255,.1); }
+/* ── QUOTA GRID ── */
+.qg{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:10px}
+.qc{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:15px;transition:border-color .14s}
+.qc:hover{border-color:var(--b2)}
+.qc-hd{display:flex;align-items:center;gap:9px;margin-bottom:13px}
+.qav{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:#fff;background:var(--ag)}
+.qname{font-size:13px;font-weight:600;letter-spacing:-.2px;line-height:1.2}
+.qdid{font-size:10.5px;color:var(--t3);font-family:'JetBrains Mono',monospace}
+.qbadge{margin-left:auto;flex-shrink:0;font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:20px;border:1px solid}
+.bmet{color:var(--green);border-color:rgba(0,214,143,.28);background:rgba(0,214,143,.05)}
+.bunmet{color:var(--red);border-color:rgba(255,71,87,.28);background:rgba(255,71,87,.05)}
+.pr{margin-bottom:7px}
+.pr-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.pr-lbl{color:var(--t2)}
+.pr-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:10.5px}
+.pr-track{height:3px;background:var(--s4);border-radius:2px;overflow:hidden}
+.pr-fill{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.qc-foot{display:flex;justify-content:flex-end;margin-top:11px;padding-top:10px;border-top:1px solid var(--border)}
 
-  /* Content styles */
-  .editable-content h1 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin: 16px 0 8px; }
-  .editable-content h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin: 14px 0 6px; color: var(--accent); }
-  .editable-content h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin: 12px 0 4px; color: var(--text2); }
-  .editable-content p { margin-bottom: 10px; }
-  .editable-content ul, .editable-content ol { padding-left: 22px; margin-bottom: 10px; }
-  .editable-content li { margin-bottom: 4px; }
-  .editable-content code {
-    background: var(--bg4); border: 1px solid var(--border); border-radius: 4px;
-    padding: 2px 7px; font-family: 'Courier New', monospace; font-size: 13px; color: var(--accent3);
-  }
-  .editable-content pre {
-    background: var(--bg4); border: 1px solid var(--border); border-radius: 8px;
-    padding: 14px 16px; margin: 10px 0; overflow-x: auto;
-  }
-  .editable-content pre code { background: none; border: none; padding: 0; }
-  .editable-content table { border-collapse: collapse; width: 100%; margin: 10px 0; }
-  .editable-content th { background: var(--bg3); padding: 9px 14px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text2); border: 1px solid var(--border); }
-  .editable-content td { padding: 9px 14px; border: 1px solid var(--border); font-size: 14px; }
-  .editable-content tr:nth-child(even) td { background: var(--bg3); }
-  .editable-content blockquote {
-    border-left: 3px solid var(--accent); padding: 10px 16px; margin: 10px 0;
-    background: rgba(124,111,255,.06); border-radius: 0 6px 6px 0; color: var(--text2);
-  }
-  .info-box {
-    background: rgba(111,255,212,.06); border: 1px solid rgba(111,255,212,.25); border-radius: 8px;
-    padding: 14px 16px; margin: 10px 0;
-  }
-  .warn-box {
-    background: rgba(255,111,145,.06); border: 1px solid rgba(255,111,145,.25); border-radius: 8px;
-    padding: 14px 16px; margin: 10px 0;
-  }
+/* ── TABLE ── */
+.tbl-wrap{background:var(--surf);border:1px solid var(--border);border-radius:9px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 13px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--border);background:var(--s2)}
+td{padding:10px 13px;border-bottom:1px solid var(--border);font-size:12.5px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--s2)}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.p-admin{background:rgba(255,71,87,.1);color:var(--red)}
+.p-senior_mod{background:rgba(168,85,247,.12);color:#c084fc}
+.p-mod{background:rgba(108,92,231,.12);color:var(--accent)}
+.p-helper{background:rgba(0,214,143,.1);color:var(--green)}
+.p-junior_staff{background:rgba(120,120,160,.1);color:var(--t2)}
+.p-super_admin{background:rgba(255,71,87,.1);color:var(--red)}
+.p-site_admin{background:rgba(0,214,143,.1);color:var(--green)}
+.p-management{background:rgba(246,201,14,.1);color:var(--yellow)}
+.p-staff{background:rgba(120,120,160,.1);color:var(--t2)}
+.u-name{font-weight:600;font-size:13px}
+.u-email{font-size:11px;color:var(--t3);font-family:'JetBrains Mono',monospace}
 
-  /* Section edit controls */
-  .section-edit-controls { display: none; gap: 8px; }
-  .section-edit-controls.visible { display: flex; }
-  .section-save-bar {
-    display: none; padding: 10px 18px; border-top: 1px solid var(--border);
-    background: var(--bg3); gap: 8px; align-items: center;
-  }
-  .section-save-bar.visible { display: flex; }
-  .save-status { font-size: 12px; color: var(--text3); margin-left: auto; }
+/* ── ADD USER ── */
+.add-panel{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:18px;margin-bottom:18px}
+.add-title{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t2);margin-bottom:14px}
+.frow{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px}
+.fg label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3)}
+.fg input,.fg select{background:var(--s3);border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;color:var(--text);font-size:13px;outline:none;transition:border-color .14s}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg input::placeholder{color:var(--t3)}
+.fg select option{background:var(--s2)}
 
-  /* Add section / add page buttons */
-  .add-section-btn {
-    display: none; width: 100%; background: transparent; border: 1px dashed var(--border);
-    border-radius: var(--radius); padding: 12px; color: var(--text3); font-family: inherit;
-    font-size: 13px; cursor: pointer; transition: all .2s; margin-top: 8px;
-  }
-  .add-section-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,111,255,.04); }
-  .add-section-btn.visible { display: block; }
+/* ── MODAL ── */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(7px);z-index:9800;align-items:center;justify-content:center;padding:20px}
+.mo.on{display:flex}
+.md{background:var(--surf);border:1px solid var(--b2);border-radius:11px;padding:26px 24px;width:100%;max-width:400px;box-shadow:0 30px 80px rgba(0,0,0,.8);animation:pop .17s ease}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(6px)}to{opacity:1;transform:none}}
+.md-h{font-size:16px;font-weight:700;letter-spacing:-.3px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.md-sec{margin-bottom:14px}
+.md-sec-h{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.md-foot{display:flex;gap:7px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.danger-box{background:rgba(255,71,87,.05);border:1px solid rgba(255,71,87,.14);border-radius:var(--r);padding:12px 14px}
+.danger-box p{font-size:12px;color:var(--t2);margin-bottom:11px;line-height:1.55}
+.md .fg{margin-bottom:12px}
+.md .fg:last-child{margin-bottom:0}
 
-  /* ── ADMIN PANEL ── */
-  #admin-view { padding: 40px 48px; display: none; }
-  #admin-view.visible { display: block; }
-  .admin-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; margin-bottom: 24px; }
-  .admin-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 4px; width: fit-content; }
-  .admin-tab { padding: 8px 18px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text2); transition: all .15s; background: none; border: none; font-family: inherit; }
-  .admin-tab.active { background: var(--accent); color: #fff; }
-  .admin-panel-section { display: none; }
-  .admin-panel-section.active { display: block; }
-  .user-table { width: 100%; border-collapse: collapse; }
-  .user-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); border-bottom: 1px solid var(--border); }
-  .user-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
-  .user-table tr:hover td { background: var(--bg3); }
-  .role-badge {
-    display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
-  }
-  .role-super_admin { background: rgba(124,111,255,.15); color: var(--accent); }
-  .role-site_admin { background: rgba(111,255,212,.12); color: var(--accent3); }
-  .role-management, .role-editor { background: rgba(255,190,50,.1); color: #ffbe32; }
-  .role-staff { background: rgba(144,144,170,.1); color: var(--text2); }
-  .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
-  .form-group label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); }
-  .form-group input, .form-group select {
-    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
-    padding: 9px 12px; color: var(--text); font-family: inherit; font-size: 14px; outline: none;
-    transition: border-color .2s;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
-  .form-group select option { background: var(--bg3); }
-  .project-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .project-chip {
-    padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
-    border: 1px solid var(--border); color: var(--text2); transition: all .15s; background: var(--bg3);
-  }
-  .project-chip.selected { border-color: var(--accent); color: var(--accent); background: rgba(124,111,255,.1); }
+/* ── TOAST ── */
+#toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:9px 15px;font-size:12.5px;z-index:9999;transform:translateY(40px) scale(.96);opacity:0;transition:all .22s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;align-items:center;gap:7px}
+#toast.on{transform:none;opacity:1}
+#toast.ok{border-color:rgba(0,214,143,.35);color:var(--green)}
+#toast.er{border-color:rgba(255,71,87,.35);color:var(--red)}
+.tdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 
-  /* Page manager */
-  .page-manager-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-  .page-manager-item {
-    display: flex; align-items: center; gap: 10px; background: var(--bg2);
-    border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
-  }
-  .page-manager-name { flex: 1; font-size: 14px; }
-  .page-manager-project { font-size: 11px; color: var(--text3); }
+/* ── STATUS ── */
+#sbar-status{position:fixed;top:16px;right:16px;z-index:10000;background:rgba(9,9,15,.88);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10.5px;font-weight:600;letter-spacing:.04em;backdrop-filter:blur(10px);color:var(--t2);transition:all .2s}
+#sbar-status.busy{border-color:rgba(246,201,14,.35);color:var(--yellow)}
+#sbar-status.ok{border-color:rgba(0,214,143,.3);color:var(--green)}
 
-  /* Status bar */
-  #status-bar {
-    position: fixed; right: 24px; top: 24px; z-index: 10000;
-    background: rgba(17,17,24,.9); border: 1px solid var(--border); border-radius: 10px;
-    color: var(--text); padding: 8px 12px; font-size: 12px; font-weight: 600;
-    backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.45);
-  }
-  #status-bar.processing { border-color: #ffbe32; color: #ffbe32; }
-  #status-bar.up-to-date { border-color: var(--accent3); color: var(--accent3); }
-
-  /* Toast */
-  #toast {
-    position: fixed; bottom: 24px; right: 24px; background: var(--bg2);
-    border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px;
-    font-size: 13px; z-index: 9999; transform: translateY(80px); opacity: 0;
-    transition: all .3s; pointer-events: none;
-  }
-  #toast.show { transform: translateY(0); opacity: 1; }
-  #toast.success { border-color: var(--accent3); color: var(--accent3); }
-  #toast.error { border-color: #ff6b6b; color: #ff6b6b; }
-
-  /* Misc */
-  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: var(--bg3); color: var(--text3); margin: 2px; }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-  .empty-state { text-align: center; padding: 48px; color: var(--text3); }
-  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
-  select { cursor: pointer; }
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; align-items: center; justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 28px; width: 480px; max-width: 95vw; }
-  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+/* ── EMPTY ── */
+.empty{padding:50px 20px;text-align:center;color:var(--t3)}
+.empty-ic{font-size:26px;margin-bottom:8px}
+.empty p{font-size:12.5px}
 </style>
 </head>
 <body>
 
 <!-- ── AUTH ── -->
-<div id="auth-screen">
-  <div class="auth-card">
-    <h1>Staff Hub</h1>
-    <p>Sign in to access your staff guides</p>
-    <label>Email address</label>
-    <input type="email" id="login-email" placeholder="you@example.com">
-    <label>Password</label>
-    <input type="password" id="login-password" placeholder="••••••••">
-    <button class="btn btn-primary" id="login-btn" onclick="login()">Sign In</button>
-    <div id="auth-error"></div>
-    <div id="auth-info"></div>
+<div id="auth">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <div class="auth-mark">SF</div>
+      <div class="auth-wordmark">SMP<em>Finder</em></div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-head">Management portal</div>
+      <div class="auth-sub">Sign in with your staff account</div>
+      <div class="field-group">
+        <label class="field-label">Email</label>
+        <input class="field" type="email" id="a-email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <input class="field" type="password" id="a-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-primary auth-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+      <div class="a-err" id="a-err"></div>
+    </div>
   </div>
 </div>
 
-<!-- ── APP ── -->
-<div id="app">
+<!-- ── SHELL ── -->
+<div id="shell">
   <!-- SIDEBAR -->
-  <div id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo">Staff<span>Hub</span></div>
-      <div class="sidebar-user" id="sidebar-email"></div>
-    </div>
-    <div class="sidebar-section-label">Navigation</div>
-    <div class="nav-item" onclick="showDashboard()"><span class="icon">⊞</span> Dashboard</div>
-    <div id="nav-projects"></div>
-    <div id="nav-quota-section" style="display:none">
-      <div class="sidebar-section-label">SMPFinder</div>
-      <div class="nav-item" id="nav-quota-item" onclick="showMyQuota()"><span class="icon">◔</span> My Quota</div>
-    </div>
-    <div id="nav-admin-section" style="display:none">
-      <div class="sidebar-section-label">Management</div>
-      <div class="nav-item" onclick="showAdmin()"><span class="icon">⚙</span> Admin Panel</div>
-    </div>
-    <div class="sidebar-footer">
-      <div class="edit-toggle-wrap" id="edit-toggle-wrap">
-        <span class="edit-toggle-label">✏️ Edit Mode</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode(this.checked)">
-          <span class="toggle-slider"></span>
-        </label>
+  <div id="sbar">
+    <div class="sb-hd">
+      <div class="sb-brand">
+        <div class="sb-mark">SF</div>
+        <div class="sb-wm">SMP<em>Finder</em></div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="quickRefreshApp()">↻ Refresh</button>
-      <button class="btn btn-ghost btn-sm" onclick="signOut()">Sign Out</button>
+      <div class="sb-who" id="sb-who"></div>
+    </div>
+    <div class="sb-sec">Quota</div>
+    <div class="nav on" id="nav-quota" onclick="showView('quota')">
+      <span class="nav-ic">◫</span> Staff Quota
+    </div>
+    <div class="sb-sec" id="admin-label" style="display:none">Admin</div>
+    <div class="nav" id="nav-users" style="display:none" onclick="showView('users')">
+      <span class="nav-ic">⊹</span> Manage Users
+    </div>
+    <div class="sb-ft">
+      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="doLogout()">Sign out</button>
     </div>
   </div>
 
   <!-- MAIN -->
   <div id="main">
-    <!-- DASHBOARD -->
-    <div id="dashboard">
-      <div class="dash-title">Welcome back 👋</div>
-      <div class="dash-sub" id="dash-sub">Select a project guide below to get started.</div>
-      <div class="project-grid" id="project-grid"></div>
-    </div>
 
-    <!-- GUIDE VIEW -->
-    <div id="guide-view">
-      <div class="guide-breadcrumb" id="guide-breadcrumb"></div>
-      <div class="page-header">
-        <div class="page-title-wrap">
-          <div class="page-title" id="page-title"></div>
-          <div class="page-subtitle" id="page-subtitle"></div>
-        </div>
-        <div id="page-edit-controls" class="section-edit-controls">
-          <button class="btn btn-danger btn-sm" onclick="deletePage()">🗑 Delete Page</button>
-        </div>
-      </div>
-      <div id="sections-container"></div>
-      <button class="add-section-btn" id="add-section-btn" onclick="addSection()">＋ Add Section</button>
-    </div>
-
-    <!-- ADMIN VIEW -->
-    <div id="admin-view">
-      <div class="admin-title">⚙ Admin Panel</div>
-      <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchAdminTab('users')">Users</button>
-        <button class="admin-tab" onclick="switchAdminTab('pages')">Pages</button>
-        <button class="admin-tab" onclick="switchAdminTab('create')">Create User</button>
-        <button class="admin-tab" onclick="switchAdminTab('activity')">Activity</button>
-        <button class="admin-tab" onclick="switchAdminTab('quota')">Quota</button>
-      </div>
-      <!-- Users tab -->
-      <div class="admin-panel-section active" id="admin-tab-users">
-        <div id="user-list-container"><div class="empty-state"><div class="empty-icon">👥</div>Loading users...</div></div>
-      </div>
-      <!-- Pages tab -->
-      <div class="admin-panel-section" id="admin-tab-pages">
-        <div style="margin-bottom:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <select id="page-project-filter" onchange="loadPageManager()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:14px;">
-            <option value="">All Projects</option>
+    <!-- QUOTA VIEW -->
+    <div class="view on" id="view-quota">
+      <div class="ph">
+        <div><div class="ph-h">Staff Quota</div><div class="ph-s">Weekly tracking — all SMPFinder staff</div></div>
+        <div class="ph-r">
+          <select class="sel" id="qweek" onchange="loadQuota()">
+            <option value="0">This week</option>
+            <option value="-1">Last week</option>
           </select>
-          <button class="btn btn-primary btn-sm" onclick="openAddPageModal()">＋ Add Page</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadQuota()">↻ Refresh</button>
         </div>
-        <div id="page-manager-container"><div class="empty-state"><div class="empty-icon">📄</div>Loading pages...</div></div>
       </div>
-      <!-- Create user tab -->
-      <div class="admin-panel-section" id="admin-tab-create">
-        <div style="max-width:560px;">
-          <div class="form-row">
-            <div class="form-group"><label>Email</label><input type="email" id="new-email" placeholder="staff@example.com"></div>
-            <div class="form-group"><label>Password</label><input type="password" id="new-password" placeholder="Min 6 chars"></div>
+      <div id="quota-body"><div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div></div>
+    </div>
+
+    <!-- USERS VIEW -->
+    <div class="view" id="view-users">
+      <div class="ph">
+        <div><div class="ph-h">Manage Users</div><div class="ph-s">Create and configure SMPFinder staff accounts</div></div>
+      </div>
+
+      <!-- Add user form (admin only) -->
+      <div class="add-panel" id="add-panel" style="display:none">
+        <div class="add-title">Create new user</div>
+        <div class="frow">
+          <div class="fg"><label>Display name</label><input type="text" id="nu-dname" placeholder="e.g. Steve"></div>
+          <div class="fg"><label>Email</label><input type="email" id="nu-email" placeholder="user@example.com"></div>
+          <div class="fg"><label>Password</label><input type="password" id="nu-pw" placeholder="Min 8 chars"></div>
+        </div>
+        <div class="frow">
+          <div class="fg"><label>Discord ID</label><input type="text" id="nu-discord" placeholder="123456789012345678"></div>
+          <div class="fg">
+            <label>SMPFinder rank</label>
+            <select id="nu-rank">
+              <option value="">— None —</option>
+              <option value="junior_staff">Junior Staff</option>
+              <option value="helper">Helper</option>
+              <option value="mod">Mod</option>
+              <option value="senior_mod">Senior Mod</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
-          <div class="form-row">
-            <div class="form-group"><label>Discord User ID</label><input type="text" id="new-discord-id" placeholder="e.g. 123456789012345678"></div>
-          </div>
-          <div class="form-row" id="smpfinder-rank-row" style="display:none;">
-            <div class="form-group">
-              <label>SMPFinder Staff Rank</label>
-              <select id="new-smpfinder-rank">
-                <option value="">— Not SMPFinder staff —</option>
-                <option value="admin">Admin</option>
-                <option value="senior_mod">Senior Mod</option>
-                <option value="mod">Mod</option>
-                <option value="helper">Helper</option>
-                <option value="junior_staff">Junior Staff</option>
-              </select>
-              <div style="font-size:11px;color:var(--text3);margin-top:4px;">Only shown when SMPFinder is assigned. Sets quota targets.</div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Global Role</label>
-              <select id="new-role">
-                <option value="staff">Staff</option>
-                <option value="management">Management</option>
-                <option value="site_admin">Site Admin</option>
-                <option value="super_admin">Manager</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:16px;">
-            <label>Assign Projects</label>
-            <div class="project-chips" id="new-user-projects"></div>
-          </div>
-          <div class="form-group" style="margin-bottom:16px;">
-            <label>Project Role</label>
-            <select id="new-project-role">
-              <option value="staff">Staff</option>
+          <div class="fg">
+            <label>Portal access</label>
+            <select id="nu-role">
+              <option value="staff">Staff — no portal access</option>
               <option value="management">Management</option>
               <option value="site_admin">Site Admin</option>
+              <option value="super_admin">Manager</option>
             </select>
           </div>
-          <button class="btn btn-primary" onclick="createUser()">Create User</button>
         </div>
+        <button class="btn btn-primary" style="width:auto;padding:8px 18px" onclick="createUser()">Create user</button>
       </div>
-      <!-- Activity tab -->
-      <div class="admin-panel-section" id="admin-tab-activity">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-          <div style="font-size:13px;color:var(--text2);">Showing recent login and action events across all staff.</div>
-          <button class="btn btn-ghost btn-sm" onclick="loadActivity()">↻ Refresh</button>
-        </div>
-        <div id="activity-container"><div class="empty-state"><div class="empty-icon">📊</div>Loading activity...</div></div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name / Email</th>
+              <th>Portal role</th>
+              <th>SMP Rank</th>
+              <th>Discord ID</th>
+              <th style="width:60px"></th>
+            </tr>
+          </thead>
+          <tbody id="users-body">
+            <tr><td colspan="5"><div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div></td></tr>
+          </tbody>
+        </table>
       </div>
-      <!-- Quota tab -->
-      <div class="admin-panel-section" id="admin-tab-quota">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-          <div>
-            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;">📊 Staff Quota</div>
-            <div style="font-size:13px;color:var(--text2);">Weekly quota progress for all SMPFinder staff. Resets every Monday.</div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            <select id="quota-week-select" onchange="loadQuota()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;">
-              <option value="current">This Week</option>
-              <option value="last">Last Week</option>
-            </select>
-            <button class="btn btn-ghost btn-sm" onclick="loadQuota()">↻ Refresh</button>
-          </div>
-        </div>
-        <div id="quota-container"><div class="empty-state"><div class="empty-icon">📊</div>Loading quota data...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── ACCESS DENIED ── -->
+<div id="denied">
+  <div class="denied-box">
+    <div class="denied-ic">🔒</div>
+    <div class="denied-h">Management Only</div>
+    <div class="denied-p">This portal is restricted to SMPFinder management. Use the <strong>/quota</strong> command on Discord to check your own quota.</div>
+  </div>
+</div>
+
+<!-- ── MEMBER EDIT MODAL ── -->
+<div class="mo" id="mo-member">
+  <div class="md">
+    <div class="md-h" id="mm-h">Edit Member</div>
+    <input type="hidden" id="mm-uid">
+    <input type="hidden" id="mm-discord">
+    <input type="hidden" id="mm-woff">
+
+    <div class="md-sec">
+      <div class="md-sec-h">Quota override</div>
+      <div class="frow">
+        <div class="fg"><label>Punishments</label><input type="number" id="mm-pun" min="0" step="1" placeholder="0"></div>
+        <div class="fg"><label>Tickets</label><input type="number" id="mm-tix" min="0" step="1" placeholder="0"></div>
       </div>
+      <div style="font-size:11px;color:var(--t2)">Replaces all quota logs for the selected week with these exact values.</div>
+    </div>
+
+    <div class="md-sec">
+      <div class="md-sec-h">Rank</div>
+      <div class="fg">
+        <label>SMPFinder Rank</label>
+        <select id="mm-rank">
+          <option value="">— None —</option>
+          <option value="junior_staff">Junior Staff</option>
+          <option value="helper">Helper</option>
+          <option value="mod">Mod</option>
+          <option value="senior_mod">Senior Mod</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="md-sec">
+      <div class="md-sec-h">Danger zone</div>
+      <div class="danger-box">
+        <p>Removes this member's portal profile and all their quota log history. Cannot be undone.</p>
+        <button class="btn btn-danger btn-xs" onclick="removeMember()">Remove from team</button>
+      </div>
+    </div>
+
+    <div class="md-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('mo-member')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveMember()">Save changes</button>
     </div>
   </div>
 </div>
 
-<!-- Add Page Modal -->
-<div class="modal-overlay" id="add-page-modal">
-  <div class="modal">
-    <div class="modal-title">➕ Add New Page</div>
-    <div class="form-group" style="margin-bottom:14px;">
-      <label>Project</label>
-      <select id="modal-page-project" onchange="loadParentPageOptions()">
-        <option value="smpfinder">SMPFinder</option>
-        <option value="infuse">Infuse Network</option>
-        <option value="bliss">BlissPvP</option>
-        <option value="strength">Strength SMP</option>
+<!-- ── USER EDIT MODAL ── -->
+<div class="mo" id="mo-user">
+  <div class="md">
+    <div class="md-h" id="mu-h">Edit User</div>
+    <input type="hidden" id="mu-uid">
+    <div class="fg"><label>Display name</label><input type="text" id="mu-dname" placeholder="e.g. Steve"></div>
+    <div class="fg"><label>Discord ID</label><input type="text" id="mu-discord" placeholder="123456789012345678"></div>
+    <div class="fg">
+      <label>SMPFinder rank</label>
+      <select id="mu-rank">
+        <option value="">— None —</option>
+        <option value="junior_staff">Junior Staff</option>
+        <option value="helper">Helper</option>
+        <option value="mod">Mod</option>
+        <option value="senior_mod">Senior Mod</option>
+        <option value="admin">Admin</option>
       </select>
     </div>
-    <div class="form-group" style="margin-bottom:14px;">
-      <label>Page Title</label>
-      <input type="text" id="modal-page-title" placeholder="e.g. Moderation Guidelines">
-    </div>
-    <div class="form-group" style="margin-bottom:14px;">
-      <label>Parent Page (optional — leave blank for top level)</label>
-      <select id="modal-page-parent"><option value="">None (top level)</option></select>
-    </div>
-    <div class="form-group" style="margin-bottom:14px;">
-      <label>Visibility</label>
-      <select id="modal-page-visibility">
-        <option value="staff">Staff and above</option>
-        <option value="management">Management and above</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('add-page-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="createPage()">Create Page</button>
-    </div>
-  </div>
-</div>
-
-<!-- Edit User Modal -->
-<div class="modal-overlay" id="edit-user-modal">
-  <div class="modal">
-    <div class="modal-title">✏️ Edit User</div>
-    <input type="hidden" id="edit-user-id">
-    <div class="form-group" style="margin-bottom:14px;">
-      <label>Global Role</label>
-      <select id="edit-user-role">
-        <option value="staff">Staff</option>
+    <div class="fg">
+      <label>Portal access</label>
+      <select id="mu-role">
+        <option value="staff">Staff — no portal access</option>
         <option value="management">Management</option>
         <option value="site_admin">Site Admin</option>
         <option value="super_admin">Manager</option>
       </select>
     </div>
-    <div class="form-group" style="margin-bottom:14px;">
-      <label>Assigned Projects</label>
-      <div class="project-chips" id="edit-user-projects"></div>
-    </div>
-    <div class="form-group" style="margin-bottom:14px;">
-      <label>Project Role</label>
-      <select id="edit-project-role">
-        <option value="staff">Staff</option>
-        <option value="management">Management</option>
-        <option value="site_admin">Site Admin</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('edit-user-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveUserEdit()">Save Changes</button>
+    <div class="md-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('mo-user')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveUserEdit()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- Force Edit Quota Modal -->
-<div class="modal-overlay" id="force-quota-modal">
-  <div class="modal">
-    <div class="modal-title">✏️ Force Edit Quota</div>
-    <input type="hidden" id="force-quota-user-id">
-    <input type="hidden" id="force-quota-discord-id">
-    <div style="font-size:13px;color:var(--text2);margin-bottom:14px;" id="force-quota-user-label"></div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Week</label>
-        <div id="force-quota-week-label" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:14px;">This Week</div>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Punishments</label>
-        <input type="number" id="force-quota-punishments" min="0" step="1" placeholder="0">
-      </div>
-      <div class="form-group">
-        <label>Tickets</label>
-        <input type="number" id="force-quota-tickets" min="0" step="1" placeholder="0">
-      </div>
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-top:4px;">This will replace all quota logs for the selected week with the exact values above.</div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('force-quota-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveForceQuotaEdit()">Save Quota</button>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
-<div id="status-bar" class="up-to-date">Status: Up To Date</div>
+<div id="toast"><div class="tdot"></div><span id="tmsg"></span></div>
+<div id="sbar-status">Ready</div>
 
 <script>
-const SUPABASE_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF';
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false
-  }
+/* ─────────────────────────────────────────────────────────
+   IMPORTANT — SECURITY NOTE
+   ─────────────────────────────────────────────────────────
+   The anon key below is safe to expose (it's public by design).
+   ALL real security must be enforced by Supabase Row Level
+   Security (RLS) policies — see rls_setup.sql.
+
+   Client-side role checks here are UX gates only.
+   The database enforces who can actually read/write data.
+   ───────────────────────────────────────────────────────── */
+const SUPA_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
+const SUPA_KEY = 'sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF';
+const {createClient} = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY, {
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
 });
 
-const PROJECTS = {
-  smpfinder: { name: 'SMPFinder', icon: '🔍', accent: '#7c6fff' },
-  infuse:    { name: 'Infuse Network', icon: '⚡', accent: '#ff6f91' },
-  bliss:     { name: 'BlissPvP', icon: '⚔️', accent: '#6fffd4' },
-  strength:  { name: 'Strength SMP', icon: '🛡️', accent: '#ffbe32' }
+// ── STATE ──
+let ME=null, PROF=null, ACC=[];
+
+// ── CONSTANTS ──
+const TARGETS = {
+  admin:       {p:18,t:6},
+  senior_mod:  {p:20,t:10},
+  mod:         {p:20,t:12},
+  helper:      {p:20,t:12},
+  junior_staff:{p:20,t:12}
 };
+const RLABELS = {admin:'Admin',senior_mod:'Senior Mod',mod:'Mod',helper:'Helper',junior_staff:'Junior Staff'};
+const RORDER  = ['admin','senior_mod','mod','helper','junior_staff'];
 
-let currentUser = null;
-let currentProfile = null;
-let currentAccess = [];
-let editMode = false;
-let currentProject = null;
-let currentPage = null;
-let allPages = [];
-let appInitialized = false;
+// ── ROLE UTILS ──
+const NR = r=>({editor:'management',manager:'super_admin'}[r]||r||'staff');
+const RL = r=>({super_admin:'Manager',site_admin:'Site Admin',management:'Management',staff:'Staff'}[NR(r)]||'Staff');
 
-const ROLE_RANK = {
-  staff: 0,
-  management: 1,
-  site_admin: 2,
-  super_admin: 3
-};
-
-function normalizeRole(role) {
-  if (role === 'editor') return 'management';
-  if (role === 'manager') return 'super_admin';
-  return role || 'staff';
+function isAdmin(){
+  const g=NR(PROF?.role);
+  if(g==='super_admin'||g==='site_admin') return true;
+  return ACC.some(a=>{const r=NR(a.role);return r==='super_admin'||r==='site_admin';});
+}
+function isMgmt(){
+  if(isAdmin()) return true;
+  return ACC.some(a=>a.project==='smpfinder'&&NR(a.role)==='management');
 }
 
-function roleLabel(role) {
-  const r = normalizeRole(role);
-  if (r === 'super_admin') return 'Manager';
-  if (r === 'site_admin') return 'Site Admin';
-  if (r === 'management') return 'Management';
-  return 'Staff';
+// ── WEEK UTILS ──
+function weekBounds(off=0){
+  const EST=5*60,now=new Date();
+  const e=new Date(now.getTime()-EST*60000);
+  const d=e.getDay();
+  const sun=new Date(e); sun.setDate(e.getDate()-d+off*7); sun.setHours(0,0,0,0);
+  const sat=new Date(sun); sat.setDate(sun.getDate()+6); sat.setHours(23,59,59,999);
+  return{start:new Date(sun.getTime()+EST*60000).toISOString(),end:new Date(sat.getTime()+EST*60000).toISOString()};
 }
+const wlbl=o=>o===0?'This week':o===-1?'Last week':`${Math.abs(o)} weeks ago`;
+const fd=iso=>new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});
 
-function hasProjectAccess(pid) {
-  if (normalizeRole(currentProfile?.role) === 'super_admin') return true;
-  return (currentAccess || []).some(a => a.project === pid);
-}
+// ── UI UTILS ──
+function status(msg,cls=''){const s=document.getElementById('sbar-status');s.textContent=msg;s.className=cls}
+let _tid;
+function toast(msg,type='ok'){clearTimeout(_tid);document.getElementById('tmsg').textContent=msg;const t=document.getElementById('toast');t.className=`on ${type}`;_tid=setTimeout(()=>t.className='',3500)}
+function closeModal(id){document.getElementById(id)?.classList.remove('on')}
+document.addEventListener('click',e=>{if(e.target.classList.contains('mo'))closeModal(e.target.id)});
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
-function getProjectAssignedRole(pid) {
-  const roles = (currentAccess || [])
-    .filter(a => a.project === pid)
-    .map(a => normalizeRole(a.role));
-  if (roles.includes('super_admin')) return 'super_admin';
-  if (roles.includes('site_admin')) return 'site_admin';
-  if (roles.includes('management')) return 'management';
-  return 'staff';
-}
-
-function isAdminUser() {
-  const globalRole = normalizeRole(currentProfile?.role);
-  if (globalRole === 'super_admin' || globalRole === 'site_admin') return true;
-  return (currentAccess || []).some(a => {
-    const r = normalizeRole(a.role);
-    return r === 'super_admin' || r === 'site_admin';
-  });
-}
-
-function isSMPFinderManagement() {
-  if (isAdminUser()) return false;
-  return (currentAccess || []).some(a => a.project === 'smpfinder' && normalizeRole(a.role) === 'management');
-}
-
-function canAssignGlobalRoleOnCreate() {
-  const globalRole = normalizeRole(currentProfile?.role);
-  if (globalRole === 'super_admin') return true;
-  return (currentAccess || []).some(a => normalizeRole(a.role) === 'super_admin');
-}
-
-function syncCreateUserRoleControl() {
-  const roleSelect = document.getElementById('new-role');
-  if (!roleSelect) return;
-
-  if (canAssignGlobalRoleOnCreate()) {
-    roleSelect.disabled = false;
-    roleSelect.title = '';
-    return;
-  }
-
-  roleSelect.value = 'staff';
-  roleSelect.disabled = true;
-  roleSelect.title = 'Site Admins can only create users with Staff global role.';
-}
-
-function canEditProject(pid) {
-  const myRole = normalizeRole(currentProfile?.role);
-  if (myRole === 'super_admin') return true;
-  if (myRole === 'site_admin') return hasProjectAccess(pid);
-  const projectRole = getProjectAssignedRole(pid);
-  if (projectRole === 'super_admin' || projectRole === 'site_admin') return true;
-  return false;
-}
-
-function canManageProjectAssignments(pid) {
-  const myRole = normalizeRole(currentProfile?.role);
-  if (myRole === 'super_admin') return true;
-  if (myRole === 'site_admin') return hasProjectAccess(pid);
-  const projectRole = getProjectAssignedRole(pid);
-  if (projectRole === 'super_admin' || projectRole === 'site_admin') return true;
-  return false;
-}
-
-function parsePageMetaContent(rawContent) {
-  if (!rawContent) return { minRole: 'staff' };
-  try {
-    const parsed = JSON.parse(rawContent);
-    return {
-      minRole: normalizeRole(parsed?.minRole || 'staff')
-    };
-  } catch (_) {
-    return { minRole: 'staff' };
-  }
-}
-
-function canAccessPageMeta(metaRow, pid = null) {
-  const meta = parsePageMetaContent(metaRow?.content);
-  const requiredRank = ROLE_RANK[normalizeRole(meta.minRole)] ?? ROLE_RANK.staff;
-  const globalRank = ROLE_RANK[normalizeRole(currentProfile?.role)] ?? ROLE_RANK.staff;
-  const projectRank = pid ? (ROLE_RANK[getProjectAssignedRole(pid)] ?? ROLE_RANK.staff) : ROLE_RANK.staff;
-  const userRank = Math.max(globalRank, projectRank);
-  return userRank >= requiredRank;
+// ── NAV ──
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));
+  document.getElementById('view-'+id)?.classList.add('on');
+  document.getElementById('nav-'+id)?.classList.add('on');
+  if(id==='quota') loadQuota();
+  if(id==='users') loadUsers();
 }
 
 // ── AUTH ──
-function setAuthError(msg) {
-  const err = document.getElementById('auth-error');
-  const info = document.getElementById('auth-info');
-  err.innerHTML = '⚠️ ' + msg;
-  err.style.display = 'block';
-  info.style.display = 'none';
-}
-function setAuthInfo(msg) {
-  const err = document.getElementById('auth-error');
-  const info = document.getElementById('auth-info');
-  info.innerHTML = 'ℹ️ ' + msg;
-  info.style.display = 'block';
-  err.style.display = 'none';
-}
-function clearAuthMessages() {
-  document.getElementById('auth-error').style.display = 'none';
-  document.getElementById('auth-info').style.display = 'none';
-}
-function setLoginLoading(on) {
-  const btn = document.getElementById('login-btn');
-  btn.textContent = on ? 'Signing in...' : 'Sign In';
-  btn.classList.toggle('btn-loading', on);
+async function doLogin(){
+  const email=document.getElementById('a-email').value.trim();
+  const pw=document.getElementById('a-pw').value;
+  const err=document.getElementById('a-err');
+  err.style.display='none';
+
+  if(!email){err.textContent='Email is required.';err.style.display='block';return}
+  if(!pw){err.textContent='Password is required.';err.style.display='block';return}
+
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true; btn.textContent='Signing in…';
+  status('Authenticating…','busy');
+
+  const{data,error}=await db.auth.signInWithPassword({email,password:pw});
+  btn.disabled=false; btn.textContent='Sign in';
+
+  if(error){
+    const m=(error.message||'').toLowerCase();
+    err.textContent=m.includes('invalid')||m.includes('credentials')?'Incorrect email or password.':m.includes('rate')||m.includes('many')?'Too many attempts — wait a moment.':error.message;
+    err.style.display='block'; status('Ready'); return;
+  }
+  await boot(data.user);
 }
 
-function withTimeout(promise, ms, label) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timed out')), ms))
+async function doLogout(){
+  await db.auth.signOut();
+  ME=null;PROF=null;ACC=[];
+  document.getElementById('shell').style.display='none';
+  document.getElementById('denied').style.display='none';
+  document.getElementById('auth').style.display='flex';
+  status('Ready');
+}
+
+// ── BOOT ──
+async function boot(user){
+  ME=user;
+  status('Loading…','busy');
+
+  const{data:prof}=await db.from('profiles').select('*').eq('id',user.id).single();
+  if(prof) PROF=prof;
+  else{
+    await db.from('profiles').insert({id:user.id,email:user.email,role:'staff'});
+    PROF={id:user.id,email:user.email,role:'staff'};
+  }
+
+  const{data:acc}=await db.from('project_access').select('*').eq('user_id',user.id);
+  ACC=acc||[];
+
+  // SECURITY GATE — staff get signed out immediately and see access denied
+  if(!isMgmt()){
+    await db.auth.signOut();
+    document.getElementById('auth').style.display='none';
+    document.getElementById('shell').style.display='none';
+    document.getElementById('denied').style.display='flex';
+    status('Access denied');
+    return;
+  }
+
+  document.getElementById('auth').style.display='none';
+  document.getElementById('shell').style.display='flex';
+  document.getElementById('sb-who').textContent=PROF.display_name||user.email||'';
+
+  if(isAdmin()){
+    document.getElementById('admin-label').style.display='block';
+    document.getElementById('nav-users').style.display='flex';
+    document.getElementById('add-panel').style.display='block';
+  }
+
+  status('Ready','ok');
+  loadQuota();
+}
+
+// Restore session on load
+(async()=>{
+  const{data:{session}}=await db.auth.getSession();
+  if(session?.user) await boot(session.user);
+})();
+db.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'){ME=null;PROF=null;ACC=[];}});
+
+// ── QUOTA VIEW ──
+async function loadQuota(){
+  const body=document.getElementById('quota-body');
+  body.innerHTML='<div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div>';
+  status('Loading…','busy');
+
+  const off=parseInt(document.getElementById('qweek')?.value||'0');
+  const{start,end}=weekBounds(off);
+
+  const[{data:profiles,error:pErr},{data:logs}]=await Promise.all([
+    db.from('profiles').select('id,display_name,email,discord_id,smpfinder_rank').order('display_name'),
+    db.from('quota_logs').select('discord_id,type').eq('project','smpfinder').gte('logged_at',start).lte('logged_at',end)
   ]);
-}
 
-async function login() {
-  const email = document.getElementById('login-email').value.trim();
-  const pw = document.getElementById('login-password').value;
-  clearAuthMessages();
+  if(pErr){body.innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load data.</p></div>';status('Error');return;}
 
-  if (!email && !pw) { setAuthError('Please enter your email and password.'); return; }
-  if (!email) { setAuthError('Please enter your email address.'); return; }
-  if (!pw) { setAuthError('Please enter your password.'); return; }
-  if (!email.includes('@')) { setAuthError('That does not look like a valid email address.'); return; }
-
-  setStatus('Processing', 'processing');
-  setLoginLoading(true);
-
-  try {
-    const { data, error } = await withTimeout(
-      sb.auth.signInWithPassword({ email, password: pw }),
-      15000,
-      'Sign-in request'
-    );
-
-    if (error) {
-      const msg = error.message ? error.message.toLowerCase() : '';
-      if (msg.includes('user is not confirmed') || msg.includes('email not confirmed') || msg.includes('unconfirmed')) {
-        setAuthError('Your account email is not confirmed yet. Please check your inbox for the confirmation link.');
-      } else if (msg.includes('invalid') || msg.includes('credentials') || msg.includes('wrong password') || msg.includes('user not found')) {
-        setAuthError('Incorrect email or password. Please try again.');
-      } else if (msg.includes('too many') || msg.includes('rate limit')) {
-        setAuthError('Too many attempts. Please wait a minute and try again.');
-      } else if (msg.includes('network') || msg.includes('fetch')) {
-        setAuthError('Network error. Please check your connection and try again.');
-      } else {
-        setAuthError(error.message || 'Login failed. Please try again.');
-      }
-      console.warn('Login error detail:', error);
-      return;
-    }
-
-    if (!data?.user) {
-      setAuthError('Sign-in succeeded but no user session was returned. Please try again.');
-      return;
-    }
-
-    await initApp(data.user);
-
-    // Final safety net: if init did not transition the UI, force the app shell visible.
-    if (document.getElementById('auth-screen').style.display !== 'none') {
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'flex';
-      setStatus('Up To Date', 'up-to-date');
-    }
-  } catch(e) {
-    const msg = String(e?.message || e || '').toLowerCase();
-    if (msg.includes('timed out')) {
-      setAuthError('Sign-in timed out. Please try again in a few seconds.');
-    } else if (!navigator.onLine) {
-      setAuthError('You appear to be offline. Please check your internet connection.');
-    } else {
-      setAuthError('Something went wrong. If this just updated, wait 30 seconds and do a hard refresh (Ctrl+Shift+R).');
-    }
-    console.warn('Login catch detail:', e);
-  } finally {
-    if (document.getElementById('auth-screen').style.display !== 'none') {
-      setLoginLoading(false);
-      setStatus('Up To Date', 'up-to-date');
-    }
-  }
-}
-
-async function initApp(user) {
-  if (appInitialized && currentUser?.id === user.id && document.getElementById('app')?.style.display === 'flex') return;
-
-  currentUser = user;
-  currentProfile = { id: user.id, email: user.email, role: 'staff' };
-  currentAccess = [];
-
-  try {
-    const { data: prof, error: profError } = await withTimeout(
-      sb.from('profiles').select('*').eq('id', user.id).single(),
-      8000,
-      'Profile load'
-    );
-
-    if (profError && profError.code !== 'PGRST116') {
-      console.warn('Profiles select error:', profError);
-    } else if (!prof) {
-      const { error: insertError } = await withTimeout(
-        sb.from('profiles').insert({ id: user.id, email: user.email, role: 'staff' }),
-        8000,
-        'Profile create'
-      );
-      if (insertError) console.warn('Profiles insert error:', insertError);
-    } else {
-      currentProfile = prof;
-    }
-  } catch(e) {
-    console.warn('Init app profiles error:', e);
-  }
-
-  try {
-    const { data: access, error: accessError } = await withTimeout(
-      sb.from('project_access').select('*').eq('user_id', user.id),
-      8000,
-      'Project access load'
-    );
-
-    if (accessError) {
-      console.warn('Project access error:', accessError);
-    } else {
-      currentAccess = access || [];
-    }
-  } catch(e) {
-    console.warn('Init app access error:', e);
-  }
-
-  const authScreen = document.getElementById('auth-screen');
-  const appShell = document.getElementById('app');
-  const sidebarEmail = document.getElementById('sidebar-email');
-  const navAdmin = document.getElementById('nav-admin-section');
-  const editToggleWrap = document.getElementById('edit-toggle-wrap');
-
-  if (authScreen) authScreen.style.display = 'none';
-  if (appShell) appShell.style.display = 'flex';
-  if (sidebarEmail) sidebarEmail.textContent = user.email || '';
-
-  logActivity('login');
-  setStatus('Up To Date', 'up-to-date');
-
-  const isAdmin = isAdminUser();
-  if (isAdmin) {
-    if (navAdmin) navAdmin.style.display = 'block';
-    if (editToggleWrap) editToggleWrap.classList.add('visible');
-  } else if (isSMPFinderManagement()) {
-    if (navAdmin) navAdmin.style.display = 'block';
-  }
-
-  buildNavProjects();
-  addQuotaNavItem();
-  showDashboard();
-  appInitialized = true;
-}
-
-async function signOut() {
-  await logActivity('logout');
-  await sb.auth.signOut();
-  location.reload();
-}
-
-sb.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user && !currentUser) await initApp(session.user);
-});
-
-async function restoreSession() {
-  setStatus('Processing', 'processing');
-  try {
-    const { data, error } = await withTimeout(sb.auth.getSession(), 12000, 'Session restore');
-    if (error) {
-      console.warn('Supabase session restore failed:', error.message || error);
-      setStatus('Up To Date', 'up-to-date');
-      return;
-    }
-    if (data?.session?.user && !currentUser) {
-      await initApp(data.session.user);
-    } else {
-      setStatus('Up To Date', 'up-to-date');
-    }
-  } catch (e) {
-    console.warn('Session restore catch detail:', e);
-    setStatus('Up To Date', 'up-to-date');
-  }
-}
-window.addEventListener('load', restoreSession);
-
-// Enter key on login fields
-['login-email','login-password'].forEach(id => {
-  document.getElementById(id)?.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-});
-
-// ── NAVIGATION ──
-function getAccessibleProjects() {
-  if (normalizeRole(currentProfile?.role) === 'super_admin') return Object.keys(PROJECTS);
-
-  const assigned = [...new Set((currentAccess || []).map(a => a.project).filter(Boolean))];
-  return assigned;
-}
-
-function buildNavProjects() {
-  const projects = getAccessibleProjects();
-  const nav = document.getElementById('nav-projects');
-  nav.innerHTML = '';
-  projects.forEach(pid => {
-    const p = PROJECTS[pid];
-    const wrap = document.createElement('div');
-    wrap.innerHTML = `
-      <div class="nav-item" id="nav-${pid}" onclick="toggleNavProject('${pid}')">
-        <span class="icon">${p.icon}</span> ${p.name}
-        <span class="nav-arrow" id="arrow-${pid}">▶</span>
-      </div>
-      <div class="nav-children" id="nav-children-${pid}"></div>
-    `;
-    nav.appendChild(wrap);
+  const qmap={};
+  (logs||[]).forEach(l=>{
+    if(!qmap[l.discord_id])qmap[l.discord_id]={p:0,t:0};
+    if(l.type==='punishment')qmap[l.discord_id].p++;
+    if(l.type==='ticket')qmap[l.discord_id].t++;
   });
-}
 
-async function toggleNavProject(pid) {
-  const children = document.getElementById(`nav-children-${pid}`);
-  const arrow = document.getElementById(`arrow-${pid}`);
-  if (children.classList.contains('open')) {
-    children.classList.remove('open');
-    arrow.classList.remove('open');
-    return;
-  }
-  children.classList.add('open');
-  arrow.classList.add('open');
-  currentProject = pid;
-  await loadNavPages(pid);
-}
+  const staff=(profiles||[]).filter(p=>p.discord_id&&p.smpfinder_rank);
+  if(!staff.length){body.innerHTML='<div class="empty"><div class="empty-ic">🔗</div><p>No staff with Discord IDs and ranks linked.</p></div>';status('Ready','ok');return;}
 
-async function loadNavPages(pid) {
-  const { data: pages } = await sb.from('guide_content')
-    .select('page_slug, title, section_slug, content')
-    .eq('project', pid)
-    .eq('section_slug', '__pagemeta__')
-    .order('sort_order');
-  
-  const container = document.getElementById(`nav-children-${pid}`);
-  container.innerHTML = '';
+  let met=0;
+  staff.forEach(p=>{const tg=TARGETS[p.smpfinder_rank]||TARGETS.junior_staff,q=qmap[p.discord_id]||{p:0,t:0};if(q.p>=tg.p&&q.t>=tg.t)met++;});
 
-  const visiblePages = (pages || []).filter(p => canAccessPageMeta(p, pid));
-  
-  if (visiblePages.length === 0) {
-    container.innerHTML = `<div class="nav-item nav-subitem" style="color:var(--text3);font-style:italic;">No pages yet</div>`;
-    return;
-  }
+  let html=`
+  <div class="stats">
+    <div class="stat" style="--c:var(--green)"><div class="stat-n">${met}</div><div class="stat-l">Quota met</div></div>
+    <div class="stat" style="--c:var(--red)"><div class="stat-n">${staff.length-met}</div><div class="stat-l">Not met</div></div>
+    <div class="stat" style="--c:var(--accent)"><div class="stat-n">${staff.length}</div><div class="stat-l">Total staff</div></div>
+  </div>
+  <div class="wbar">
+    ${off===0?'<div class="wdot"></div>':''}
+    <strong>${wlbl(off)}</strong>
+    <span style="color:var(--t3)">·</span>
+    <span>${fd(start)} — ${fd(end)}</span>
+    <span style="margin-left:auto;color:var(--t3);font-size:11px">Resets Sun 12AM EST</span>
+  </div>`;
 
-  // Build tree
-  const topLevel = visiblePages.filter(p => !p.page_slug.includes('/'));
-  topLevel.forEach(page => {
-    const slug = page.page_slug;
-    const children = visiblePages.filter(p => p.page_slug.startsWith(slug + '/') && p.page_slug.split('/').length === slug.split('/').length + 1);
-    
-    const item = document.createElement('div');
-    item.innerHTML = `<div class="nav-item nav-subitem" id="navpage-${pid}-${slug.replace(/\//g,'_')}" onclick="openPage('${pid}','${slug}')">${page.title}</div>`;
-    container.appendChild(item);
+  const grouped={};RORDER.forEach(r=>grouped[r]=[]);
+  staff.forEach(p=>{if(grouped[p.smpfinder_rank])grouped[p.smpfinder_rank].push(p);});
 
-    children.forEach(child => {
-      const ci = document.createElement('div');
-      ci.innerHTML = `<div class="nav-item nav-subsubitem" id="navpage-${pid}-${child.page_slug.replace(/\//g,'_')}" onclick="openPage('${pid}','${child.page_slug}')">${child.title}</div>`;
-      container.appendChild(ci);
+  RORDER.forEach(rank=>{
+    const grp=grouped[rank];if(!grp?.length)return;
+    html+=`<div class="rdiv">${RLABELS[rank]||rank}</div><div class="qg">`;
 
-      const grandchildren = visiblePages.filter(p => p.page_slug.startsWith(child.page_slug + '/'));
-      grandchildren.forEach(gc => {
-        const gi = document.createElement('div');
-        gi.style.paddingLeft = '74px';
-        gi.innerHTML = `<div class="nav-item nav-subsubitem" style="padding-left:74px" id="navpage-${pid}-${gc.page_slug.replace(/\//g,'_')}" onclick="openPage('${pid}','${gc.page_slug}')">${gc.title}</div>`;
-        container.appendChild(gi);
-      });
-    });
-  });
-}
+    grp.forEach(p=>{
+      const tg=TARGETS[rank]||TARGETS.junior_staff;
+      const q=qmap[p.discord_id]||{p:0,t:0};
+      const pp=Math.min(100,tg.p>0?Math.round(q.p/tg.p*100):100);
+      const tp=Math.min(100,tg.t>0?Math.round(q.t/tg.t*100):100);
+      const pm=q.p>=tg.p,tm=q.t>=tg.t,am=pm&&tm;
+      const pc=pm?'var(--green)':pp>=60?'var(--yellow)':'var(--red)';
+      const tc=tm?'var(--green)':tp>=60?'var(--yellow)':'var(--red)';
+      const dname=esc(p.display_name||(p.email||'').split('@')[0]||'Unknown');
+      const init=dname.replace(/&[^;]+;/g,'').substring(0,2).toUpperCase();
 
-// ── DASHBOARD ──
-function showDashboard() {
-  document.getElementById('dashboard').classList.add('visible');
-  document.getElementById('guide-view').classList.remove('visible');
-  document.getElementById('admin-view').classList.remove('visible');
-  const projects = getAccessibleProjects();
-  const grid = document.getElementById('project-grid');
-  grid.innerHTML = '';
-  projects.forEach(pid => {
-    const p = PROJECTS[pid];
-    const role = normalizeRole(currentProfile.role) === 'super_admin' ? 'super_admin' : normalizeRole(currentAccess.find(a=>a.project===pid)?.role || 'staff');
-    const card = document.createElement('div');
-    card.className = 'project-card';
-    card.style.setProperty('--card-accent', p.accent);
-    card.innerHTML = `<div class="project-card-icon">${p.icon}</div><div class="project-card-name">${p.name}</div><div class="project-card-role">${roleLabel(role)}</div>`;
-    card.onclick = () => { toggleNavProject(pid); openFirstPage(pid); };
-    grid.appendChild(card);
-  });
-  document.getElementById('dash-sub').textContent = `You have access to ${projects.length} project guide${projects.length !== 1 ? 's' : ''}.`;
-}
+      const editBtn=isAdmin()?`<button class="btn btn-ghost btn-xs" onclick="openMemberModal(${JSON.stringify(p.id)},${JSON.stringify(p.discord_id)},${JSON.stringify(p.display_name||(p.email||'').split('@')[0])},${q.p},${q.t},${JSON.stringify(p.smpfinder_rank||'')},${off})">Edit member</button>`:'';
 
-async function openFirstPage(pid) {
-  const { data: pages } = await sb.from('guide_content')
-    .select('page_slug, content').eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order');
-  const firstVisible = (pages || []).find(p => canAccessPageMeta(p, pid));
-  if (firstVisible) openPage(pid, firstVisible.page_slug);
-}
-
-// ── GUIDE VIEW ──
-async function openPage(pid, pageSlug) {
-  currentProject = pid;
-  currentPage = pageSlug;
-  document.getElementById('dashboard').classList.remove('visible');
-  document.getElementById('guide-view').classList.add('visible');
-  document.getElementById('admin-view').classList.remove('visible');
-
-  // Active nav
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const navEl = document.getElementById(`navpage-${pid}-${pageSlug.replace(/\//g,'_')}`);
-  if (navEl) navEl.classList.add('active');
-
-  // Load page meta
-  const { data: meta } = await sb.from('guide_content')
-    .select('title, content').eq('project', pid).eq('page_slug', pageSlug).eq('section_slug', '__pagemeta__').single();
-
-  if (!canAccessPageMeta(meta, pid)) {
-    showToast('You do not have permission to view this page.', 'error');
-    showDashboard();
-    return;
-  }
-
-  const p = PROJECTS[pid];
-  document.getElementById('guide-breadcrumb').innerHTML = `${p.icon} ${p.name} <span>/ ${meta?.title || pageSlug}</span>`;
-  document.getElementById('page-title').textContent = meta?.title || pageSlug;
-  document.getElementById('page-subtitle').textContent = '';
-
-  // Edit controls
-  const isPageEditor = canEditProject(pid);
-  document.getElementById('page-edit-controls').classList.toggle('visible', editMode && isPageEditor);
-  document.getElementById('add-section-btn').classList.toggle('visible', editMode && isPageEditor);
-
-  // Load sections
-  const { data: sections } = await sb.from('guide_content')
-    .select('*').eq('project', pid).eq('page_slug', pageSlug).neq('section_slug', '__pagemeta__').order('sort_order');
-
-  renderSections(sections || [], pid, pageSlug);
-}
-
-function renderSections(sections, pid, pageSlug) {
-  const container = document.getElementById('sections-container');
-  container.innerHTML = '';
-  const isPageEditor = canEditProject(pid);
-
-  sections.forEach(sec => {
-    const block = document.createElement('div');
-    block.className = 'section-block';
-    block.dataset.id = sec.id;
-    block.innerHTML = `
-      <div class="editor-toolbar ${editMode && isPageEditor ? 'visible' : ''}" id="toolbar-${sec.id}">
-        <button class="toolbar-btn" onclick="fmt('bold','${sec.id}')" title="Bold"><b>B</b></button>
-        <button class="toolbar-btn" onclick="fmt('italic','${sec.id}')" title="Italic"><i>I</i></button>
-        <button class="toolbar-btn" onclick="fmt('underline','${sec.id}')" title="Underline"><u>U</u></button>
-        <div class="toolbar-sep"></div>
-        <button class="toolbar-btn" onclick="fmtBlock('h1','${sec.id}')">H1</button>
-        <button class="toolbar-btn" onclick="fmtBlock('h2','${sec.id}')">H2</button>
-        <button class="toolbar-btn" onclick="fmtBlock('h3','${sec.id}')">H3</button>
-        <div class="toolbar-sep"></div>
-        <button class="toolbar-btn" onclick="fmt('insertUnorderedList','${sec.id}')">• List</button>
-        <button class="toolbar-btn" onclick="fmt('insertOrderedList','${sec.id}')">1. List</button>
-        <div class="toolbar-sep"></div>
-        <button class="toolbar-btn" onclick="insertTable('${sec.id}')">⊞ Table</button>
-        <button class="toolbar-btn" onclick="addTableRow('${sec.id}')">+ Row</button>
-        <button class="toolbar-btn" onclick="addTableColumn('${sec.id}')">+ Col</button>
-        <button class="toolbar-btn" onclick="insertDivider('${sec.id}')">― Divider</button>
-        <button class="toolbar-btn" onclick="insertCode('${sec.id}')">&#60;/&#62; Code</button>
-        <button class="toolbar-btn" onclick="changeTextColor('${sec.id}')">A</button>
-        <button class="toolbar-btn" onclick="insertInfoBox('${sec.id}')">ℹ Info Box</button>
-        <button class="toolbar-btn" onclick="insertWarnBox('${sec.id}')">⚠ Warn Box</button>
-        <button class="toolbar-btn" onclick="insertQuote('${sec.id}')">❝ Quote</button>
-      </div>
-      <div class="section-header">
-        <div class="section-title-display" id="title-display-${sec.id}">${sec.title || 'Untitled Section'}</div>
-        <input class="section-title-input" id="title-input-${sec.id}" value="${sec.title || ''}" placeholder="Section title">
-        <div class="section-edit-controls ${editMode && isPageEditor ? 'visible' : ''}" id="sec-controls-${sec.id}">
-          <button class="btn btn-danger btn-sm" onclick="deleteSection('${sec.id}')">🗑</button>
+      html+=`<div class="qc">
+        <div class="qc-hd">
+          <div class="qav">${init}</div>
+          <div><div class="qname">${dname}</div><div class="qdid">${p.discord_id}</div></div>
+          <span class="qbadge ${am?'bmet':'bunmet'}">${am?'MET':'UNMET'}</span>
         </div>
-      </div>
-      <div class="section-content">
-        <div class="editable-content" id="content-${sec.id}"
-          contenteditable="${editMode && isPageEditor ? 'true' : 'false'}"
-          oninput="markDirty('${sec.id}')">${sec.content || '<p>Start writing here...</p>'}</div>
-      </div>
-      <div class="section-save-bar ${editMode && isPageEditor ? 'visible' : ''}" id="savebar-${sec.id}">
-        <button class="btn btn-success btn-sm" onclick="saveSection('${sec.id}','${pid}','${pageSlug}')">💾 Save Section</button>
-        <span class="save-status" id="status-${sec.id}"></span>
-      </div>
-    `;
-    container.appendChild(block);
-
-    // Title input sync
-    if (editMode && isPageEditor) {
-      document.getElementById(`title-display-${sec.id}`).style.display = 'none';
-      document.getElementById(`title-input-${sec.id}`).style.display = 'block';
-      document.getElementById(`title-input-${sec.id}`).oninput = () => markDirty(sec.id);
-    }
-  });
-}
-
-function markDirty(secId) {
-  const status = document.getElementById(`status-${secId}`);
-  if (status) status.textContent = 'Unsaved changes';
-}
-
-async function saveSection(secId, pid, pageSlug) {
-  if (!canEditProject(pid)) {
-    showToast('You can only edit sections in projects you are assigned to.', 'error');
-    return;
-  }
-  const content = document.getElementById(`content-${secId}`).innerHTML;
-  const titleEl = document.getElementById(`title-input-${secId}`);
-  const title = titleEl ? titleEl.value : document.getElementById(`title-display-${secId}`).textContent;
-  const status = document.getElementById(`status-${secId}`);
-  status.textContent = 'Saving...';
-  setStatus('Processing', 'processing');
-  const { error } = await sb.from('guide_content').update({ content, title, updated_at: new Date().toISOString() }).eq('id', secId);
-  if (error) {
-    status.textContent = '❌ Error saving';
-    showToast('Save failed: ' + error.message, 'error');
-    setStatus('Up To Date', 'up-to-date');
-  } else {
-    status.textContent = '✅ Saved';
-    showToast('Section saved!', 'success');
-    logActivity('section_saved', `${pid} / ${pageSlug}`);
-    setStatus('Up To Date', 'up-to-date');
-  }
-}
-
-async function addSection() {
-  if (!currentPage || !currentProject) return;
-  if (!canEditProject(currentProject)) {
-    showToast('You can only add sections in projects you are assigned to.', 'error');
-    return;
-  }
-  setStatus('Processing', 'processing');
-  const { data: existing } = await sb.from('guide_content').select('sort_order').eq('project', currentProject).eq('page_slug', currentPage).order('sort_order', {ascending:false}).limit(1);
-  const nextOrder = existing && existing.length > 0 ? (existing[0].sort_order + 1) : 0;
-  const { error } = await sb.from('guide_content').insert({
-    project: currentProject, page_slug: currentPage,
-    section_slug: 'section_' + Date.now(),
-    title: 'New Section', content: '<p>Start writing here...</p>', sort_order: nextOrder
-  });
-  if (error) {
-    showToast('Error: ' + error.message, 'error');
-    setStatus('Up To Date', 'up-to-date');
-    return;
-  }
-  showToast('Section added!', 'success');
-  setStatus('Up To Date', 'up-to-date');
-  logActivity('section_added', `${currentProject} / ${currentPage}`);
-  openPage(currentProject, currentPage);
-}
-
-async function deleteSection(secId) {
-  if (!canEditProject(currentProject)) {
-    showToast('You can only delete sections in projects you are assigned to.', 'error');
-    return;
-  }
-  if (!confirm('Delete this section? This cannot be undone.')) return;
-  await sb.from('guide_content').delete().eq('id', secId);
-  showToast('Section deleted', 'success');
-  openPage(currentProject, currentPage);
-}
-
-async function deletePage() {
-  if (!canEditProject(currentProject)) {
-    showToast('You can only delete pages in projects you are assigned to.', 'error');
-    return;
-  }
-  if (!confirm('Delete this entire page and all its sections? This cannot be undone.')) return;
-  setStatus('Processing', 'processing');
-  await sb.from('guide_content').delete().eq('project', currentProject).eq('page_slug', currentPage);
-  showToast('Page deleted', 'success');
-  setStatus('Up To Date', 'up-to-date');
-  await loadNavPages(currentProject);
-  showDashboard();
-}
-
-// ── EDIT MODE ──
-function toggleEditMode(on) {
-  if (on && currentProject && !canEditProject(currentProject)) {
-    showToast('Edit mode is only available for projects you are assigned to.', 'error');
-    document.getElementById('edit-mode-toggle').checked = false;
-    return;
-  }
-  editMode = on;
-  if (currentPage) openPage(currentProject, currentPage);
-}
-
-// ── RICH TEXT FORMATTING ──
-function fmt(cmd, secId) {
-  document.getElementById(`content-${secId}`).focus();
-  document.execCommand(cmd, false, null);
-  markDirty(secId);
-}
-
-function fmtBlock(tag, secId) {
-  document.getElementById(`content-${secId}`).focus();
-  document.execCommand('formatBlock', false, tag);
-  markDirty(secId);
-}
-
-function insertTable(secId) {
-  const el = document.getElementById(`content-${secId}`);
-  el.focus();
-  const html = `<table><thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th></tr></thead><tbody><tr><td>Row 1</td><td>Data</td><td>Data</td></tr><tr><td>Row 2</td><td>Data</td><td>Data</td></tr></tbody></table><p><br></p>`;
-  document.execCommand('insertHTML', false, html);
-  markDirty(secId);
-}
-
-function getActiveTable(secId) {
-  const selection = window.getSelection();
-  if (selection && selection.rangeCount > 0) {
-    let node = selection.anchorNode;
-    if (node) {
-      if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-      const selectedTable = node?.closest ? node.closest('table') : null;
-      if (selectedTable) return selectedTable;
-    }
-  }
-
-  const root = document.getElementById(`content-${secId}`);
-  return root ? root.querySelector('table') : null;
-}
-
-function addTableRow(secId) {
-  const table = getActiveTable(secId);
-  if (!table) {
-    showToast('Place cursor inside a table first.', 'error');
-    return;
-  }
-
-  const tbody = table.tBodies[0] || table.createTBody();
-  const refRow = tbody.rows[tbody.rows.length - 1] || table.tHead?.rows[0] || table.rows[0];
-  const cellCount = refRow ? refRow.cells.length : 1;
-  const newRow = tbody.insertRow();
-
-  for (let i = 0; i < cellCount; i++) {
-    const cell = newRow.insertCell();
-    cell.textContent = 'Data';
-  }
-
-  markDirty(secId);
-}
-
-function addTableColumn(secId) {
-  const table = getActiveTable(secId);
-  if (!table) {
-    showToast('Place cursor inside a table first.', 'error');
-    return;
-  }
-
-  const allRows = Array.from(table.rows);
-  if (allRows.length === 0) {
-    const tbody = table.tBodies[0] || table.createTBody();
-    const row = tbody.insertRow();
-    row.insertCell().textContent = 'Data';
-    markDirty(secId);
-    return;
-  }
-
-  const headerRow = table.tHead?.rows[0] || null;
-  const nextIndex = (headerRow ? headerRow.cells.length : allRows[0].cells.length) + 1;
-
-  allRows.forEach(row => {
-    const isHeaderRow = row.parentElement && row.parentElement.tagName === 'THEAD';
-    const cell = document.createElement(isHeaderRow ? 'th' : 'td');
-    cell.textContent = isHeaderRow ? `Column ${nextIndex}` : 'Data';
-    row.appendChild(cell);
-  });
-
-  markDirty(secId);
-}
-
-function insertCode(secId) {
-  const el = document.getElementById(`content-${secId}`);
-  el.focus();
-  document.execCommand('insertHTML', false, `<pre><code>/command &lt;user&gt; &lt;reason&gt;</code></pre><p><br></p>`);
-  markDirty(secId);
-}
-
-function insertInfoBox(secId) {
-  const el = document.getElementById(`content-${secId}`);
-  el.focus();
-  document.execCommand('insertHTML', false, `<div class="info-box">ℹ️ Info: Your text here</div><p><br></p>`);
-  markDirty(secId);
-}
-
-function insertWarnBox(secId) {
-  const el = document.getElementById(`content-${secId}`);
-  el.focus();
-  document.execCommand('insertHTML', false, `<div class="warn-box">⚠️ Warning: Your text here</div><p><br></p>`);
-  markDirty(secId);
-}
-
-function insertQuote(secId) {
-  const el = document.getElementById(`content-${secId}`);
-  el.focus();
-  document.execCommand('insertHTML', false, `<blockquote>Quote text here</blockquote><p><br></p>`);
-  markDirty(secId);
-}
-
-function insertDivider(secId) {
-  const el = document.getElementById(`content-${secId}`);
-  el.focus();
-  document.execCommand('insertHTML', false, `<hr style="border-color: var(--border); margin: 12px 0;"/><p><br></p>`);
-  markDirty(secId);
-}
-
-function changeTextColor(secId) {
-  const color = prompt('Enter text color (name, hex, rgb):', '#7c6fff');
-  if (!color) return;
-  const el = document.getElementById(`content-${secId}`);
-  el.focus();
-  document.execCommand('foreColor', false, color);
-  markDirty(secId);
-}
-
-// ── PAGE MANAGER ──
-async function openAddPageModal() {
-  populateEditableProjectFilter(document.getElementById('modal-page-project'));
-  await loadParentPageOptions();
-  document.getElementById('add-page-modal').classList.add('open');
-}
-
-async function loadParentPageOptions() {
-  const pid = document.getElementById('modal-page-project').value;
-  const { data: pages } = await sb.from('guide_content').select('page_slug, title').eq('project', pid).eq('section_slug', '__pagemeta__').order('sort_order');
-  const sel = document.getElementById('modal-page-parent');
-  sel.innerHTML = '<option value="">None (top level)</option>';
-  (pages || []).forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.page_slug;
-    opt.textContent = p.title;
-    sel.appendChild(opt);
-  });
-}
-
-async function createPage() {
-  const pid = document.getElementById('modal-page-project').value;
-  const title = document.getElementById('modal-page-title').value.trim();
-  const parent = document.getElementById('modal-page-parent').value;
-  const visibility = normalizeRole(document.getElementById('modal-page-visibility').value);
-  if (!canEditProject(pid)) {
-    showToast('You can only create pages in projects you are assigned to.', 'error');
-    return;
-  }
-  if (!title) { showToast('Please enter a page title', 'error'); return; }
-  setStatus('Processing', 'processing');
-
-  const slugBase = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const slug = (parent ? parent + '/' : '') + slugBase;
-
-  const { data: existingPage, error: existingError } = await sb.from('guide_content')
-    .select('id')
-    .eq('project', pid)
-    .eq('page_slug', slug)
-    .eq('section_slug', '__pagemeta__')
-    .single();
-
-  if (existingError && existingError.code !== 'PGRST116') {
-    showToast('Error checking existing page: ' + existingError.message, 'error');
-    return;
-  }
-  if (existingPage) {
-    showToast('A page with that name already exists in this project.', 'error');
-    return;
-  }
-
-  const { data: lastPage, error: lastPageError } = await sb.from('guide_content')
-    .select('sort_order')
-    .eq('project', pid)
-    .eq('section_slug', '__pagemeta__')
-    .order('sort_order', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (lastPageError && lastPageError.code !== 'PGRST116') {
-    showToast('Error determining sort order: ' + lastPageError.message, 'error');
-    return;
-  }
-
-  const nextOrder = lastPage ? (lastPage.sort_order + 1) : 0;
-
-  const { error } = await sb.from('guide_content').insert({
-    project: pid,
-    page_slug: slug,
-    section_slug: '__pagemeta__',
-    title,
-    content: JSON.stringify({ minRole: visibility }),
-    sort_order: nextOrder
-  });
-  if (error) { showToast('Error: ' + error.message, 'error'); return; }
-
-  showToast('Page created!', 'success');
-  logActivity('page_created', `${pid} / ${title}`);
-  closeModal('add-page-modal');
-
-  await loadNavPages(pid);
-  loadPageManager();
-
-  // If the user is currently viewing the same project, open the new page.
-  if (currentProject === pid) {
-    openPage(pid, slug);
-  }
-
-  setStatus('Up To Date', 'up-to-date');
-}
-
-async function loadPageManager() {
-  const pid = document.getElementById('page-project-filter').value;
-  let query = sb.from('guide_content').select('*').eq('section_slug', '__pagemeta__').order('project').order('sort_order');
-  if (pid) query = query.eq('project', pid);
-  const { data: pages } = await query;
-  const container = document.getElementById('page-manager-container');
-  if (!pages || pages.length === 0) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div>No pages yet. Add one above!</div>'; return; }
-  container.innerHTML = `<div class="page-manager-list">${pages.map(p => `
-    <div class="page-manager-item">
-      <span class="page-manager-name">${p.title}</span>
-      <span class="tag">${p.page_slug}</span>
-      <span class="page-manager-project tag">${PROJECTS[p.project]?.name || p.project}</span>
-      <button class="btn btn-danger btn-sm" ${canEditProject(p.project) ? '' : 'disabled title="Not assigned to this project" style="opacity:.5;cursor:not-allowed;"'} onclick="adminDeletePage('${p.project}','${p.page_slug}')">🗑 Delete</button>
-    </div>`).join('')}</div>`;
-}
-
-async function adminDeletePage(pid, pageSlug) {
-  if (!canEditProject(pid)) {
-    showToast('You can only delete pages in projects you are assigned to.', 'error');
-    return;
-  }
-  if (!confirm(`Delete page "${pageSlug}" and all its sections?`)) return;
-  await sb.from('guide_content').delete().eq('project', pid).eq('page_slug', pageSlug);
-  showToast('Page deleted', 'success');
-  await loadNavPages(pid);
-  loadPageManager();
-}
-
-// ── ADMIN PANEL ──
-function showAdmin() {
-  document.getElementById('dashboard').classList.remove('visible');
-  document.getElementById('guide-view').classList.remove('visible');
-  document.getElementById('admin-view').classList.add('visible');
-
-  if (isSMPFinderManagement()) {
-    document.querySelectorAll('.admin-tab').forEach(t => {
-      const tabName = t.getAttribute('onclick') || '';
-      t.style.display = tabName.includes('quota') ? '' : 'none';
+        <div class="pr">
+          <div class="pr-top"><span class="pr-lbl">⚔ Punishments</span><span class="pr-val" style="color:${pc}">${q.p} / ${tg.p}</span></div>
+          <div class="pr-track"><div class="pr-fill" style="width:${pp}%;background:${pc}"></div></div>
+        </div>
+        <div class="pr">
+          <div class="pr-top"><span class="pr-lbl">🎫 Tickets</span><span class="pr-val" style="color:${tc}">${q.t} / ${tg.t}</span></div>
+          <div class="pr-track"><div class="pr-fill" style="width:${tp}%;background:${tc}"></div></div>
+        </div>
+        ${editBtn?`<div class="qc-foot">${editBtn}</div>`:''}
+      </div>`;
     });
-    switchAdminTab('quota');
-    return;
+    html+='</div>';
+  });
+
+  body.innerHTML=html;
+  status('Ready','ok');
+}
+
+// ── MEMBER MODAL ──
+function openMemberModal(uid,discord,dname,pun,tix,rank,woff){
+  document.getElementById('mm-uid').value=uid;
+  document.getElementById('mm-discord').value=discord;
+  document.getElementById('mm-woff').value=woff;
+  document.getElementById('mm-h').textContent=`Edit — ${dname}`;
+  document.getElementById('mm-pun').value=pun;
+  document.getElementById('mm-tix').value=tix;
+  document.getElementById('mm-rank').value=rank||'';
+  document.getElementById('mo-member').classList.add('on');
+}
+
+async function saveMember(){
+  const uid=document.getElementById('mm-uid').value;
+  const discord=document.getElementById('mm-discord').value.trim();
+  const woff=parseInt(document.getElementById('mm-woff').value||'0');
+  const pun=Math.max(0,parseInt(document.getElementById('mm-pun').value||'0'));
+  const tix=Math.max(0,parseInt(document.getElementById('mm-tix').value||'0'));
+  const rank=document.getElementById('mm-rank').value;
+
+  status('Saving…','busy');
+
+  const{error:rErr}=await db.from('profiles').update({smpfinder_rank:rank||null}).eq('id',uid);
+  if(rErr){toast('Rank update failed: '+rErr.message,'er');status('Ready','ok');return;}
+
+  if(discord){
+    const{start,end}=weekBounds(woff);
+    await db.from('quota_logs').delete().eq('discord_id',discord).eq('project','smpfinder').gte('logged_at',start).lte('logged_at',end);
+    const mid=new Date(new Date(start).getTime()+(new Date(end).getTime()-new Date(start).getTime())/2).toISOString();
+    const rows=[];
+    for(let i=0;i<pun;i++)rows.push({discord_id:discord,type:'punishment',project:'smpfinder',logged_at:mid});
+    for(let i=0;i<tix;i++)rows.push({discord_id:discord,type:'ticket',project:'smpfinder',logged_at:mid});
+    if(rows.length)await db.from('quota_logs').insert(rows);
   }
 
-  document.querySelectorAll('.admin-tab').forEach(t => t.style.display = '');
-  syncCreateUserRoleControl();
-  loadUsers();
-  loadPageManager();
-  populateProjectChips('new-user-projects');
-  populateProjectFilter(document.getElementById('page-project-filter'));
-}
-
-function switchAdminTab(tab) {
-  if (isSMPFinderManagement() && tab !== 'quota') return;
-  if (tab === 'quota') loadQuota();
-  document.querySelectorAll('.admin-tab').forEach((t,i) => t.classList.toggle('active', ['users','pages','create','activity','quota'][i] === tab));
-  document.querySelectorAll('.admin-panel-section').forEach(s => s.classList.remove('active'));
-  document.getElementById('admin-tab-' + tab)?.classList.add('active');
-  if (tab === 'create') syncCreateUserRoleControl();
-  if (tab === 'users') loadUsers();
-  if (tab === 'pages') loadPageManager();
-  if (tab === 'activity') loadActivity();
-}
-
-async function loadUsers() {
-  const { data: profiles } = await sb.from('profiles').select('*');
-  const { data: access } = await sb.from('project_access').select('*');
-  const container = document.getElementById('user-list-container');
-  if (!profiles || profiles.length === 0) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>No users yet.</div>'; return; }
-  container.innerHTML = `<table class="user-table">
-    <thead><tr><th>Email</th><th>Role</th><th>Projects</th><th>Actions</th></tr></thead>
-    <tbody>${profiles.map(p => {
-      const userAccess = (access || []).filter(a => a.user_id === p.id);
-      const projects = userAccess.map(a => `<span class="tag">${PROJECTS[a.project]?.name || a.project}</span>`).join('');
-      return `<tr>
-        <td>${p.email}</td>
-        <td><span class="role-badge role-${normalizeRole(p.role)}">${roleLabel(p.role)}</span></td>
-        <td>${projects || '<span style="color:var(--text3)">None</span>'}</td>
-        <td style="display:flex;gap:6px;">
-          <button class="btn btn-ghost btn-sm" onclick="openEditUser('${p.id}','${p.role}')">✏️ Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteUser('${p.id}')">🗑</button>
-        </td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table>`;
-}
-
-async function openEditUser(userId, role) {
-  document.getElementById('edit-user-id').value = userId;
-  const roleSelect = document.getElementById('edit-user-role');
-  roleSelect.value = normalizeRole(role);
-  const editingSelf = currentUser?.id === userId;
-  roleSelect.disabled = editingSelf;
-  roleSelect.title = editingSelf ? 'You cannot change your own global role.' : '';
-  const { data: access } = await sb.from('project_access').select('*').eq('user_id', userId);
-  const selectedProjects = (access || []).map(a => a.project).filter(canManageProjectAssignments);
-  const projectRole = normalizeRole(access && access.length > 0 ? access[0].role : 'staff');
-  document.getElementById('edit-project-role').value = projectRole;
-  populateProjectChips('edit-user-projects', selectedProjects);
-  document.getElementById('edit-user-modal').classList.add('open');
-}
-
-async function saveUserEdit() {
-  const userId = document.getElementById('edit-user-id').value;
-  const existingRole = normalizeRole((await sb.from('profiles').select('role').eq('id', userId).single()).data?.role || 'staff');
-  const role = normalizeRole(document.getElementById('edit-user-role').value);
-  const projectRole = normalizeRole(document.getElementById('edit-project-role').value);
-  const selected = [...document.querySelectorAll('#edit-user-projects .project-chip.selected')].map(c => c.dataset.pid).filter(canManageProjectAssignments);
-
-  if (currentUser?.id === userId && role !== existingRole) {
-    showToast('You cannot change your own global role.', 'error');
-    document.getElementById('edit-user-role').value = existingRole;
-    return;
-  }
-
-  await sb.from('profiles').update({ role }).eq('id', userId);
-  await sb.from('project_access').delete().eq('user_id', userId);
-  if (selected.length > 0) {
-    await sb.from('project_access').insert(selected.map(pid => ({ user_id: userId, project: pid, role: projectRole })));
-  }
-  showToast('User updated!', 'success');
-  logActivity('user_updated', `uid:${userId}`);
-  closeModal('edit-user-modal');
-  loadUsers();
-}
-
-async function deleteUser(userId) {
-  if (!confirm('Remove this user from the system?')) return;
-  await sb.from('project_access').delete().eq('user_id', userId);
-  await sb.from('profiles').delete().eq('id', userId);
-  showToast('User removed', 'success');
-  loadUsers();
-}
-
-async function createUser() {
-  const email = document.getElementById('new-email').value.trim();
-  const password = document.getElementById('new-password').value;
-  const requestedRole = normalizeRole(document.getElementById('new-role').value);
-  const role = canAssignGlobalRoleOnCreate() ? requestedRole : 'staff';
-  const projectRole = normalizeRole(document.getElementById('new-project-role').value);
-  const selected = [...document.querySelectorAll('#new-user-projects .project-chip.selected')].map(c => c.dataset.pid).filter(canManageProjectAssignments);
-  if (!email || !password) { showToast('Email and password required', 'error'); return; }
-
-  // Use Supabase admin invite or signUp
-  const { data, error } = await sb.auth.signUp({ email, password });
-  if (error) { showToast('Error: ' + error.message, 'error'); return; }
-  const uid = data.user?.id;
-  if (!uid) { showToast('User created but could not get ID', 'error'); return; }
-  const discordId = document.getElementById('new-discord-id')?.value?.trim() || null;
-  const smpfinderRank = document.getElementById('new-smpfinder-rank')?.value?.trim() || null;
-  await sb.from('profiles').upsert({ id: uid, email, role, discord_id: discordId, smpfinder_rank: smpfinderRank || null });
-  if (selected.length > 0) {
-    await sb.from('project_access').insert(selected.map(pid => ({ user_id: uid, project: pid, role: projectRole })));
-  }
-  showToast(`User ${email} created!`, 'success');
-  logActivity('user_created', email);
-  document.getElementById('new-email').value = '';
-  document.getElementById('new-password').value = '';
-}
-
-// ── PROJECT CHIPS ──
-function populateProjectChips(containerId, selected = []) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  const allowedProjects = Object.entries(PROJECTS).filter(([pid]) => canManageProjectAssignments(pid));
-  allowedProjects.forEach(([pid, p]) => {
-    const chip = document.createElement('div');
-    chip.className = 'project-chip' + (selected.includes(pid) ? ' selected' : '');
-    chip.dataset.pid = pid;
-    chip.textContent = p.icon + ' ' + p.name;
-    chip.onclick = () => {
-      chip.classList.toggle('selected');
-      updateSMPFinderRankVisibility(containerId);
-    };
-    container.appendChild(chip);
-  });
-}
-
-function updateSMPFinderRankVisibility(containerId) {
-  if (containerId !== 'new-user-projects') return;
-  const chips = document.querySelectorAll('#new-user-projects .project-chip');
-  const smpSelected = Array.from(chips).some(c => c.dataset.pid === 'smpfinder' && c.classList.contains('selected'));
-  const rankRow = document.getElementById('smpfinder-rank-row');
-  if (rankRow) rankRow.style.display = smpSelected ? 'flex' : 'none';
-}
-
-function populateProjectFilter(selectEl) {
-  selectEl.innerHTML = '<option value="">All Projects</option>';
-  Object.entries(PROJECTS).forEach(([pid, p]) => {
-    const opt = document.createElement('option');
-    opt.value = pid;
-    opt.textContent = p.name;
-    selectEl.appendChild(opt);
-  });
-}
-
-function populateEditableProjectFilter(selectEl) {
-  const allowedProjects = Object.entries(PROJECTS).filter(([pid]) => canEditProject(pid));
-  selectEl.innerHTML = '';
-  allowedProjects.forEach(([pid, p]) => {
-    const opt = document.createElement('option');
-    opt.value = pid;
-    opt.textContent = p.name;
-    selectEl.appendChild(opt);
-  });
-}
-
-// ── MODALS ──
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-// ── STATUS BAR ──
-function setStatus(text, mode = 'up-to-date') {
-  const status = document.getElementById('status-bar');
-  if (!status) return;
-  status.textContent = `Status: ${text}`;
-  status.classList.remove('processing','up-to-date');
-  status.classList.add(mode);
-}
-
-async function quickRefreshApp() {
-  setStatus('Processing', 'processing');
-  try {
-    const { data, error } = await sb.auth.getUser();
-    if (error || !data?.user) {
-      setStatus('Up To Date', 'up-to-date');
-      showToast('Session unavailable. Please sign in again.', 'error');
-      return;
-    }
-
-    appInitialized = false;
-    await initApp(data.user);
-
-    if (currentProject && currentPage) {
-      await openPage(currentProject, currentPage);
-    }
-
-    showToast('Content refreshed', 'success');
-  } catch (e) {
-    showToast('Refresh failed. Please try again.', 'error');
-  } finally {
-    setStatus('Up To Date', 'up-to-date');
-  }
-}
-
-// ── TOAST ──
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `show ${type}`;
-  setTimeout(() => { t.className = ''; }, 3000);
-}
-
-// ── ACTIVITY LOG ──
-async function logActivity(action, detail = '') {
-  try {
-    await sb.from('activity_log').insert({
-      user_id: currentUser?.id || null,
-      email: currentUser?.email || 'unknown',
-      action,
-      detail
-    });
-  } catch(e) { /* silently fail — never block the user */ }
-}
-
-async function loadActivity() {
-  const container = document.getElementById('activity-container');
-  container.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
-  const { data, error } = await sb.from('activity_log').select('*').order('created_at', { ascending: false }).limit(200);
-  if (error || !data || data.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div>No activity recorded yet. Activity will appear here after staff log in.</div>';
-    return;
-  }
-  const actionColors = {
-    'login': 'var(--accent3)',
-    'logout': 'var(--text3)',
-    'page_created': 'var(--accent)',
-    'page_deleted': '#ff6b6b',
-    'section_saved': 'var(--accent)',
-    'section_added': 'var(--accent)',
-    'section_deleted': '#ff6b6b',
-    'user_created': 'var(--accent3)',
-    'user_updated': '#ffbe32',
-    'user_deleted': '#ff6b6b',
-  };
-  const actionIcons = {
-    'login': '🔐', 'logout': '👋', 'page_created': '📄', 'page_deleted': '🗑',
-    'section_saved': '💾', 'section_added': '➕', 'section_deleted': '🗑',
-    'user_created': '👤', 'user_updated': '✏️', 'user_deleted': '❌'
-  };
-
-  // Group by date
-  const grouped = {};
-  data.forEach(row => {
-    const date = new Date(row.created_at).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    if (!grouped[date]) grouped[date] = [];
-    grouped[date].push(row);
-  });
-
-  let html = '';
-  Object.entries(grouped).forEach(([date, rows]) => {
-    html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:12px 0 8px;">${date}</div>`;
-    rows.forEach(row => {
-      const time = new Date(row.created_at).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-      const color = actionColors[row.action] || 'var(--text2)';
-      const icon = actionIcons[row.action] || '•';
-      const label = row.action.replace(/_/g, ' ');
-      html += `
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
-          <span style="font-size:16px;width:24px;text-align:center;">${icon}</span>
-          <div style="flex:1;">
-            <div style="font-size:13px;color:var(--text);">${row.email}</div>
-            <div style="font-size:12px;color:${color};text-transform:capitalize;">${label}${row.detail ? ' — ' + row.detail : ''}</div>
-          </div>
-          <div style="font-size:12px;color:var(--text3);white-space:nowrap;">${time}</div>
-        </div>`;
-    });
-  });
-  container.innerHTML = html;
-}
-
-// ── QUOTA ──
-const QUOTA_TARGETS = {
-  admin:        { punishments: 18, tickets: 6 },
-  senior_mod:   { punishments: 20, tickets: 10 },
-  mod:          { punishments: 20, tickets: 12 },
-  helper:       { punishments: 20, tickets: 12 },
-  junior_staff: { punishments: 20, tickets: 12 }
-};
-
-const QUOTA_LABELS = {
-  admin:        'Admin',
-  senior_mod:   'Senior Mod',
-  mod:          'Mod',
-  helper:       'Helper',
-  junior_staff: 'Junior Staff'
-};
-
-function getWeekBounds(offset = 0) {
-  // Week runs Sunday 12:00AM EST to Saturday 11:59PM EST
-  // EST = UTC-5, EDT = UTC-4. We use UTC-5 conservatively.
-  const EST_OFFSET = 5 * 60; // minutes
-  const now = new Date();
-  // Convert now to EST
-  const nowEST = new Date(now.getTime() - EST_OFFSET * 60 * 1000);
-  // Find the most recent Sunday (start of week) in EST
-  const dayEST = nowEST.getDay(); // 0=Sun, 6=Sat
-  const sunday = new Date(nowEST);
-  sunday.setDate(nowEST.getDate() - dayEST + (offset * 7));
-  sunday.setHours(0, 0, 0, 0);
-  const saturday = new Date(sunday);
-  saturday.setDate(sunday.getDate() + 6);
-  saturday.setHours(23, 59, 59, 999);
-  // Convert back to UTC for Supabase queries
-  const startUTC = new Date(sunday.getTime() + EST_OFFSET * 60 * 1000);
-  const endUTC = new Date(saturday.getTime() + EST_OFFSET * 60 * 1000);
-  return { start: startUTC.toISOString(), end: endUTC.toISOString() };
-}
-
-function getWeekOffsetLabel(offset) {
-  if (offset === 0) return 'This Week';
-  if (offset === -1) return 'Last Week';
-  return `${Math.abs(offset)} Weeks Ago`;
-}
-
-function getAdminQuotaOffsetFromSelect(value) {
-  return value === 'last' ? -1 : 0;
-}
-
-function getMyQuotaOffsetFromSelect(value) {
-  if (value === 'last') return -1;
-  if (value === '2ago') return -2;
-  if (value === '3ago') return -3;
-  return 0;
-}
-
-async function loadQuota() {
-  const container = document.getElementById('quota-container');
-  if (!container) return;
-  container.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
-
-  const weekSel = document.getElementById('quota-week-select')?.value || 'current';
-  const offset = weekSel === 'last' ? -1 : 0;
-  const { start, end } = getWeekBounds(offset);
-
-  const { data: profiles, error: pErr } = await sb.from('profiles').select('id,email,role,discord_id,smpfinder_rank').order('email');
-  if (pErr || !profiles) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load users.</div>'; return; }
-
-  const { data: logs } = await sb.from('quota_logs')
-    .select('*').eq('project', 'smpfinder').gte('logged_at', start).lte('logged_at', end);
-
-  const logList = logs || [];
-  const quotaMap = {};
-  logList.forEach(log => {
-    if (!quotaMap[log.discord_id]) quotaMap[log.discord_id] = { punishments: 0, tickets: 0 };
-    if (log.type === 'punishment') quotaMap[log.discord_id].punishments++;
-    if (log.type === 'ticket') quotaMap[log.discord_id].tickets++;
-  });
-
-  const staffToShow = profiles.filter(p => p.discord_id && p.smpfinder_rank);
-  if (!staffToShow.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔗</div>No staff have Discord IDs and ranks linked yet.</div>';
-    return;
-  }
-
-  // Rank order for grouping
-  const RANK_ORDER = ['admin','senior_mod','mod','helper','junior_staff'];
-  const grouped = {};
-  RANK_ORDER.forEach(r => grouped[r] = []);
-  staffToShow.forEach(p => {
-    const r = p.smpfinder_rank;
-    if (grouped[r]) grouped[r].push(p);
-  });
-
-  const weekLabel = offset === -1 ? 'Last Week' : 'This Week';
-  const startDate = new Date(start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const endDate = new Date(end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-  let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:24px;">${weekLabel}: ${startDate} — ${endDate} &nbsp;·&nbsp; Resets Saturday 11:59PM EST</div>`;
-
-  RANK_ORDER.forEach(rank => {
-    const group = grouped[rank];
-    if (!group || !group.length) return;
-    const rankName = QUOTA_LABELS[rank] || rank;
-    html += `<div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);">${rankName}</div>`;
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">';
-
-    group.forEach(p => {
-      const targets = QUOTA_TARGETS[rank] || QUOTA_TARGETS.junior_staff;
-      const counts = quotaMap[p.discord_id] || { punishments: 0, tickets: 0 };
-      const punPct = Math.min(100, Math.round((counts.punishments / targets.punishments) * 100));
-      const tikPct = Math.min(100, Math.round((counts.tickets / targets.tickets) * 100));
-      const punMet = counts.punishments >= targets.punishments;
-      const tikMet = counts.tickets >= targets.tickets;
-      const allMet = punMet && tikMet;
-      const punColor = punMet ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
-      const tikColor = tikMet ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
-      const statusColor = allMet ? 'var(--accent3)' : '#ff6b6b';
-      const statusText = allMet ? 'Met' : 'Not met';
-      const username = (p.email || '').split('@')[0];
-      const initials = username.substring(0,2).toUpperCase();
-
-      // Build next rank for promote button
-      const rankIdx = RANK_ORDER.indexOf(rank);
-      const nextRank = rankIdx > 0 ? RANK_ORDER[rankIdx - 1] : null;
-      const demoteRank = rankIdx < (RANK_ORDER.length - 1) ? RANK_ORDER[rankIdx + 1] : null;
-      const quotaActions = isAdminUser() ? `
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
-          <button onclick="openForceQuotaEdit('${p.id}','${p.discord_id}','${username}',${counts.punishments},${counts.tickets})" style="flex:1;min-width:130px;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">✏ Force Edit</button>
-          ${nextRank ? `<button onclick="promoteStaff('${p.id}','${nextRank}','${username}')" style="flex:1;min-width:130px;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent3)';this.style.color='var(--accent3)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">⬆ Promote</button>` : ''}
-          ${demoteRank ? `<button onclick="demoteStaff('${p.id}','${demoteRank}','${username}')" style="flex:1;min-width:130px;padding:7px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#ffbe32';this.style.color='#ffbe32'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">⬇ Demote</button>` : ''}
-        </div>` : '';
-
-      html += `
-        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;">
-          <div style="position:absolute;top:14px;right:14px;font-size:10px;font-weight:600;color:${statusColor};border:1px solid ${statusColor};border-radius:20px;padding:2px 8px;">${statusText}</div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;">${initials}</div>
-            <div>
-              <div style="font-weight:600;font-size:14px;">${username}</div>
-              <div style="font-size:11px;color:var(--text3);">Discord: ${p.discord_id}</div>
-            </div>
-          </div>
-          <div style="margin-bottom:10px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-              <div style="font-size:12px;color:var(--text2);">⚔ Punishments</div>
-              <div style="font-size:12px;font-weight:600;color:${punColor};">${counts.punishments} / ${targets.punishments}</div>
-            </div>
-            <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;">
-              <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:3px;"></div>
-            </div>
-          </div>
-          <div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-              <div style="font-size:12px;color:var(--text2);">🎫 Tickets</div>
-              <div style="font-size:12px;font-weight:600;color:${tikColor};">${counts.tickets} / ${targets.tickets}</div>
-            </div>
-            <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;">
-              <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:3px;"></div>
-            </div>
-          </div>
-          ${quotaActions}
-        </div>`;
-    });
-
-    html += '</div>';
-  });
-
-  container.innerHTML = html;
-}
-
-async function promoteStaff(userId, newRank, username) {
-  if (!confirm(`Promote ${username} to ${QUOTA_LABELS[newRank]}? This will update their quota targets immediately.`)) return;
-  const { error } = await sb.from('profiles').update({ smpfinder_rank: newRank }).eq('id', userId);
-  if (error) { showToast('Failed to promote: ' + error.message, 'error'); return; }
-  showToast(`${username} promoted to ${QUOTA_LABELS[newRank]}!`, 'success');
+  closeModal('mo-member');
+  toast('Member updated.','ok');
+  status('Ready','ok');
   loadQuota();
 }
 
-async function demoteStaff(userId, newRank, username) {
-  if (!confirm(`Demote ${username} to ${QUOTA_LABELS[newRank]}? This will update their quota targets immediately.`)) return;
-  const { error } = await sb.from('profiles').update({ smpfinder_rank: newRank }).eq('id', userId);
-  if (error) { showToast('Failed to demote: ' + error.message, 'error'); return; }
-  showToast(`${username} demoted to ${QUOTA_LABELS[newRank]}.`, 'success');
+async function removeMember(){
+  const uid=document.getElementById('mm-uid').value;
+  const discord=document.getElementById('mm-discord').value.trim();
+  const name=document.getElementById('mm-h').textContent.replace('Edit — ','');
+  if(!confirm(`Remove ${name} from the team?\n\nThis deletes their portal profile and all quota history. Cannot be undone.`))return;
+  status('Removing…','busy');
+  if(discord)await db.from('quota_logs').delete().eq('discord_id',discord).eq('project','smpfinder');
+  await db.from('project_access').delete().eq('user_id',uid);
+  await db.from('profiles').delete().eq('id',uid);
+  closeModal('mo-member');
+  toast(`${name} removed.`,'ok');
+  status('Ready','ok');
   loadQuota();
+  if(document.getElementById('view-users').classList.contains('on'))loadUsers();
 }
 
-function openForceQuotaEdit(userId, discordId, username, punishments, tickets) {
-  if (!isAdminUser()) {
-    showToast('Only admins can force edit quota.', 'error');
-    return;
-  }
+// ── USERS VIEW ──
+async function loadUsers(){
+  const body=document.getElementById('users-body');
+  body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div></td></tr>';
 
-  const weekSel = document.getElementById('quota-week-select')?.value || 'current';
-  document.getElementById('force-quota-user-id').value = userId;
-  document.getElementById('force-quota-discord-id').value = discordId;
-  document.getElementById('force-quota-user-label').textContent = `User: ${username} (${discordId})`;
-  document.getElementById('force-quota-week-label').textContent = weekSel === 'last' ? 'Last Week' : 'This Week';
-  document.getElementById('force-quota-punishments').value = punishments;
-  document.getElementById('force-quota-tickets').value = tickets;
-  document.getElementById('force-quota-modal').classList.add('open');
+  const{data:profiles,error}=await db.from('profiles').select('id,display_name,email,role,discord_id,smpfinder_rank').order('display_name');
+  if(error||!profiles){body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load.</p></div></td></tr>';return;}
+  if(!profiles.length){body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">👤</div><p>No users found.</p></div></td></tr>';return;}
+
+  body.innerHTML=profiles.map(p=>{
+    const rn=NR(p.role);
+    const dn=esc(p.display_name||(p.email||'').split('@')[0]);
+    return `<tr>
+      <td><div class="u-name">${dn}</div><div class="u-email">${esc(p.email||'')}</div></td>
+      <td><span class="pill p-${rn}">${RL(p.role)}</span></td>
+      <td>${p.smpfinder_rank?`<span class="pill p-${p.smpfinder_rank}">${RLABELS[p.smpfinder_rank]}</span>`:'<span style="color:var(--t3)">—</span>'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t2)">${esc(p.discord_id||'—')}</td>
+      <td><button class="btn btn-ghost btn-xs" onclick="openUserModal(${JSON.stringify(p.id)})">Edit</button></td>
+    </tr>`;
+  }).join('');
 }
 
-async function saveForceQuotaEdit() {
-  if (!isAdminUser()) {
-    showToast('Only admins can force edit quota.', 'error');
-    return;
-  }
-
-  const discordId = (document.getElementById('force-quota-discord-id').value || '').trim();
-  const punishments = Math.max(0, parseInt(document.getElementById('force-quota-punishments').value || '0', 10));
-  const tickets = Math.max(0, parseInt(document.getElementById('force-quota-tickets').value || '0', 10));
-
-  if (!discordId) {
-    showToast('Missing Discord ID for this user.', 'error');
-    return;
-  }
-  if (!Number.isFinite(punishments) || !Number.isFinite(tickets)) {
-    showToast('Please enter valid non-negative numbers.', 'error');
-    return;
-  }
-
-  const weekSel = document.getElementById('quota-week-select')?.value || 'current';
-  const offset = getAdminQuotaOffsetFromSelect(weekSel);
-  const { start, end } = getWeekBounds(offset);
-
-  setStatus('Processing', 'processing');
-
-  const { error: delError } = await sb.from('quota_logs')
-    .delete()
-    .eq('project', 'smpfinder')
-    .eq('discord_id', discordId)
-    .gte('logged_at', start)
-    .lte('logged_at', end);
-
-  if (delError) {
-    showToast('Failed to clear existing logs: ' + delError.message, 'error');
-    setStatus('Up To Date', 'up-to-date');
-    return;
-  }
-
-  const startMs = new Date(start).getTime();
-  const newLogs = [];
-  for (let i = 0; i < punishments; i++) {
-    newLogs.push({
-      project: 'smpfinder',
-      discord_id: discordId,
-      type: 'punishment',
-      logged_at: new Date(startMs + (i * 1000)).toISOString()
-    });
-  }
-  for (let i = 0; i < tickets; i++) {
-    newLogs.push({
-      project: 'smpfinder',
-      discord_id: discordId,
-      type: 'ticket',
-      logged_at: new Date(startMs + ((punishments + i) * 1000)).toISOString()
-    });
-  }
-
-  if (newLogs.length > 0) {
-    const { error: insError } = await sb.from('quota_logs').insert(newLogs);
-    if (insError) {
-      showToast('Failed to write new quota logs: ' + insError.message, 'error');
-      setStatus('Up To Date', 'up-to-date');
-      return;
-    }
-  }
-
-  closeModal('force-quota-modal');
-  showToast('Quota updated successfully.', 'success');
-  logActivity('quota_force_edit', `${discordId} ${weekSel} P:${punishments} T:${tickets}`);
-  await loadQuota();
-  setStatus('Up To Date', 'up-to-date');
+async function openUserModal(uid){
+  const{data:p}=await db.from('profiles').select('*').eq('id',uid).single();
+  if(!p){toast('Could not load user.','er');return;}
+  document.getElementById('mu-uid').value=p.id;
+  document.getElementById('mu-dname').value=p.display_name||'';
+  document.getElementById('mu-discord').value=p.discord_id||'';
+  document.getElementById('mu-rank').value=p.smpfinder_rank||'';
+  document.getElementById('mu-role').value=NR(p.role);
+  document.getElementById('mu-h').textContent=`Edit — ${p.display_name||(p.email||'').split('@')[0]}`;
+  document.getElementById('mo-user').classList.add('on');
 }
 
-// Show quota section in sidebar for smpfinder staff
-function addQuotaNavItem() {
-  if (!currentProfile?.smpfinder_rank) return;
-  const section = document.getElementById('nav-quota-section');
-  if (section) section.style.display = 'block';
+async function saveUserEdit(){
+  const uid=document.getElementById('mu-uid').value;
+  const dname=document.getElementById('mu-dname').value.trim();
+  const discord=document.getElementById('mu-discord').value.trim();
+  const rank=document.getElementById('mu-rank').value;
+  const role=document.getElementById('mu-role').value;
+  if(!dname){toast('Display name is required.','er');return;}
+  status('Saving…','busy');
+  const{error}=await db.from('profiles').update({display_name:dname||null,discord_id:discord||null,smpfinder_rank:rank||null,role}).eq('id',uid);
+  if(error){toast('Failed: '+error.message,'er');status('Ready','ok');return;}
+  const{data:ea}=await db.from('project_access').select('id').eq('user_id',uid).eq('project','smpfinder').single().catch(()=>({data:null}));
+  if(ea)await db.from('project_access').update({role}).eq('user_id',uid).eq('project','smpfinder');
+  else await db.from('project_access').insert({user_id:uid,project:'smpfinder',role});
+  closeModal('mo-user');
+  toast('User updated.','ok');
+  status('Ready','ok');
+  loadUsers();
 }
 
-async function showMyQuota() {
-  // Show a personal quota view for non-admins
-  document.querySelectorAll('#dashboard, #guide-view, #admin-view').forEach(el => {
-    el.classList.remove('visible');
-    el.style.display = 'none';
-  });
-
-  let quotaPersonal = document.getElementById('quota-personal-view');
-  if (!quotaPersonal) {
-    quotaPersonal = document.createElement('div');
-    quotaPersonal.id = 'quota-personal-view';
-    quotaPersonal.style.cssText = 'padding:40px 48px;display:block;';
-    document.getElementById('main').appendChild(quotaPersonal);
-  }
-  quotaPersonal.style.display = 'block';
-
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('nav-quota-item')?.classList.add('active');
-
-  quotaPersonal.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px;">
-      <div>
-        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:6px;">My Quota Overview</div>
-        <div style="color:var(--text2);font-size:14px;">Track weekly progress against your SMPFinder quota target.</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <select id="my-quota-week-select" onchange="loadMyQuotaPersonal()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;">
-          <option value="current">This Week</option>
-          <option value="last">Last Week</option>
-          <option value="2ago">2 Weeks Ago</option>
-          <option value="3ago">3 Weeks Ago</option>
-        </select>
-        <button class="btn btn-ghost btn-sm" onclick="loadMyQuotaPersonal()">Refresh</button>
-      </div>
-    </div>
-    <div id="my-quota-content"><div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div></div>`;
-
-  await loadMyQuotaPersonal();
+async function createUser(){
+  const dname=document.getElementById('nu-dname').value.trim();
+  const email=document.getElementById('nu-email').value.trim();
+  const pw=document.getElementById('nu-pw').value;
+  const discord=document.getElementById('nu-discord').value.trim();
+  const rank=document.getElementById('nu-rank').value;
+  const role=document.getElementById('nu-role').value;
+  if(!dname){toast('Display name is required.','er');return;}
+  if(!email){toast('Email is required.','er');return;}
+  if(!pw||pw.length<8){toast('Password must be at least 8 characters.','er');return;}
+  status('Creating…','busy');
+  const{data:sd,error:se}=await db.auth.signUp({email,password:pw});
+  if(se||!sd?.user){toast('Sign-up failed: '+(se?.message||'Unknown'),'er');status('Ready','ok');return;}
+  const uid=sd.user.id;
+  const row={id:uid,email,display_name:dname,role,discord_id:discord||null,smpfinder_rank:rank||null};
+  const{data:ex}=await db.from('profiles').select('id').eq('id',uid).single().catch(()=>({data:null}));
+  if(ex)await db.from('profiles').update(row).eq('id',uid);
+  else await db.from('profiles').insert(row);
+  await db.from('project_access').insert({user_id:uid,project:'smpfinder',role});
+  ['nu-dname','nu-email','nu-pw','nu-discord'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('nu-rank').value='';
+  document.getElementById('nu-role').value='staff';
+  toast(`${dname} created. They must verify their email to sign in.`,'ok');
+  status('Ready','ok');
+  loadUsers();
 }
-
-async function loadMyQuotaPersonal() {
-  const quotaContent = document.getElementById('my-quota-content');
-  if (!quotaContent) return;
-  quotaContent.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
-
-  const discordId = currentProfile?.discord_id;
-  const smpRank = currentProfile?.smpfinder_rank || null;
-  const targets = smpRank ? (QUOTA_TARGETS[smpRank] || QUOTA_TARGETS.junior_staff) : QUOTA_TARGETS.junior_staff;
-
-  if (!discordId) {
-    quotaContent.innerHTML = '<div style="background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:16px 20px;color:#ff6b6b;font-size:14px;">Your account does not have a Discord ID linked. Ask an admin to add your Discord ID to see your quota.</div>';
-    return;
-  }
-
-  const selected = document.getElementById('my-quota-week-select')?.value || 'current';
-  const selectedOffset = getMyQuotaOffsetFromSelect(selected);
-
-  const weekOffsets = [0, -1, -2, -3];
-  const results = await Promise.all(weekOffsets.map(async (offset) => {
-    const { start, end } = getWeekBounds(offset);
-    const { data: logs } = await sb.from('quota_logs')
-      .select('type')
-      .eq('discord_id', discordId)
-      .eq('project', 'smpfinder')
-      .gte('logged_at', start)
-      .lte('logged_at', end);
-
-    const counts = { punishments: 0, tickets: 0 };
-    (logs || []).forEach(l => {
-      if (l.type === 'punishment') counts.punishments++;
-      if (l.type === 'ticket') counts.tickets++;
-    });
-
-    return { offset, start, end, counts };
-  }));
-
-  const selectedWeek = results.find(r => r.offset === selectedOffset) || results[0];
-  const punPct = Math.min(100, targets.punishments > 0 ? Math.round((selectedWeek.counts.punishments / targets.punishments) * 100) : 100);
-  const tikPct = Math.min(100, targets.tickets > 0 ? Math.round((selectedWeek.counts.tickets / targets.tickets) * 100) : 100);
-  const punColor = selectedWeek.counts.punishments >= targets.punishments ? 'var(--accent3)' : punPct >= 60 ? '#ffbe32' : '#ff6b6b';
-  const tikColor = selectedWeek.counts.tickets >= targets.tickets ? 'var(--accent3)' : tikPct >= 60 ? '#ffbe32' : '#ff6b6b';
-  const startDate = new Date(selectedWeek.start).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-  const endDate = new Date(selectedWeek.end).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-
-  quotaContent.innerHTML = `
-    <div style="max-width:980px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:26px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
-        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">${getWeekOffsetLabel(selectedWeek.offset)}</div>
-        <div style="font-size:12px;color:var(--text3);">${startDate} - ${endDate}</div>
-      </div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">Rank target: ${QUOTA_LABELS[smpRank] || 'Staff'}</div>
-
-      <div style="margin-bottom:22px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:15px;font-weight:600;">Punishments</div>
-          <div style="font-size:20px;font-weight:800;color:${punColor};">${selectedWeek.counts.punishments} <span style="font-size:14px;color:var(--text3);font-weight:400;">/ ${targets.punishments}</span></div>
-        </div>
-        <div style="height:12px;background:var(--bg4);border-radius:8px;overflow:hidden;">
-          <div style="height:100%;width:${punPct}%;background:${punColor};border-radius:8px;transition:width .4s;"></div>
-        </div>
-      </div>
-
-      <div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:15px;font-weight:600;">Tickets</div>
-          <div style="font-size:20px;font-weight:800;color:${tikColor};">${selectedWeek.counts.tickets} <span style="font-size:14px;color:var(--text3);font-weight:400;">/ ${targets.tickets}</span></div>
-        </div>
-        <div style="height:12px;background:var(--bg4);border-radius:8px;overflow:hidden;">
-          <div style="height:100%;width:${tikPct}%;background:${tikColor};border-radius:8px;transition:width .4s;"></div>
-        </div>
-      </div>
-    </div>
-    <div style="margin-top:18px;font-size:12px;color:var(--text3);">History window retained: current week plus previous 3 weeks via dropdown.</div>`;
-}
-
-// ── KEYBOARD SHORTCUTS ──
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    if (editMode && currentPage && canEditProject(currentProject)) {
-      document.querySelectorAll('.section-block').forEach(block => {
-        const id = block.dataset.id;
-        if (id) saveSection(id, currentProject, currentPage);
-      });
-    }
-  }
-});
 </script>
 </body>
 </html>
