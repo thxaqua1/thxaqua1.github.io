@@ -221,6 +221,21 @@ tr:hover td{background:var(--s2)}
 .rc-row strong{color:var(--text);font-weight:500}
 .rc-eval{display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:600;background:rgba(246,201,14,.08);border:1px solid rgba(246,201,14,.22);color:var(--yellow)}
 .no-reg{margin-top:6px;padding:8px 10px;background:var(--s3);border-radius:6px;font-size:11px;color:var(--t3);line-height:1.5}
+
+/* ── INTERVIEWS + STRIKES ── */
+.badge-status{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.badge-pending{background:rgba(246,201,14,.1);color:var(--yellow);border:1px solid rgba(246,201,14,.25)}
+.badge-passed{background:rgba(0,214,143,.1);color:var(--green);border:1px solid rgba(0,214,143,.25)}
+.badge-failed{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25)}
+.badge-active{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25)}
+.badge-expired{background:rgba(120,120,160,.1);color:var(--t2);border:1px solid rgba(120,120,160,.2)}
+.badge-1{background:rgba(246,201,14,.1);color:var(--yellow);border:1px solid rgba(246,201,14,.25)}
+.badge-2{background:rgba(255,140,0,.1);color:#ff8c00;border:1px solid rgba(255,140,0,.25)}
+.badge-3{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25)}
+.form-bar{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end;background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:14px}
+.form-bar .fg{min-width:120px}
+.form-bar .fg input,.form-bar .fg select,.form-bar .fg textarea{width:100%}
+textarea.field{resize:vertical;min-height:60px;font-family:inherit}
 </style>
 </head>
 <body>
@@ -265,6 +280,12 @@ tr:hover td{background:var(--s2)}
     </div>
     <div class="nav" id="nav-roster" onclick="showView('roster')">
       <span class="nav-ic">⊛</span> Staff Roster
+    </div>
+    <div class="nav" id="nav-interviews" onclick="showView('interviews')">
+      <span class="nav-ic">◈</span> Interviews
+    </div>
+    <div class="nav" id="nav-strikes" onclick="showView('strikes')">
+      <span class="nav-ic">⚑</span> Strikes
     </div>
     <div class="sb-sec" id="admin-label" style="display:none">Admin</div>
     <div class="nav" id="nav-users" style="display:none" onclick="showView('users')">
@@ -356,6 +377,62 @@ tr:hover td{background:var(--s2)}
         <div class="ph-r"><button class="btn btn-ghost btn-sm" onclick="loadRoster()">&#8635; Refresh</button></div>
       </div>
       <div id="roster-body"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div></div>
+    </div>
+
+    <!-- INTERVIEWS VIEW -->
+    <div class="view" id="view-interviews">
+      <div class="ph">
+        <div><div class="ph-h">Interviews</div><div class="ph-s">Track applicant interview results</div></div>
+        <div class="ph-r"><button class="btn btn-ghost btn-sm" onclick="loadInterviews()">&#8635; Refresh</button></div>
+      </div>
+      <div class="form-bar" id="interview-form-wrap">
+        <div class="fg"><label>Applicant name</label><input class="field" type="text" id="iv-name" placeholder="e.g. Steve"></div>
+        <div class="fg"><label>Discord ID</label><input class="field" type="text" id="iv-discord" placeholder="123456789012345678"></div>
+        <div class="fg"><label>Interviewer</label><input class="field" type="text" id="iv-interviewer" placeholder="Your name"></div>
+        <div class="fg"><label>Outcome</label>
+          <select class="field" id="iv-status">
+            <option value="pending">Pending</option>
+            <option value="passed">Passed</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+        <div class="fg" style="flex:2;min-width:200px"><label>Notes</label><textarea class="field" id="iv-notes" placeholder="Optional notes..."></textarea></div>
+        <div class="fg" style="align-self:flex-end"><button class="btn btn-primary" onclick="addInterview()">Add</button></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Applicant</th><th>Discord ID</th><th>Interviewer</th><th>Outcome</th><th>Notes</th><th>Date</th><th style="width:50px"></th></tr></thead>
+          <tbody id="interviews-body"><tr><td colspan="7"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STRIKES VIEW -->
+    <div class="view" id="view-strikes">
+      <div class="ph">
+        <div><div class="ph-h">Strikes</div><div class="ph-s">Staff disciplinary record</div></div>
+        <div class="ph-r"><button class="btn btn-ghost btn-sm" onclick="loadStrikes()">&#8635; Refresh</button></div>
+      </div>
+      <div class="form-bar" id="strike-form-wrap">
+        <div class="fg"><label>Staff member</label><input class="field" type="text" id="sk-name" placeholder="Display name"></div>
+        <div class="fg"><label>Discord ID</label><input class="field" type="text" id="sk-discord" placeholder="123456789012345678"></div>
+        <div class="fg"><label>Strike #</label>
+          <select class="field" id="sk-number">
+            <option value="1">Strike 1</option>
+            <option value="2">Strike 2</option>
+            <option value="3">Strike 3 (final)</option>
+          </select>
+        </div>
+        <div class="fg"><label>Issued by</label><input class="field" type="text" id="sk-issuer" placeholder="Your name"></div>
+        <div class="fg" style="flex:2;min-width:200px"><label>Reason</label><textarea class="field" id="sk-reason" placeholder="Reason for strike..."></textarea></div>
+        <div class="fg" style="align-self:flex-end"><button class="btn btn-primary" onclick="addStrike()">Issue Strike</button></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Staff Member</th><th>Discord ID</th><th>Strike</th><th>Issued By</th><th>Reason</th><th>Status</th><th>Date</th><th style="width:50px"></th></tr></thead>
+          <tbody id="strikes-body"><tr><td colspan="8"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div></td></tr></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
@@ -518,7 +595,9 @@ function showView(id){
   document.getElementById('nav-'+id)?.classList.add('on');
   if(id==='quota')  loadQuota();
   if(id==='users')  loadUsers();
-  if(id==='roster') loadRoster();
+  if(id==='roster')     loadRoster();
+  if(id==='interviews') loadInterviews();
+  if(id==='strikes')    loadStrikes();
 }
 
 // ── AUTH ──
@@ -955,6 +1034,107 @@ async function loadRoster(){
 
   body.innerHTML = html || '<div class="empty"><div class="empty-ic">&#128101;</div><p>No staff found.</p></div>';
   status('Ready','ok');
+}
+
+
+// ── INTERVIEWS ───────────────────────────────────────────────
+async function loadInterviews(){
+  const body=document.getElementById('interviews-body');
+  body.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div></td></tr>';
+  const{data,error}=await db.from('interviews').select('*').order('created_at',{ascending:false});
+  if(error){body.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-ic">&#9888;</div><p>Failed to load.</p></div></td></tr>';console.error(error);return;}
+  if(!data||!data.length){body.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-ic">&#128196;</div><p>No interviews recorded yet.</p></div></td></tr>';return;}
+  const statusBadge=s=>({pending:'badge-pending',passed:'badge-passed',failed:'badge-failed'}[s]||'badge-pending');
+  body.innerHTML=data.map(r=>`<tr>
+    <td><div class="u-name">${esc(r.applicant_name||'')}</div></td>
+    <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2)">${esc(r.discord_id||'—')}</td>
+    <td>${esc(r.interviewer||'—')}</td>
+    <td><span class="badge-status ${statusBadge(r.status)}">${esc(r.status||'pending')}</span></td>
+    <td style="font-size:12px;color:var(--t2);max-width:200px">${esc(r.notes||'—')}</td>
+    <td style="font-size:11px;color:var(--t3)">${r.created_at?new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}</td>
+    <td><button class="btn btn-danger btn-xs" onclick="deleteInterview('${r.id}')">&#10005;</button></td>
+  </tr>`).join('');
+}
+
+async function addInterview(){
+  const name=document.getElementById('iv-name').value.trim();
+  const discord=document.getElementById('iv-discord').value.trim();
+  const interviewer=document.getElementById('iv-interviewer').value.trim();
+  const status=document.getElementById('iv-status').value;
+  const notes=document.getElementById('iv-notes').value.trim();
+  if(!name){toast('Applicant name is required.','er');return;}
+  if(!interviewer){toast('Interviewer name is required.','er');return;}
+  status('Saving…','busy');
+  const{error}=await db.from('interviews').insert({applicant_name:name,discord_id:discord||null,interviewer,status,notes:notes||null});
+  if(error){toast('Failed: '+error.message,'er');status('Ready','ok');return;}
+  ['iv-name','iv-discord','iv-interviewer','iv-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('iv-status').value='pending';
+  toast('Interview recorded.','ok');
+  status('Ready','ok');
+  loadInterviews();
+}
+
+async function deleteInterview(id){
+  if(!confirm('Delete this interview record?'))return;
+  await db.from('interviews').delete().eq('id',id);
+  toast('Deleted.','ok');
+  loadInterviews();
+}
+
+// ── STRIKES ──────────────────────────────────────────────────
+async function loadStrikes(){
+  const body=document.getElementById('strikes-body');
+  body.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div></td></tr>';
+  const{data,error}=await db.from('strikes').select('*').order('created_at',{ascending:false});
+  if(error){body.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-ic">&#9888;</div><p>Failed to load.</p></div></td></tr>';console.error(error);return;}
+  if(!data||!data.length){body.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-ic">&#9888;</div><p>No strikes issued yet.</p></div></td></tr>';return;}
+  const numBadge=n=>({1:'badge-1',2:'badge-2',3:'badge-3'}[n]||'badge-1');
+  const stBadge=s=>s==='active'?'badge-active':'badge-expired';
+  body.innerHTML=data.map(r=>`<tr>
+    <td><div class="u-name">${esc(r.staff_name||'')}</div></td>
+    <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2)">${esc(r.discord_id||'—')}</td>
+    <td><span class="badge-status ${numBadge(r.strike_number)}">Strike ${r.strike_number||1}</span></td>
+    <td>${esc(r.issued_by||'—')}</td>
+    <td style="font-size:12px;color:var(--t2);max-width:200px">${esc(r.reason||'—')}</td>
+    <td><span class="badge-status ${stBadge(r.status)}">${esc(r.status||'active')}</span></td>
+    <td style="font-size:11px;color:var(--t3)">${r.created_at?new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}</td>
+    <td style="display:flex;gap:4px">
+      ${r.status==='active'?`<button class="btn btn-ghost btn-xs" onclick="expireStrike('${r.id}')">Expire</button>`:''}
+      <button class="btn btn-danger btn-xs" onclick="deleteStrike('${r.id}')">&#10005;</button>
+    </td>
+  </tr>`).join('');
+}
+
+async function addStrike(){
+  const name=document.getElementById('sk-name').value.trim();
+  const discord=document.getElementById('sk-discord').value.trim();
+  const number=parseInt(document.getElementById('sk-number').value);
+  const issuer=document.getElementById('sk-issuer').value.trim();
+  const reason=document.getElementById('sk-reason').value.trim();
+  if(!name){toast('Staff member name is required.','er');return;}
+  if(!issuer){toast('Issued by is required.','er');return;}
+  if(!reason){toast('Reason is required.','er');return;}
+  status('Saving…','busy');
+  const{error}=await db.from('strikes').insert({staff_name:name,discord_id:discord||null,strike_number:number,issued_by:issuer,reason,status:'active'});
+  if(error){toast('Failed: '+error.message,'er');status('Ready','ok');return;}
+  ['sk-name','sk-discord','sk-issuer','sk-reason'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('sk-number').value='1';
+  toast('Strike issued.','ok');
+  status('Ready','ok');
+  loadStrikes();
+}
+
+async function expireStrike(id){
+  await db.from('strikes').update({status:'expired'}).eq('id',id);
+  toast('Strike expired.','ok');
+  loadStrikes();
+}
+
+async function deleteStrike(id){
+  if(!confirm('Delete this strike record?'))return;
+  await db.from('strikes').delete().eq('id',id);
+  toast('Deleted.','ok');
+  loadStrikes();
 }
 
 </script>
