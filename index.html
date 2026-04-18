@@ -201,7 +201,7 @@ tr:hover td{background:var(--s2)}
 .empty-ic{font-size:26px;margin-bottom:8px}
 .empty p{font-size:12.5px}
 
-/* ROSTER */
+/* ── ROSTER ── */
 .roster-tier{margin-bottom:28px}
 .tier-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .tier-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
@@ -220,8 +220,7 @@ tr:hover td{background:var(--s2)}
 .rc-row span{font-size:10px;color:var(--t3);width:70px;flex-shrink:0}
 .rc-row strong{color:var(--text);font-weight:500}
 .rc-eval{display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:600;background:rgba(246,201,14,.08);border:1px solid rgba(246,201,14,.22);color:var(--yellow)}
-.rc-missing{color:var(--t3);font-style:italic;font-size:11px}
-.no-register-hint{margin-top:6px;padding:8px 10px;background:var(--s3);border-radius:6px;font-size:11px;color:var(--t3);line-height:1.5}
+.no-reg{margin-top:6px;padding:8px 10px;background:var(--s3);border-radius:6px;font-size:11px;color:var(--t3);line-height:1.5}
 </style>
 </head>
 <body>
@@ -354,11 +353,9 @@ tr:hover td{background:var(--s2)}
     <div class="view" id="view-roster">
       <div class="ph">
         <div><div class="ph-h">Staff Roster</div><div class="ph-s">All active SMPFinder staff — hierarchical order</div></div>
-        <div class="ph-r">
-          <button class="btn btn-ghost btn-sm" onclick="loadRoster()">&#8635; Refresh</button>
-        </div>
+        <div class="ph-r"><button class="btn btn-ghost btn-sm" onclick="loadRoster()">&#8635; Refresh</button></div>
       </div>
-      <div id="roster-body"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading...</p></div></div>
+      <div id="roster-body"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div></div>
     </div>
 
   </div>
@@ -459,7 +456,7 @@ tr:hover td{background:var(--s2)}
 
 <script>
 const SUPA_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
-const SUPA_KEY = 'sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhaW5iYm56ZW52amlpZGpleHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MzI1ODEsImV4cCI6MjA5MDQwODU4MX0.iypJkR4Jz0eALdohes98Kt338jq3NVg_tIGIAgww8oQ'; // ← replace with legacy anon key from Supabase → Settings → API → Legacy API Keys → anon/public
 const {createClient} = supabase;
 const db = createClient(SUPA_URL, SUPA_KEY, {
   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
@@ -861,23 +858,23 @@ async function createUser(){
   loadUsers();
 }
 
-// ── ROSTER VIEW ──
+// ── ROSTER ──────────────────────────────────────────────────
 const ROSTER_ORDER = [
-  {key:'owner',       label:'Owner',       color:'#ff4757', bg:'rgba(255,71,87,.85)'},
-  {key:'manager',     label:'Manager',     color:'#f6c90e', bg:'rgba(246,201,14,.85)'},
-  {key:'head_admin',  label:'Head Admin',  color:'#a855f7', bg:'rgba(168,85,247,.85)'},
-  {key:'senior_admin',label:'Sr. Admin',   color:'#6c5ce7', bg:'rgba(108,92,231,.85)'},
-  {key:'admin',       label:'Admin',       color:'#ff6b81', bg:'rgba(255,107,129,.85)'},
-  {key:'senior_mod',  label:'Sr. Mod',     color:'#c084fc', bg:'rgba(192,132,252,.85)'},
-  {key:'mod',         label:'Mod',         color:'#74b9ff', bg:'rgba(116,185,255,.85)'},
-  {key:'helper',      label:'Helper',      color:'#00d68f', bg:'rgba(0,214,143,.85)'},
-  {key:'junior_staff',label:'Jr. Staff',   color:'#8e9baa', bg:'rgba(142,155,170,.85)'},
+  {key:'owner',        label:'Owner',      color:'#ff4757', bg:'rgba(255,71,87,.85)'},
+  {key:'manager',      label:'Manager',    color:'#f6c90e', bg:'rgba(246,201,14,.85)'},
+  {key:'head_admin',   label:'Head Admin', color:'#a855f7', bg:'rgba(168,85,247,.85)'},
+  {key:'senior_admin', label:'Sr. Admin',  color:'#6c5ce7', bg:'rgba(108,92,231,.85)'},
+  {key:'admin',        label:'Admin',      color:'#ff6b81', bg:'rgba(255,107,129,.85)'},
+  {key:'senior_mod',   label:'Sr. Mod',    color:'#c084fc', bg:'rgba(192,132,252,.85)'},
+  {key:'mod',          label:'Mod',        color:'#74b9ff', bg:'rgba(116,185,255,.85)'},
+  {key:'helper',       label:'Helper',     color:'#00d68f', bg:'rgba(0,214,143,.85)'},
+  {key:'junior_staff', label:'Jr. Staff',  color:'#8e9baa', bg:'rgba(142,155,170,.85)'},
 ];
 
 async function loadRoster(){
   const body = document.getElementById('roster-body');
-  body.innerHTML = '<div class="empty"><div class="empty-ic">&#9203;</div><p>Loading...</p></div>';
-  status('Loading...','busy');
+  body.innerHTML = '<div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div>';
+  status('Loading…','busy');
 
   const {data:profiles, error} = await db
     .from('profiles')
@@ -889,7 +886,6 @@ async function loadRoster(){
     status('Error'); console.error(error); return;
   }
 
-  // Only show staff who have a rank set (either roster_rank or smpfinder_rank)
   const active = (profiles||[]).filter(p => p.roster_rank || p.smpfinder_rank);
 
   if(!active.length){
@@ -897,7 +893,6 @@ async function loadRoster(){
     status('Ready','ok'); return;
   }
 
-  // Group by rank
   const grouped = {};
   ROSTER_ORDER.forEach(r => grouped[r.key] = []);
   active.forEach(p => {
@@ -907,21 +902,17 @@ async function loadRoster(){
   });
 
   let html = '';
-  let totalShown = 0;
-
   ROSTER_ORDER.forEach(tier => {
     const members = grouped[tier.key];
-    if(!members.length) return;
-    totalShown += members.length;
+    if(!members || !members.length) return;
 
     html += '<div class="roster-tier">';
     html += '<div class="tier-hd">';
-    html += '<div class="tier-icon" style="background:' + tier.bg + '">' + tier.label.substring(0,2).toUpperCase() + '</div>';
-    html += '<div class="tier-name">' + esc(tier.label) + '</div>';
-    html += '<div class="tier-count">' + members.length + '</div>';
+    html += '<div class="tier-icon" style="background:'+tier.bg+'">'+esc(tier.label.substring(0,2).toUpperCase())+'</div>';
+    html += '<div class="tier-name">'+esc(tier.label)+'</div>';
+    html += '<div class="tier-count">'+members.length+'</div>';
     html += '<div class="tier-line"></div>';
-    html += '</div>';
-    html += '<div class="roster-grid">';
+    html += '</div><div class="roster-grid">';
 
     members.forEach(p => {
       const rawName = p.display_name || 'Unknown';
@@ -931,48 +922,41 @@ async function loadRoster(){
         ? new Date(p.hired_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
         : null;
 
-      // Eval date for jr staff
       let evalHtml = '';
       if(tier.key === 'junior_staff' && p.eval_date){
-        const evalDt  = new Date(p.eval_date);
-        const today   = new Date();
-        const daysLeft = Math.ceil((evalDt - today) / 86400000);
-        const evalStr = evalDt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        const label   = daysLeft > 0 ? 'Eval in ' + daysLeft + ' day' + (daysLeft!==1?'s':'') : 'Eval overdue';
-        evalHtml = '<div class="rc-eval">&#128197; ' + evalStr + ' &mdash; ' + label + '</div>';
+        const evalDt   = new Date(p.eval_date);
+        const daysLeft = Math.ceil((evalDt - new Date()) / 86400000);
+        const evalStr  = evalDt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const lbl      = daysLeft > 0 ? 'Eval in '+daysLeft+' day'+(daysLeft!==1?'s':'') : 'Eval overdue';
+        evalHtml = '<div class="rc-eval">&#128197; '+evalStr+' &mdash; '+lbl+'</div>';
       }
 
       html += '<div class="rc">';
-      html += '<div class="rc-accent" style="background:' + tier.color + '"></div>';
+      html += '<div class="rc-accent" style="background:'+tier.color+'"></div>';
       html += '<div class="rc-hd">';
-      html += '<div class="rc-av" style="background:' + tier.bg + '">' + esc(init) + '</div>';
-      html += '<div><div class="rc-name">' + esc(rawName) + '</div>';
-      html += '<div class="rc-rank">' + esc(tier.label) + '</div></div>';
+      html += '<div class="rc-av" style="background:'+tier.bg+'">'+esc(init)+'</div>';
+      html += '<div><div class="rc-name">'+esc(rawName)+'</div><div class="rc-rank">'+esc(tier.label)+'</div></div>';
       html += '</div>';
 
       if(hasInfo){
-        if(p.timezone)     html += '<div class="rc-row"><span>Timezone</span><strong>' + esc(p.timezone) + '</strong></div>';
-        if(p.region)       html += '<div class="rc-row"><span>Region</span><strong>' + esc(p.region) + '</strong></div>';
-        if(p.useable_email)html += '<div class="rc-row"><span>Email</span><strong>' + esc(p.useable_email) + '</strong></div>';
-        if(hiredStr)       html += '<div class="rc-row"><span>Hired</span><strong>' + hiredStr + '</strong></div>';
+        if(p.timezone)      html += '<div class="rc-row"><span>Timezone</span><strong>'+esc(p.timezone)+'</strong></div>';
+        if(p.region)        html += '<div class="rc-row"><span>Region</span><strong>'+esc(p.region)+'</strong></div>';
+        if(p.useable_email) html += '<div class="rc-row"><span>Email</span><strong>'+esc(p.useable_email)+'</strong></div>';
+        if(hiredStr)        html += '<div class="rc-row"><span>Hired</span><strong>'+hiredStr+'</strong></div>';
       } else {
-        html += '<div class="no-register-hint">&#9888;&#65039; Staff member hasn't run <strong>/register</strong> yet.</div>';
+        html += '<div class="no-reg">&#9888;&#65039; Hasn\'t run <strong>/register</strong> yet.</div>';
       }
 
-      html += evalHtml;
-      html += '</div>';
+      html += evalHtml + '</div>';
     });
 
     html += '</div></div>';
   });
 
-  if(!totalShown){
-    body.innerHTML='<div class="empty"><div class="empty-ic">&#128101;</div><p>No staff found.</p></div>';
-  } else {
-    body.innerHTML = html;
-  }
+  body.innerHTML = html || '<div class="empty"><div class="empty-ic">&#128101;</div><p>No staff found.</p></div>';
   status('Ready','ok');
 }
+
 </script>
 </body>
 </html>
