@@ -31,11 +31,9 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button,input,select{font-family:inherit;font-size:inherit}
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px}
 
-/* ── BUTTONS ── */
+/* BUTTONS */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 15px;border-radius:var(--r);border:none;font-size:13px;font-weight:500;cursor:pointer;transition:all .14s;white-space:nowrap;user-select:none}
 .btn:disabled{opacity:.38;pointer-events:none}
 .btn-primary{background:var(--accent);color:#fff}
@@ -48,11 +46,11 @@ button,input,select{font-family:inherit;font-size:inherit}
 .btn-sm{padding:6px 13px;font-size:12.5px}
 .btn-xs{padding:4px 10px;font-size:11.5px}
 
-/* ── AUTH ── */
+/* AUTH */
 #auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(ellipse 55% 50% at 12% 55%,rgba(108,92,231,.09),transparent),radial-gradient(ellipse 40% 40% at 88% 18%,rgba(168,85,247,.06),transparent);z-index:1000}
 .auth-wrap{width:348px}
 .auth-logo{display:flex;align-items:center;gap:9px;margin-bottom:30px}
-.auth-mark{width:34px;height:34px;border-radius:9px;background:var(--ag);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.auth-mark{width:34px;height:34px;border-radius:9px;background:var(--ag);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
 .auth-wordmark{font-size:15px;font-weight:700;letter-spacing:-.4px}
 .auth-wordmark em{color:var(--accent);font-style:normal}
 .auth-card{background:var(--surf);border:1px solid var(--b2);border-radius:13px;padding:32px 30px;box-shadow:0 40px 90px rgba(0,0,0,.7)}
@@ -66,10 +64,10 @@ button,input,select{font-family:inherit;font-size:inherit}
 .auth-btn{width:100%;margin-top:6px;padding:10px;font-size:13.5px;font-weight:600}
 .a-err{display:none;font-size:12px;padding:9px 12px;border-radius:var(--r);margin-top:11px;background:rgba(255,71,87,.07);border:1px solid rgba(255,71,87,.2);color:var(--red);line-height:1.5}
 
-/* ── SHELL ── */
+/* SHELL */
 #shell{display:none;height:100vh;flex-direction:row}
 
-/* ── SIDEBAR ── */
+/* SIDEBAR */
 #sbar{width:var(--sidebar);min-width:var(--sidebar);background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
 .sb-hd{padding:16px 14px 13px;border-bottom:1px solid var(--border)}
 .sb-brand{display:flex;align-items:center;gap:8px}
@@ -84,19 +82,19 @@ button,input,select{font-family:inherit;font-size:inherit}
 .nav-ic{width:15px;text-align:center;font-size:12px}
 .sb-ft{margin-top:auto;padding:11px 14px;border-top:1px solid var(--border)}
 
-/* ── MAIN ── */
+/* MAIN */
 #main{flex:1;overflow-y:auto}
 .view{padding:32px 38px;display:none}
 .view.on{display:block}
 
-/* ── ACCESS DENIED ── */
-#denied{display:none;flex:1;min-height:100vh;align-items:center;justify-content:center;padding:40px;background:var(--bg)}
+/* ACCESS DENIED */
+#denied{display:none;position:fixed;inset:0;align-items:center;justify-content:center;padding:40px;background:var(--bg);z-index:999}
 .denied-box{background:var(--surf);border:1px solid rgba(255,71,87,.18);border-radius:12px;padding:36px 32px;text-align:center;max-width:340px}
 .denied-ic{font-size:32px;margin-bottom:12px}
 .denied-h{font-size:17px;font-weight:700;margin-bottom:6px}
 .denied-p{font-size:12.5px;color:var(--t2);line-height:1.6}
 
-/* ── PAGE HEADER ── */
+/* PAGE HEADER */
 .ph{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:26px}
 .ph-h{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:2px}
 .ph-s{font-size:12px;color:var(--t2)}
@@ -105,24 +103,24 @@ button,input,select{font-family:inherit;font-size:inherit}
 .sel:focus{border-color:var(--accent)}
 .sel option{background:var(--s2)}
 
-/* ── STAT STRIP ── */
+/* STAT STRIP */
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:22px}
 .stat{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:14px 13px;position:relative;overflow:hidden}
 .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--c,var(--accent))}
 .stat-n{font-size:24px;font-weight:700;letter-spacing:-.5px;color:var(--c,var(--text));line-height:1}
 .stat-l{font-size:11px;color:var(--t2);margin-top:3px}
 
-/* ── WEEK BAR ── */
+/* WEEK BAR */
 .wbar{display:flex;align-items:center;gap:9px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:7px 13px;font-size:11.5px;color:var(--t2);margin-bottom:18px}
 .wbar strong{color:var(--text);font-weight:600}
 .wdot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
-/* ── RANK DIVIDER ── */
+/* RANK DIVIDER */
 .rdiv{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin:22px 0 9px}
 .rdiv::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* ── QUOTA GRID ── */
+/* QUOTA GRID */
 .qg{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:10px}
 .qc{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:15px;transition:border-color .14s}
 .qc:hover{border-color:var(--b2)}
@@ -141,7 +139,7 @@ button,input,select{font-family:inherit;font-size:inherit}
 .pr-fill{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1)}
 .qc-foot{display:flex;justify-content:flex-end;margin-top:11px;padding-top:10px;border-top:1px solid var(--border)}
 
-/* ── TABLE ── */
+/* TABLE */
 .tbl-wrap{background:var(--surf);border:1px solid var(--border);border-radius:9px;overflow:hidden}
 table{width:100%;border-collapse:collapse}
 th{text-align:left;padding:9px 13px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--border);background:var(--s2)}
@@ -161,7 +159,7 @@ tr:hover td{background:var(--s2)}
 .u-name{font-weight:600;font-size:13px}
 .u-email{font-size:11px;color:var(--t3);font-family:'JetBrains Mono',monospace}
 
-/* ── ADD USER ── */
+/* ADD USER */
 .add-panel{background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:18px;margin-bottom:18px}
 .add-title{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t2);margin-bottom:14px}
 .frow{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:8px}
@@ -172,10 +170,10 @@ tr:hover td{background:var(--s2)}
 .fg input::placeholder{color:var(--t3)}
 .fg select option{background:var(--s2)}
 
-/* ── MODAL ── */
+/* MODAL */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(7px);z-index:9800;align-items:center;justify-content:center;padding:20px}
 .mo.on{display:flex}
-.md{background:var(--surf);border:1px solid var(--b2);border-radius:11px;padding:26px 24px;width:100%;max-width:400px;box-shadow:0 30px 80px rgba(0,0,0,.8);animation:pop .17s ease}
+.md{background:var(--surf);border:1px solid var(--b2);border-radius:11px;padding:26px 24px;width:100%;max-width:420px;box-shadow:0 30px 80px rgba(0,0,0,.8);animation:pop .17s ease}
 @keyframes pop{from{opacity:0;transform:scale(.95) translateY(6px)}to{opacity:1;transform:none}}
 .md-h{font-size:16px;font-weight:700;letter-spacing:-.3px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
 .md-sec{margin-bottom:14px}
@@ -186,19 +184,19 @@ tr:hover td{background:var(--s2)}
 .md .fg{margin-bottom:12px}
 .md .fg:last-child{margin-bottom:0}
 
-/* ── TOAST ── */
+/* TOAST */
 #toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:9px 15px;font-size:12.5px;z-index:9999;transform:translateY(40px) scale(.96);opacity:0;transition:all .22s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;align-items:center;gap:7px}
 #toast.on{transform:none;opacity:1}
 #toast.ok{border-color:rgba(0,214,143,.35);color:var(--green)}
 #toast.er{border-color:rgba(255,71,87,.35);color:var(--red)}
 .tdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 
-/* ── STATUS ── */
+/* STATUS */
 #sbar-status{position:fixed;top:16px;right:16px;z-index:10000;background:rgba(9,9,15,.88);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10.5px;font-weight:600;letter-spacing:.04em;backdrop-filter:blur(10px);color:var(--t2);transition:all .2s}
 #sbar-status.busy{border-color:rgba(246,201,14,.35);color:var(--yellow)}
 #sbar-status.ok{border-color:rgba(0,214,143,.3);color:var(--green)}
 
-/* ── EMPTY ── */
+/* EMPTY */
 .empty{padding:50px 20px;text-align:center;color:var(--t3)}
 .empty-ic{font-size:26px;margin-bottom:8px}
 .empty p{font-size:12.5px}
@@ -206,7 +204,7 @@ tr:hover td{background:var(--s2)}
 </head>
 <body>
 
-<!-- ── AUTH ── -->
+<!-- AUTH -->
 <div id="auth">
   <div class="auth-wrap">
     <div class="auth-logo">
@@ -230,9 +228,8 @@ tr:hover td{background:var(--s2)}
   </div>
 </div>
 
-<!-- ── SHELL ── -->
+<!-- SHELL -->
 <div id="shell">
-  <!-- SIDEBAR -->
   <div id="sbar">
     <div class="sb-hd">
       <div class="sb-brand">
@@ -254,7 +251,6 @@ tr:hover td{background:var(--s2)}
     </div>
   </div>
 
-  <!-- MAIN -->
   <div id="main">
 
     <!-- QUOTA VIEW -->
@@ -278,7 +274,6 @@ tr:hover td{background:var(--s2)}
         <div><div class="ph-h">Manage Users</div><div class="ph-s">Create and configure SMPFinder staff accounts</div></div>
       </div>
 
-      <!-- Add user form (admin only) -->
       <div class="add-panel" id="add-panel" style="display:none">
         <div class="add-title">Create new user</div>
         <div class="frow">
@@ -333,16 +328,16 @@ tr:hover td{background:var(--s2)}
   </div>
 </div>
 
-<!-- ── ACCESS DENIED ── -->
+<!-- ACCESS DENIED -->
 <div id="denied">
   <div class="denied-box">
     <div class="denied-ic">🔒</div>
     <div class="denied-h">Management Only</div>
-    <div class="denied-p">This portal is restricted to SMPFinder management. Use the <strong>/quota</strong> command on Discord to check your own quota.</div>
+    <div class="denied-p">This portal is for SMPFinder management only.<br>Use <strong>/quota</strong> on Discord to check your quota.</div>
   </div>
 </div>
 
-<!-- ── MEMBER EDIT MODAL ── -->
+<!-- MEMBER EDIT MODAL (from quota card) -->
 <div class="mo" id="mo-member">
   <div class="md">
     <div class="md-h" id="mm-h">Edit Member</div>
@@ -361,8 +356,8 @@ tr:hover td{background:var(--s2)}
 
     <div class="md-sec">
       <div class="md-sec-h">Rank</div>
-      <div class="fg">
-        <label>SMPFinder Rank</label>
+      <div class="fg" style="margin-bottom:0">
+        <label>SMPFinder rank</label>
         <select id="mm-rank">
           <option value="">— None —</option>
           <option value="junior_staff">Junior Staff</option>
@@ -389,7 +384,7 @@ tr:hover td{background:var(--s2)}
   </div>
 </div>
 
-<!-- ── USER EDIT MODAL ── -->
+<!-- USER EDIT MODAL (from manage users table) -->
 <div class="mo" id="mo-user">
   <div class="md">
     <div class="md-h" id="mu-h">Edit User</div>
@@ -407,7 +402,7 @@ tr:hover td{background:var(--s2)}
         <option value="admin">Admin</option>
       </select>
     </div>
-    <div class="fg">
+    <div class="fg" style="margin-bottom:0">
       <label>Portal access</label>
       <select id="mu-role">
         <option value="staff">Staff — no portal access</option>
@@ -427,16 +422,6 @@ tr:hover td{background:var(--s2)}
 <div id="sbar-status">Ready</div>
 
 <script>
-/* ─────────────────────────────────────────────────────────
-   IMPORTANT — SECURITY NOTE
-   ─────────────────────────────────────────────────────────
-   The anon key below is safe to expose (it's public by design).
-   ALL real security must be enforced by Supabase Row Level
-   Security (RLS) policies — see rls_setup.sql.
-
-   Client-side role checks here are UX gates only.
-   The database enforces who can actually read/write data.
-   ───────────────────────────────────────────────────────── */
 const SUPA_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
 const SUPA_KEY = 'sb_publishable_hru7WNTqfjVmM7TLEBJnYg_LdutSiyF';
 const {createClient} = supabase;
@@ -446,6 +431,8 @@ const db = createClient(SUPA_URL, SUPA_KEY, {
 
 // ── STATE ──
 let ME=null, PROF=null, ACC=[];
+// In-memory cache of all profiles — avoids re-fetching for edit modal
+let PROFILES_CACHE = [];
 
 // ── CONSTANTS ──
 const TARGETS = {
@@ -457,8 +444,6 @@ const TARGETS = {
 };
 const RLABELS = {admin:'Admin',senior_mod:'Senior Mod',mod:'Mod',helper:'Helper',junior_staff:'Junior Staff'};
 const RORDER  = ['admin','senior_mod','mod','helper','junior_staff'];
-
-// ── ROLE UTILS ──
 const NR = r=>({editor:'management',manager:'super_admin'}[r]||r||'staff');
 const RL = r=>({super_admin:'Manager',site_admin:'Site Admin',management:'Management',staff:'Staff'}[NR(r)]||'Staff');
 
@@ -490,7 +475,7 @@ let _tid;
 function toast(msg,type='ok'){clearTimeout(_tid);document.getElementById('tmsg').textContent=msg;const t=document.getElementById('toast');t.className=`on ${type}`;_tid=setTimeout(()=>t.className='',3500)}
 function closeModal(id){document.getElementById(id)?.classList.remove('on')}
 document.addEventListener('click',e=>{if(e.target.classList.contains('mo'))closeModal(e.target.id)});
-function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML}
 
 // ── NAV ──
 function showView(id){
@@ -506,30 +491,26 @@ function showView(id){
 async function doLogin(){
   const email=document.getElementById('a-email').value.trim();
   const pw=document.getElementById('a-pw').value;
-  const err=document.getElementById('a-err');
-  err.style.display='none';
-
-  if(!email){err.textContent='Email is required.';err.style.display='block';return}
-  if(!pw){err.textContent='Password is required.';err.style.display='block';return}
-
+  const errEl=document.getElementById('a-err');
+  errEl.style.display='none';
+  if(!email){errEl.textContent='Email is required.';errEl.style.display='block';return}
+  if(!pw){errEl.textContent='Password is required.';errEl.style.display='block';return}
   const btn=document.getElementById('login-btn');
-  btn.disabled=true; btn.textContent='Signing in…';
+  btn.disabled=true;btn.textContent='Signing in…';
   status('Authenticating…','busy');
-
   const{data,error}=await db.auth.signInWithPassword({email,password:pw});
-  btn.disabled=false; btn.textContent='Sign in';
-
+  btn.disabled=false;btn.textContent='Sign in';
   if(error){
     const m=(error.message||'').toLowerCase();
-    err.textContent=m.includes('invalid')||m.includes('credentials')?'Incorrect email or password.':m.includes('rate')||m.includes('many')?'Too many attempts — wait a moment.':error.message;
-    err.style.display='block'; status('Ready'); return;
+    errEl.textContent=m.includes('invalid')||m.includes('credentials')?'Incorrect email or password.':m.includes('rate')||m.includes('many')?'Too many attempts — wait a moment.':error.message;
+    errEl.style.display='block';status('Ready');return;
   }
   await boot(data.user);
 }
 
 async function doLogout(){
   await db.auth.signOut();
-  ME=null;PROF=null;ACC=[];
+  ME=null;PROF=null;ACC=[];PROFILES_CACHE=[];
   document.getElementById('shell').style.display='none';
   document.getElementById('denied').style.display='none';
   document.getElementById('auth').style.display='flex';
@@ -541,17 +522,18 @@ async function boot(user){
   ME=user;
   status('Loading…','busy');
 
-  const{data:prof}=await db.from('profiles').select('*').eq('id',user.id).single();
-  if(prof) PROF=prof;
+  // Load own profile
+  const{data:prof,error:profErr}=await db.from('profiles').select('*').eq('id',user.id).single();
+  if(prof){PROF=prof;}
   else{
-    await db.from('profiles').insert({id:user.id,email:user.email,role:'staff'});
-    PROF={id:user.id,email:user.email,role:'staff'};
+    // Auto-create if missing (new user)
+    const{data:inserted}=await db.from('profiles').insert({id:user.id,email:user.email,role:'staff'}).select().single();
+    PROF=inserted||{id:user.id,email:user.email,role:'staff'};
   }
 
   const{data:acc}=await db.from('project_access').select('*').eq('user_id',user.id);
   ACC=acc||[];
 
-  // SECURITY GATE — staff get signed out immediately and see access denied
   if(!isMgmt()){
     await db.auth.signOut();
     document.getElementById('auth').style.display='none';
@@ -575,12 +557,11 @@ async function boot(user){
   loadQuota();
 }
 
-// Restore session on load
 (async()=>{
   const{data:{session}}=await db.auth.getSession();
   if(session?.user) await boot(session.user);
 })();
-db.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'){ME=null;PROF=null;ACC=[];}});
+db.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'){ME=null;PROF=null;ACC=[];PROFILES_CACHE=[];}});
 
 // ── QUOTA VIEW ──
 async function loadQuota(){
@@ -596,7 +577,10 @@ async function loadQuota(){
     db.from('quota_logs').select('discord_id,type').eq('project','smpfinder').gte('logged_at',start).lte('logged_at',end)
   ]);
 
-  if(pErr){body.innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load data.</p></div>';status('Error');return;}
+  if(pErr){body.innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load — check console.</p></div>';status('Error');console.error(pErr);return;}
+
+  // Cache for edit modals
+  PROFILES_CACHE = profiles || [];
 
   const qmap={};
   (logs||[]).forEach(l=>{
@@ -605,11 +589,14 @@ async function loadQuota(){
     if(l.type==='ticket')qmap[l.discord_id].t++;
   });
 
-  const staff=(profiles||[]).filter(p=>p.discord_id&&p.smpfinder_rank);
-  if(!staff.length){body.innerHTML='<div class="empty"><div class="empty-ic">🔗</div><p>No staff with Discord IDs and ranks linked.</p></div>';status('Ready','ok');return;}
+  const staff=PROFILES_CACHE.filter(p=>p.discord_id&&p.smpfinder_rank);
+  if(!staff.length){body.innerHTML='<div class="empty"><div class="empty-ic">🔗</div><p>No staff with a Discord ID and rank set yet.<br>Go to Manage Users to add them.</p></div>';status('Ready','ok');return;}
 
   let met=0;
-  staff.forEach(p=>{const tg=TARGETS[p.smpfinder_rank]||TARGETS.junior_staff,q=qmap[p.discord_id]||{p:0,t:0};if(q.p>=tg.p&&q.t>=tg.t)met++;});
+  staff.forEach(p=>{
+    const tg=TARGETS[p.smpfinder_rank]||TARGETS.junior_staff,q=qmap[p.discord_id]||{p:0,t:0};
+    if(q.p>=tg.p&&q.t>=tg.t)met++;
+  });
 
   let html=`
   <div class="stats">
@@ -625,13 +612,13 @@ async function loadQuota(){
     <span style="margin-left:auto;color:var(--t3);font-size:11px">Resets Sun 12AM EST</span>
   </div>`;
 
-  const grouped={};RORDER.forEach(r=>grouped[r]=[]);
+  const grouped={};
+  RORDER.forEach(r=>grouped[r]=[]);
   staff.forEach(p=>{if(grouped[p.smpfinder_rank])grouped[p.smpfinder_rank].push(p);});
 
   RORDER.forEach(rank=>{
     const grp=grouped[rank];if(!grp?.length)return;
     html+=`<div class="rdiv">${RLABELS[rank]||rank}</div><div class="qg">`;
-
     grp.forEach(p=>{
       const tg=TARGETS[rank]||TARGETS.junior_staff;
       const q=qmap[p.discord_id]||{p:0,t:0};
@@ -640,15 +627,14 @@ async function loadQuota(){
       const pm=q.p>=tg.p,tm=q.t>=tg.t,am=pm&&tm;
       const pc=pm?'var(--green)':pp>=60?'var(--yellow)':'var(--red)';
       const tc=tm?'var(--green)':tp>=60?'var(--yellow)':'var(--red)';
-      const dname=esc(p.display_name||(p.email||'').split('@')[0]||'Unknown');
-      const init=dname.replace(/&[^;]+;/g,'').substring(0,2).toUpperCase();
-
-      const editBtn=isAdmin()?`<button class="btn btn-ghost btn-xs" onclick="openMemberModal(${JSON.stringify(p.id)},${JSON.stringify(p.discord_id)},${JSON.stringify(p.display_name||(p.email||'').split('@')[0])},${q.p},${q.t},${JSON.stringify(p.smpfinder_rank||'')},${off})">Edit member</button>`:'';
-
+      const rawName=p.display_name||(p.email||'').split('@')[0]||'Unknown';
+      const dname=esc(rawName);
+      const init=rawName.substring(0,2).toUpperCase();
+      const editBtn=isAdmin()?`<button class="btn btn-ghost btn-xs" onclick="openMemberModal(${JSON.stringify(p.id)},${JSON.stringify(p.discord_id||'')},${JSON.stringify(rawName)},${q.p},${q.t},${JSON.stringify(p.smpfinder_rank||'')},${off})">Edit member</button>`:'';
       html+=`<div class="qc">
         <div class="qc-hd">
           <div class="qav">${init}</div>
-          <div><div class="qname">${dname}</div><div class="qdid">${p.discord_id}</div></div>
+          <div><div class="qname">${dname}</div><div class="qdid">${esc(p.discord_id||'—')}</div></div>
           <span class="qbadge ${am?'bmet':'bunmet'}">${am?'MET':'UNMET'}</span>
         </div>
         <div class="pr">
@@ -669,12 +655,12 @@ async function loadQuota(){
   status('Ready','ok');
 }
 
-// ── MEMBER MODAL ──
-function openMemberModal(uid,discord,dname,pun,tix,rank,woff){
+// ── MEMBER MODAL (quota card edit) ──
+function openMemberModal(uid,discord,rawName,pun,tix,rank,woff){
   document.getElementById('mm-uid').value=uid;
   document.getElementById('mm-discord').value=discord;
   document.getElementById('mm-woff').value=woff;
-  document.getElementById('mm-h').textContent=`Edit — ${dname}`;
+  document.getElementById('mm-h').textContent=`Edit — ${rawName}`;
   document.getElementById('mm-pun').value=pun;
   document.getElementById('mm-tix').value=tix;
   document.getElementById('mm-rank').value=rank||'';
@@ -688,7 +674,6 @@ async function saveMember(){
   const pun=Math.max(0,parseInt(document.getElementById('mm-pun').value||'0'));
   const tix=Math.max(0,parseInt(document.getElementById('mm-tix').value||'0'));
   const rank=document.getElementById('mm-rank').value;
-
   status('Saving…','busy');
 
   const{error:rErr}=await db.from('profiles').update({smpfinder_rank:rank||null}).eq('id',uid);
@@ -701,7 +686,7 @@ async function saveMember(){
     const rows=[];
     for(let i=0;i<pun;i++)rows.push({discord_id:discord,type:'punishment',project:'smpfinder',logged_at:mid});
     for(let i=0;i<tix;i++)rows.push({discord_id:discord,type:'ticket',project:'smpfinder',logged_at:mid});
-    if(rows.length)await db.from('quota_logs').insert(rows);
+    if(rows.length){const{error:iErr}=await db.from('quota_logs').insert(rows);if(iErr)console.error('log insert:',iErr);}
   }
 
   closeModal('mo-member');
@@ -732,30 +717,45 @@ async function loadUsers(){
   body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div></td></tr>';
 
   const{data:profiles,error}=await db.from('profiles').select('id,display_name,email,role,discord_id,smpfinder_rank').order('display_name');
-  if(error||!profiles){body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load.</p></div></td></tr>';return;}
-  if(!profiles.length){body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">👤</div><p>No users found.</p></div></td></tr>';return;}
+  if(error||!profiles){
+    body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load. If RLS is enabled, ensure management can select all profiles.</p></div></td></tr>';
+    console.error(error);return;
+  }
+  if(!profiles.length){
+    body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">👤</div><p>No users found.</p></div></td></tr>';return;
+  }
+
+  // Keep cache in sync
+  PROFILES_CACHE=profiles;
 
   body.innerHTML=profiles.map(p=>{
     const rn=NR(p.role);
-    const dn=esc(p.display_name||(p.email||'').split('@')[0]);
+    const rawName=p.display_name||(p.email||'').split('@')[0];
+    // Pass all fields as a JSON-encoded data attribute to avoid inline JS escaping issues
+    const dataAttr=esc(JSON.stringify({
+      id:p.id,display_name:p.display_name||'',email:p.email||'',
+      discord_id:p.discord_id||'',smpfinder_rank:p.smpfinder_rank||'',role:rn
+    }));
     return `<tr>
-      <td><div class="u-name">${dn}</div><div class="u-email">${esc(p.email||'')}</div></td>
+      <td><div class="u-name">${esc(rawName)}</div><div class="u-email">${esc(p.email||'')}</div></td>
       <td><span class="pill p-${rn}">${RL(p.role)}</span></td>
-      <td>${p.smpfinder_rank?`<span class="pill p-${p.smpfinder_rank}">${RLABELS[p.smpfinder_rank]}</span>`:'<span style="color:var(--t3)">—</span>'}</td>
+      <td>${p.smpfinder_rank?`<span class="pill p-${p.smpfinder_rank}">${RLABELS[p.smpfinder_rank]||p.smpfinder_rank}</span>`:'<span style="color:var(--t3)">—</span>'}</td>
       <td style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t2)">${esc(p.discord_id||'—')}</td>
-      <td><button class="btn btn-ghost btn-xs" onclick="openUserModal(${JSON.stringify(p.id)})">Edit</button></td>
+      <td><button class="btn btn-ghost btn-xs" data-user='${dataAttr}' onclick="openUserModal(this)">Edit</button></td>
     </tr>`;
   }).join('');
 }
 
-async function openUserModal(uid){
-  const{data:p}=await db.from('profiles').select('*').eq('id',uid).single();
-  if(!p){toast('Could not load user.','er');return;}
+// FIX: reads directly from the button's data-user attribute — no Supabase re-fetch needed
+function openUserModal(btn){
+  let p;
+  try{p=JSON.parse(btn.getAttribute('data-user'));}
+  catch(e){toast('Could not read user data.','er');return;}
   document.getElementById('mu-uid').value=p.id;
   document.getElementById('mu-dname').value=p.display_name||'';
   document.getElementById('mu-discord').value=p.discord_id||'';
   document.getElementById('mu-rank').value=p.smpfinder_rank||'';
-  document.getElementById('mu-role').value=NR(p.role);
+  document.getElementById('mu-role').value=p.role||'staff';
   document.getElementById('mu-h').textContent=`Edit — ${p.display_name||(p.email||'').split('@')[0]}`;
   document.getElementById('mo-user').classList.add('on');
 }
@@ -768,11 +768,16 @@ async function saveUserEdit(){
   const role=document.getElementById('mu-role').value;
   if(!dname){toast('Display name is required.','er');return;}
   status('Saving…','busy');
-  const{error}=await db.from('profiles').update({display_name:dname||null,discord_id:discord||null,smpfinder_rank:rank||null,role}).eq('id',uid);
-  if(error){toast('Failed: '+error.message,'er');status('Ready','ok');return;}
-  const{data:ea}=await db.from('project_access').select('id').eq('user_id',uid).eq('project','smpfinder').single().catch(()=>({data:null}));
-  if(ea)await db.from('project_access').update({role}).eq('user_id',uid).eq('project','smpfinder');
-  else await db.from('project_access').insert({user_id:uid,project:'smpfinder',role});
+
+  const update={display_name:dname,discord_id:discord||null,smpfinder_rank:rank||null,role};
+  const{error}=await db.from('profiles').update(update).eq('id',uid);
+  if(error){toast('Failed: '+error.message,'er');console.error(error);status('Ready','ok');return;}
+
+  // Sync project_access
+  const{data:ea}=await db.from('project_access').select('id').eq('user_id',uid).eq('project','smpfinder').maybeSingle();
+  if(ea) await db.from('project_access').update({role}).eq('user_id',uid).eq('project','smpfinder');
+  else   await db.from('project_access').insert({user_id:uid,project:'smpfinder',role});
+
   closeModal('mo-user');
   toast('User updated.','ok');
   status('Ready','ok');
@@ -786,22 +791,35 @@ async function createUser(){
   const discord=document.getElementById('nu-discord').value.trim();
   const rank=document.getElementById('nu-rank').value;
   const role=document.getElementById('nu-role').value;
+
   if(!dname){toast('Display name is required.','er');return;}
   if(!email){toast('Email is required.','er');return;}
   if(!pw||pw.length<8){toast('Password must be at least 8 characters.','er');return;}
+
   status('Creating…','busy');
+
   const{data:sd,error:se}=await db.auth.signUp({email,password:pw});
   if(se||!sd?.user){toast('Sign-up failed: '+(se?.message||'Unknown'),'er');status('Ready','ok');return;}
+
   const uid=sd.user.id;
-  const row={id:uid,email,display_name:dname,role,discord_id:discord||null,smpfinder_rank:rank||null};
-  const{data:ex}=await db.from('profiles').select('id').eq('id',uid).single().catch(()=>({data:null}));
-  if(ex)await db.from('profiles').update(row).eq('id',uid);
-  else await db.from('profiles').insert(row);
-  await db.from('project_access').insert({user_id:uid,project:'smpfinder',role});
+  const profileRow={id:uid,email,display_name:dname,role,discord_id:discord||null,smpfinder_rank:rank||null};
+
+  // upsert handles both: new user (insert) and edge case where auth trigger already created a row
+  const{error:upErr}=await db.from('profiles').upsert(profileRow,{onConflict:'id'});
+  if(upErr){
+    // upsert failed — try plain insert as fallback
+    const{error:insErr}=await db.from('profiles').insert(profileRow);
+    if(insErr){toast('Profile save failed: '+insErr.message,'er');console.error(insErr);status('Ready','ok');return;}
+  }
+
+  const{error:accErr}=await db.from('project_access').upsert({user_id:uid,project:'smpfinder',role},{onConflict:'user_id,project'});
+  if(accErr)console.warn('project_access upsert:',accErr);
+
   ['nu-dname','nu-email','nu-pw','nu-discord'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('nu-rank').value='';
   document.getElementById('nu-role').value='staff';
-  toast(`${dname} created. They must verify their email to sign in.`,'ok');
+
+  toast(`${dname} created. They must verify their email before signing in.`,'ok');
   status('Ready','ok');
   loadUsers();
 }
