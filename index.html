@@ -87,13 +87,6 @@ button,input,select{font-family:inherit;font-size:inherit}
 .view{padding:32px 38px;display:none}
 .view.on{display:block}
 
-/* ACCESS DENIED */
-#denied{display:none;position:fixed;inset:0;align-items:center;justify-content:center;padding:40px;background:var(--bg);z-index:999}
-.denied-box{background:var(--surf);border:1px solid rgba(255,71,87,.18);border-radius:12px;padding:36px 32px;text-align:center;max-width:340px}
-.denied-ic{font-size:32px;margin-bottom:12px}
-.denied-h{font-size:17px;font-weight:700;margin-bottom:6px}
-.denied-p{font-size:12.5px;color:var(--t2);line-height:1.6}
-
 /* PAGE HEADER */
 .ph{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:26px}
 .ph-h{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:2px}
@@ -248,7 +241,7 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
       <div class="auth-wordmark">SMP<em>Finder</em></div>
     </div>
     <div class="auth-card">
-      <div class="auth-head">Management portal</div>
+      <div class="auth-head">Staff portal</div>
       <div class="auth-sub">Sign in with your staff account</div>
       <div class="field-group">
         <label class="field-label">Email</label>
@@ -438,15 +431,6 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
   </div>
 </div>
 
-<!-- ACCESS DENIED -->
-<div id="denied">
-  <div class="denied-box">
-    <div class="denied-ic">🔒</div>
-    <div class="denied-h">Management Only</div>
-    <div class="denied-p">This portal is for SMPFinder management only.<br>Use <strong>/quota</strong> on Discord to check your quota.</div>
-  </div>
-</div>
-
 <!-- MEMBER EDIT MODAL (from quota card) -->
 <div class="mo" id="mo-member">
   <div class="md">
@@ -533,7 +517,7 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
 
 <script>
 const SUPA_URL = 'https://tainbbnzenvjiidjexwa.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhaW5iYm56ZW52amlpZGpleHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MzI1ODEsImV4cCI6MjA5MDQwODU4MX0.iypJkR4Jz0eALdohes98Kt338jq3NVg_tIGIAgww8oQ'; // ← replace with legacy anon key from Supabase → Settings → API → Legacy API Keys → anon/public
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhaW5iYm56ZW52amlpZGpleHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MzI1ODEsImV4cCI6MjA5MDQwODU4MX0.iypJkR4Jz0eALdohes98Kt338jq3NVg_tIGIAgww8oQ';
 const {createClient} = supabase;
 const db = createClient(SUPA_URL, SUPA_KEY, {
   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
@@ -541,7 +525,6 @@ const db = createClient(SUPA_URL, SUPA_KEY, {
 
 // ── STATE ──
 let ME=null, PROF=null, ACC=[];
-// In-memory cache of all profiles — avoids re-fetching for edit modal
 let PROFILES_CACHE = [];
 
 // ── CONSTANTS ──
@@ -561,10 +544,6 @@ function isAdmin(){
   const g=NR(PROF?.role);
   if(g==='super_admin'||g==='site_admin') return true;
   return ACC.some(a=>{const r=NR(a.role);return r==='super_admin'||r==='site_admin';});
-}
-function isMgmt(){
-  if(isAdmin()) return true;
-  return ACC.some(a=>a.project==='smpfinder'&&NR(a.role)==='management');
 }
 
 // ── WEEK UTILS ──
@@ -593,8 +572,8 @@ function showView(id){
   document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));
   document.getElementById('view-'+id)?.classList.add('on');
   document.getElementById('nav-'+id)?.classList.add('on');
-  if(id==='quota')  loadQuota();
-  if(id==='users')  loadUsers();
+  if(id==='quota')      loadQuota();
+  if(id==='users')      loadUsers();
   if(id==='roster')     loadRoster();
   if(id==='interviews') loadInterviews();
   if(id==='strikes')    loadStrikes();
@@ -625,7 +604,6 @@ async function doLogout(){
   await db.auth.signOut();
   ME=null;PROF=null;ACC=[];PROFILES_CACHE=[];
   document.getElementById('shell').style.display='none';
-  document.getElementById('denied').style.display='none';
   document.getElementById('auth').style.display='flex';
   status('Ready');
 }
@@ -636,9 +614,10 @@ async function boot(user){
   status('Loading…','busy');
 
   // Load own profile
-  const{data:prof,error:profErr}=await db.from('profiles').select('*').eq('id',user.id).single();
-  if(prof){PROF=prof;}
-  else{
+  const{data:prof}=await db.from('profiles').select('*').eq('id',user.id).single();
+  if(prof){
+    PROF=prof;
+  } else {
     // Auto-create if missing (new user)
     const{data:inserted}=await db.from('profiles').insert({id:user.id,email:user.email,role:'staff'}).select().single();
     PROF=inserted||{id:user.id,email:user.email,role:'staff'};
@@ -647,19 +626,12 @@ async function boot(user){
   const{data:acc}=await db.from('project_access').select('*').eq('user_id',user.id);
   ACC=acc||[];
 
-  if(!isMgmt()){
-    await db.auth.signOut();
-    document.getElementById('auth').style.display='none';
-    document.getElementById('shell').style.display='none';
-    document.getElementById('denied').style.display='flex';
-    status('Access denied');
-    return;
-  }
-
+  // Show the shell for all authenticated users — no role gate
   document.getElementById('auth').style.display='none';
   document.getElementById('shell').style.display='flex';
   document.getElementById('sb-who').textContent=PROF.display_name||user.email||'';
 
+  // Show admin-only controls only for admins/site admins
   if(isAdmin()){
     document.getElementById('admin-label').style.display='block';
     document.getElementById('nav-users').style.display='flex';
@@ -692,7 +664,6 @@ async function loadQuota(){
 
   if(pErr){body.innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load — check console.</p></div>';status('Error');console.error(pErr);return;}
 
-  // Cache for edit modals
   PROFILES_CACHE = profiles || [];
 
   const qmap={};
@@ -831,20 +802,18 @@ async function loadUsers(){
 
   const{data:profiles,error}=await db.from('profiles').select('id,display_name,email,role,discord_id,smpfinder_rank').order('display_name');
   if(error||!profiles){
-    body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load. If RLS is enabled, ensure management can select all profiles.</p></div></td></tr>';
+    body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load.</p></div></td></tr>';
     console.error(error);return;
   }
   if(!profiles.length){
     body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">👤</div><p>No users found.</p></div></td></tr>';return;
   }
 
-  // Keep cache in sync
   PROFILES_CACHE=profiles;
 
   body.innerHTML=profiles.map(p=>{
     const rn=NR(p.role);
     const rawName=p.display_name||(p.email||'').split('@')[0];
-    // Pass all fields as a JSON-encoded data attribute to avoid inline JS escaping issues
     const dataAttr=esc(JSON.stringify({
       id:p.id,display_name:p.display_name||'',email:p.email||'',
       discord_id:p.discord_id||'',smpfinder_rank:p.smpfinder_rank||'',role:rn
@@ -859,7 +828,6 @@ async function loadUsers(){
   }).join('');
 }
 
-// FIX: reads directly from the button's data-user attribute — no Supabase re-fetch needed
 function openUserModal(btn){
   let p;
   try{p=JSON.parse(btn.getAttribute('data-user'));}
@@ -886,7 +854,6 @@ async function saveUserEdit(){
   const{error}=await db.from('profiles').update(update).eq('id',uid);
   if(error){toast('Failed: '+error.message,'er');console.error(error);status('Ready','ok');return;}
 
-  // Sync project_access
   const{data:ea}=await db.from('project_access').select('id').eq('user_id',uid).eq('project','smpfinder').maybeSingle();
   if(ea) await db.from('project_access').update({role}).eq('user_id',uid).eq('project','smpfinder');
   else   await db.from('project_access').insert({user_id:uid,project:'smpfinder',role});
@@ -917,10 +884,8 @@ async function createUser(){
   const uid=sd.user.id;
   const profileRow={id:uid,email,display_name:dname,role,discord_id:discord||null,smpfinder_rank:rank||null};
 
-  // upsert handles both: new user (insert) and edge case where auth trigger already created a row
   const{error:upErr}=await db.from('profiles').upsert(profileRow,{onConflict:'id'});
   if(upErr){
-    // upsert failed — try plain insert as fallback
     const{error:insErr}=await db.from('profiles').insert(profileRow);
     if(insErr){toast('Profile save failed: '+insErr.message,'er');console.error(insErr);status('Ready','ok');return;}
   }
@@ -937,7 +902,7 @@ async function createUser(){
   loadUsers();
 }
 
-// ── ROSTER ──────────────────────────────────────────────────
+// ── ROSTER ──
 const ROSTER_ORDER = [
   {key:'owner',        label:'Owner',      color:'#ff4757', bg:'rgba(255,71,87,.85)'},
   {key:'manager',      label:'Manager',    color:'#f6c90e', bg:'rgba(246,201,14,.85)'},
@@ -1036,8 +1001,7 @@ async function loadRoster(){
   status('Ready','ok');
 }
 
-
-// ── INTERVIEWS ───────────────────────────────────────────────
+// ── INTERVIEWS ──
 async function loadInterviews(){
   const body=document.getElementById('interviews-body');
   body.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div></td></tr>';
@@ -1060,12 +1024,12 @@ async function addInterview(){
   const name=document.getElementById('iv-name').value.trim();
   const discord=document.getElementById('iv-discord').value.trim();
   const interviewer=document.getElementById('iv-interviewer').value.trim();
-  const status=document.getElementById('iv-status').value;
+  const ivStatus=document.getElementById('iv-status').value;
   const notes=document.getElementById('iv-notes').value.trim();
   if(!name){toast('Applicant name is required.','er');return;}
   if(!interviewer){toast('Interviewer name is required.','er');return;}
   status('Saving…','busy');
-  const{error}=await db.from('interviews').insert({applicant_name:name,discord_id:discord||null,interviewer,status,notes:notes||null});
+  const{error}=await db.from('interviews').insert({applicant_name:name,discord_id:discord||null,interviewer,status:ivStatus,notes:notes||null});
   if(error){toast('Failed: '+error.message,'er');status('Ready','ok');return;}
   ['iv-name','iv-discord','iv-interviewer','iv-notes'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('iv-status').value='pending';
@@ -1081,7 +1045,7 @@ async function deleteInterview(id){
   loadInterviews();
 }
 
-// ── STRIKES ──────────────────────────────────────────────────
+// ── STRIKES ──
 async function loadStrikes(){
   const body=document.getElementById('strikes-body');
   body.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div></td></tr>';
@@ -1136,7 +1100,6 @@ async function deleteStrike(id){
   toast('Deleted.','ok');
   loadStrikes();
 }
-
 </script>
 </body>
 </html>
