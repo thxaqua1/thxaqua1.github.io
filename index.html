@@ -22,6 +22,7 @@
   --green:   #00d68f;
   --yellow:  #f6c90e;
   --red:     #ff4757;
+  --blue:    #74b9ff;
   --text:    #ebebf5;
   --t2:      #72728a;
   --t3:      #38384e;
@@ -30,7 +31,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button,input,select{font-family:inherit;font-size:inherit}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px}
 
 /* BUTTONS */
@@ -43,6 +44,8 @@ button,input,select{font-family:inherit;font-size:inherit}
 .btn-ghost:hover{color:var(--text);border-color:var(--b2);background:var(--s3)}
 .btn-danger{background:rgba(255,71,87,.07);color:var(--red);border:1px solid rgba(255,71,87,.18)}
 .btn-danger:hover{background:rgba(255,71,87,.14)}
+.btn-approve{background:rgba(0,214,143,.09);color:var(--green);border:1px solid rgba(0,214,143,.25)}
+.btn-approve:hover{background:rgba(0,214,143,.16)}
 .btn-sm{padding:6px 13px;font-size:12.5px}
 .btn-xs{padding:4px 10px;font-size:11.5px}
 
@@ -149,6 +152,7 @@ tr:hover td{background:var(--s2)}
 .p-site_admin{background:rgba(0,214,143,.1);color:var(--green)}
 .p-management{background:rgba(246,201,14,.1);color:var(--yellow)}
 .p-staff{background:rgba(120,120,160,.1);color:var(--t2)}
+.p-unknown{background:rgba(120,120,160,.08);color:var(--t3)}
 .u-name{font-weight:600;font-size:13px}
 .u-email{font-size:11px;color:var(--t3);font-family:'JetBrains Mono',monospace}
 
@@ -167,15 +171,20 @@ tr:hover td{background:var(--s2)}
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(7px);z-index:9800;align-items:center;justify-content:center;padding:20px}
 .mo.on{display:flex}
 .md{background:var(--surf);border:1px solid var(--b2);border-radius:11px;padding:26px 24px;width:100%;max-width:420px;box-shadow:0 30px 80px rgba(0,0,0,.8);animation:pop .17s ease}
+.md-wide{max-width:500px}
 @keyframes pop{from{opacity:0;transform:scale(.95) translateY(6px)}to{opacity:1;transform:none}}
 .md-h{font-size:16px;font-weight:700;letter-spacing:-.3px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
 .md-sec{margin-bottom:14px}
 .md-sec-h{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.md-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:5px;margin-top:13px;display:block}
 .md-foot{display:flex;gap:7px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
 .danger-box{background:rgba(255,71,87,.05);border:1px solid rgba(255,71,87,.14);border-radius:var(--r);padding:12px 14px}
 .danger-box p{font-size:12px;color:var(--t2);margin-bottom:11px;line-height:1.55}
 .md .fg{margin-bottom:12px}
 .md .fg:last-child{margin-bottom:0}
+.md-info{font-size:12px;color:var(--t2);margin-top:8px;line-height:1.55;background:var(--s3);border-radius:var(--r);padding:10px 12px;border:1px solid var(--border)}
+.md textarea{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--text);font-size:13px;outline:none;resize:vertical;min-height:80px;transition:border-color .14s}
+.md textarea:focus{border-color:var(--accent)}
 
 /* TOAST */
 #toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:9px 15px;font-size:12.5px;z-index:9999;transform:translateY(40px) scale(.96);opacity:0;transition:all .22s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;align-items:center;gap:7px}
@@ -194,7 +203,7 @@ tr:hover td{background:var(--s2)}
 .empty-ic{font-size:26px;margin-bottom:8px}
 .empty p{font-size:12.5px}
 
-/* ── ROSTER ── */
+/* ROSTER */
 .roster-tier{margin-bottom:28px}
 .tier-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .tier-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
@@ -215,13 +224,15 @@ tr:hover td{background:var(--s2)}
 .rc-eval{display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:600;background:rgba(246,201,14,.08);border:1px solid rgba(246,201,14,.22);color:var(--yellow)}
 .no-reg{margin-top:6px;padding:8px 10px;background:var(--s3);border-radius:6px;font-size:11px;color:var(--t3);line-height:1.5}
 
-/* ── INTERVIEWS + STRIKES ── */
+/* INTERVIEWS + STRIKES */
 .badge-status{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
 .badge-pending{background:rgba(246,201,14,.1);color:var(--yellow);border:1px solid rgba(246,201,14,.25)}
 .badge-passed{background:rgba(0,214,143,.1);color:var(--green);border:1px solid rgba(0,214,143,.25)}
 .badge-failed{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25)}
 .badge-active{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25)}
 .badge-expired{background:rgba(120,120,160,.1);color:var(--t2);border:1px solid rgba(120,120,160,.2)}
+.badge-approved{background:rgba(0,214,143,.1);color:var(--green);border:1px solid rgba(0,214,143,.25)}
+.badge-denied{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25)}
 .badge-1{background:rgba(246,201,14,.1);color:var(--yellow);border:1px solid rgba(246,201,14,.25)}
 .badge-2{background:rgba(255,140,0,.1);color:#ff8c00;border:1px solid rgba(255,140,0,.25)}
 .badge-3{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25)}
@@ -229,6 +240,38 @@ tr:hover td{background:var(--s2)}
 .form-bar .fg{min-width:120px}
 .form-bar .fg input,.form-bar .fg select,.form-bar .fg textarea{width:100%}
 textarea.field{resize:vertical;min-height:60px;font-family:inherit}
+
+/* LOA + PROMOTIONS — request cards */
+.req-grid{display:flex;flex-direction:column;gap:10px}
+.req-card{background:var(--surf);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .14s}
+.req-card:hover{border-color:var(--b2)}
+.req-card.status-approved{border-left:3px solid var(--green)}
+.req-card.status-denied{border-left:3px solid var(--red)}
+.req-card.status-pending{border-left:3px solid var(--yellow)}
+.req-hd{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.req-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;background:var(--ag)}
+.req-name{font-size:13.5px;font-weight:600;letter-spacing:-.2px}
+.req-meta{font-size:11px;color:var(--t3);margin-top:1px;font-family:'JetBrains Mono',monospace}
+.req-badge{margin-left:auto;flex-shrink:0}
+.req-body{padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.req-field{display:flex;flex-direction:column;gap:3px}
+.req-field-lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.req-field-val{font-size:13px;color:var(--text);line-height:1.45}
+.req-field.full{grid-column:1/-1}
+.req-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--s2)}
+.req-foot-info{font-size:11px;color:var(--t3);margin-right:auto}
+
+/* badge generic (for LOA/promo status) */
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid}
+
+/* PROMOTION specific */
+.promo-arrow{display:flex;align-items:center;gap:8px;font-size:13px}
+.promo-arrow span.arrow-sep{color:var(--t3);font-size:11px}
+.quota-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:600}
+.qc-yes{background:rgba(0,214,143,.08);color:var(--green);border:1px solid rgba(0,214,143,.2)}
+.qc-mostly{background:rgba(116,185,255,.08);color:var(--blue);border:1px solid rgba(116,185,255,.2)}
+.qc-sometimes{background:rgba(246,201,14,.08);color:var(--yellow);border:1px solid rgba(246,201,14,.2)}
+.qc-no{background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.2)}
 </style>
 </head>
 <body>
@@ -267,6 +310,7 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
       </div>
       <div class="sb-who" id="sb-who"></div>
     </div>
+
     <div class="sb-sec">Quota</div>
     <div class="nav on" id="nav-quota" onclick="showView('quota')">
       <span class="nav-ic">◫</span> Staff Quota
@@ -280,10 +324,20 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
     <div class="nav" id="nav-strikes" onclick="showView('strikes')">
       <span class="nav-ic">⚑</span> Strikes
     </div>
+
+    <div class="sb-sec">Management</div>
+    <div class="nav" id="nav-loa" onclick="showView('loa')">
+      <span class="nav-ic">🏖</span> LOA Requests
+    </div>
+    <div class="nav" id="nav-promotions" onclick="showView('promotions')">
+      <span class="nav-ic">⭐</span> Promotions
+    </div>
+
     <div class="sb-sec" id="admin-label" style="display:none">Admin</div>
     <div class="nav" id="nav-users" style="display:none" onclick="showView('users')">
       <span class="nav-ic">⊹</span> Manage Users
     </div>
+
     <div class="sb-ft">
       <button class="btn btn-ghost btn-sm" style="width:100%" onclick="doLogout()">Sign out</button>
     </div>
@@ -311,7 +365,6 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
       <div class="ph">
         <div><div class="ph-h">Manage Users</div><div class="ph-s">Create and configure SMPFinder staff accounts</div></div>
       </div>
-
       <div class="add-panel" id="add-panel" style="display:none">
         <div class="add-title">Create new user</div>
         <div class="frow">
@@ -344,16 +397,11 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
         </div>
         <button class="btn btn-primary" style="width:auto;padding:8px 18px" onclick="createUser()">Create user</button>
       </div>
-
       <div class="tbl-wrap">
         <table>
           <thead>
             <tr>
-              <th>Name / Email</th>
-              <th>Portal role</th>
-              <th>SMP Rank</th>
-              <th>Discord ID</th>
-              <th style="width:60px"></th>
+              <th>Name / Email</th><th>Portal role</th><th>SMP Rank</th><th>Discord ID</th><th style="width:60px"></th>
             </tr>
           </thead>
           <tbody id="users-body">
@@ -378,7 +426,7 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
         <div><div class="ph-h">Interviews</div><div class="ph-s">Track applicant interview results</div></div>
         <div class="ph-r"><button class="btn btn-ghost btn-sm" onclick="loadInterviews()">&#8635; Refresh</button></div>
       </div>
-      <div class="form-bar" id="interview-form-wrap">
+      <div class="form-bar">
         <div class="fg"><label>Applicant name</label><input class="field" type="text" id="iv-name" placeholder="e.g. Steve"></div>
         <div class="fg"><label>Discord ID</label><input class="field" type="text" id="iv-discord" placeholder="123456789012345678"></div>
         <div class="fg"><label>Interviewer</label><input class="field" type="text" id="iv-interviewer" placeholder="Your name"></div>
@@ -406,7 +454,7 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
         <div><div class="ph-h">Strikes</div><div class="ph-s">Staff disciplinary record</div></div>
         <div class="ph-r"><button class="btn btn-ghost btn-sm" onclick="loadStrikes()">&#8635; Refresh</button></div>
       </div>
-      <div class="form-bar" id="strike-form-wrap">
+      <div class="form-bar">
         <div class="fg"><label>Staff member</label><input class="field" type="text" id="sk-name" placeholder="Display name"></div>
         <div class="fg"><label>Discord ID</label><input class="field" type="text" id="sk-discord" placeholder="123456789012345678"></div>
         <div class="fg"><label>Strike #</label>
@@ -428,17 +476,62 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
       </div>
     </div>
 
-  </div>
-</div>
+    <!-- LOA VIEW -->
+    <div class="view" id="view-loa">
+      <div class="ph">
+        <div><div class="ph-h">Leave of Absence Requests</div><div class="ph-s">Review, approve, or deny staff LOA submissions</div></div>
+        <div class="ph-r">
+          <select class="sel" id="loa-filter" onchange="renderLOA()">
+            <option value="all">All requests</option>
+            <option value="pending">Pending only</option>
+            <option value="approved">Approved</option>
+            <option value="denied">Denied</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadLOA()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat" style="--c:var(--yellow)"><div class="stat-n" id="ls-pending">—</div><div class="stat-l">Pending</div></div>
+        <div class="stat" style="--c:var(--green)"><div class="stat-n"  id="ls-approved">—</div><div class="stat-l">Approved</div></div>
+        <div class="stat" style="--c:var(--red)"><div class="stat-n"   id="ls-denied">—</div><div class="stat-l">Denied</div></div>
+        <div class="stat"><div class="stat-n" id="ls-total">—</div><div class="stat-l">Total</div></div>
+      </div>
+      <div id="loa-body"><div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div></div>
+    </div>
 
-<!-- MEMBER EDIT MODAL (from quota card) -->
+    <!-- PROMOTIONS VIEW -->
+    <div class="view" id="view-promotions">
+      <div class="ph">
+        <div><div class="ph-h">Promotion Nominations</div><div class="ph-s">Review and act on Senior Admin promotion nominations</div></div>
+        <div class="ph-r">
+          <select class="sel" id="promo-filter" onchange="renderPromotions()">
+            <option value="all">All nominations</option>
+            <option value="pending">Pending only</option>
+            <option value="approved">Approved</option>
+            <option value="denied">Denied</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadPromotions()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat" style="--c:var(--yellow)"><div class="stat-n" id="ps-pending">—</div><div class="stat-l">Pending</div></div>
+        <div class="stat" style="--c:var(--green)"><div class="stat-n"  id="ps-approved">—</div><div class="stat-l">Approved</div></div>
+        <div class="stat" style="--c:var(--red)"><div class="stat-n"   id="ps-denied">—</div><div class="stat-l">Denied</div></div>
+        <div class="stat"><div class="stat-n" id="ps-total">—</div><div class="stat-l">Total</div></div>
+      </div>
+      <div id="promo-body"><div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div></div>
+    </div>
+
+  </div><!-- /#main -->
+</div><!-- /#shell -->
+
+<!-- MEMBER EDIT MODAL (quota card) -->
 <div class="mo" id="mo-member">
   <div class="md">
     <div class="md-h" id="mm-h">Edit Member</div>
     <input type="hidden" id="mm-uid">
     <input type="hidden" id="mm-discord">
     <input type="hidden" id="mm-woff">
-
     <div class="md-sec">
       <div class="md-sec-h">Quota override</div>
       <div class="frow">
@@ -447,7 +540,6 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
       </div>
       <div style="font-size:11px;color:var(--t2)">Replaces all quota logs for the selected week with these exact values.</div>
     </div>
-
     <div class="md-sec">
       <div class="md-sec-h">Rank</div>
       <div class="fg" style="margin-bottom:0">
@@ -462,7 +554,6 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
         </select>
       </div>
     </div>
-
     <div class="md-sec">
       <div class="md-sec-h">Danger zone</div>
       <div class="danger-box">
@@ -470,7 +561,6 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
         <button class="btn btn-danger btn-xs" onclick="removeMember()">Remove from team</button>
       </div>
     </div>
-
     <div class="md-foot">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('mo-member')">Cancel</button>
       <button class="btn btn-primary btn-sm" onclick="saveMember()">Save changes</button>
@@ -478,7 +568,7 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
   </div>
 </div>
 
-<!-- USER EDIT MODAL (from manage users table) -->
+<!-- USER EDIT MODAL -->
 <div class="mo" id="mo-user">
   <div class="md">
     <div class="md-h" id="mu-h">Edit User</div>
@@ -512,6 +602,26 @@ textarea.field{resize:vertical;min-height:60px;font-family:inherit}
   </div>
 </div>
 
+<!-- DECISION MODAL (LOA + Promotions) -->
+<div class="mo" id="mo-decision">
+  <div class="md md-wide">
+    <div class="md-h" id="mo-title">Review Request</div>
+    <input type="hidden" id="mo-id">
+    <input type="hidden" id="mo-type">
+    <input type="hidden" id="mo-discord-id">
+    <input type="hidden" id="mo-action">
+    <input type="hidden" id="mo-rec-name">
+    <div id="mo-summary" style="background:var(--s3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:2px"></div>
+    <label class="md-label">Message to DM them</label>
+    <textarea id="mo-msg" placeholder="Write a message to send to this staff member…"></textarea>
+    <div class="md-info" id="mo-hint"></div>
+    <div class="md-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('mo-decision')">Cancel</button>
+      <button class="btn btn-sm" id="mo-confirm-btn" onclick="confirmDecision()">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"><div class="tdot"></div><span id="tmsg"></span></div>
 <div id="sbar-status">Ready</div>
 
@@ -525,7 +635,8 @@ const db = createClient(SUPA_URL, SUPA_KEY, {
 
 // ── STATE ──
 let ME=null, PROF=null, ACC=[];
-let PROFILES_CACHE = [];
+let PROFILES_CACHE=[];
+let LOA_DATA=[], PROMO_DATA=[];
 
 // ── CONSTANTS ──
 const TARGETS = {
@@ -535,8 +646,12 @@ const TARGETS = {
   helper:      {p:20,t:12},
   junior_staff:{p:20,t:12}
 };
-const RLABELS = {admin:'Admin',senior_mod:'Senior Mod',mod:'Mod',helper:'Helper',junior_staff:'Junior Staff'};
+const RLABELS = {
+  admin:'Admin', senior_mod:'Senior Mod', mod:'Mod', helper:'Helper', junior_staff:'Junior Staff',
+  senior_admin:'Senior Admin', head_admin:'Head Admin', manager:'Manager', owner:'Owner', unknown:'Unknown'
+};
 const RORDER  = ['admin','senior_mod','mod','helper','junior_staff'];
+const QUOTA_MAP = {yes:'Yes — consistently', mostly:'Mostly yes', sometimes:'Sometimes', no:'No'};
 const NR = r=>({editor:'management',manager:'super_admin'}[r]||r||'staff');
 const RL = r=>({super_admin:'Manager',site_admin:'Site Admin',management:'Management',staff:'Staff'}[NR(r)]||'Staff');
 
@@ -556,7 +671,8 @@ function weekBounds(off=0){
   return{start:new Date(sun.getTime()+EST*60000).toISOString(),end:new Date(sat.getTime()+EST*60000).toISOString()};
 }
 const wlbl=o=>o===0?'This week':o===-1?'Last week':`${Math.abs(o)} weeks ago`;
-const fd=iso=>new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const fd=iso=>{if(!iso)return '—';try{return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch{return iso;}};
+const fdt=iso=>{if(!iso)return '';try{return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}catch{return iso;}};
 
 // ── UI UTILS ──
 function status(msg,cls=''){const s=document.getElementById('sbar-status');s.textContent=msg;s.className=cls}
@@ -577,6 +693,8 @@ function showView(id){
   if(id==='roster')     loadRoster();
   if(id==='interviews') loadInterviews();
   if(id==='strikes')    loadStrikes();
+  if(id==='loa')        loadLOA();
+  if(id==='promotions') loadPromotions();
 }
 
 // ── AUTH ──
@@ -602,7 +720,7 @@ async function doLogin(){
 
 async function doLogout(){
   await db.auth.signOut();
-  ME=null;PROF=null;ACC=[];PROFILES_CACHE=[];
+  ME=null;PROF=null;ACC=[];PROFILES_CACHE=[];LOA_DATA=[];PROMO_DATA=[];
   document.getElementById('shell').style.display='none';
   document.getElementById('auth').style.display='flex';
   status('Ready');
@@ -612,32 +730,23 @@ async function doLogout(){
 async function boot(user){
   ME=user;
   status('Loading…','busy');
-
-  // Load own profile
   const{data:prof}=await db.from('profiles').select('*').eq('id',user.id).single();
   if(prof){
     PROF=prof;
   } else {
-    // Auto-create if missing (new user)
     const{data:inserted}=await db.from('profiles').insert({id:user.id,email:user.email,role:'staff'}).select().single();
     PROF=inserted||{id:user.id,email:user.email,role:'staff'};
   }
-
   const{data:acc}=await db.from('project_access').select('*').eq('user_id',user.id);
   ACC=acc||[];
-
-  // Show the shell for all authenticated users — no role gate
   document.getElementById('auth').style.display='none';
   document.getElementById('shell').style.display='flex';
   document.getElementById('sb-who').textContent=PROF.display_name||user.email||'';
-
-  // Show admin-only controls only for admins/site admins
   if(isAdmin()){
     document.getElementById('admin-label').style.display='block';
     document.getElementById('nav-users').style.display='flex';
     document.getElementById('add-panel').style.display='block';
   }
-
   status('Ready','ok');
   loadQuota();
 }
@@ -646,42 +755,34 @@ async function boot(user){
   const{data:{session}}=await db.auth.getSession();
   if(session?.user) await boot(session.user);
 })();
-db.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'){ME=null;PROF=null;ACC=[];PROFILES_CACHE=[];}});
+db.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'){ME=null;PROF=null;ACC=[];PROFILES_CACHE=[];LOA_DATA=[];PROMO_DATA=[];}});
 
 // ── QUOTA VIEW ──
 async function loadQuota(){
   const body=document.getElementById('quota-body');
   body.innerHTML='<div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div>';
   status('Loading…','busy');
-
   const off=parseInt(document.getElementById('qweek')?.value||'0');
   const{start,end}=weekBounds(off);
-
   const[{data:profiles,error:pErr},{data:logs}]=await Promise.all([
     db.from('profiles').select('id,display_name,email,discord_id,smpfinder_rank').order('display_name'),
     db.from('quota_logs').select('discord_id,type').eq('project','smpfinder').gte('logged_at',start).lte('logged_at',end)
   ]);
-
   if(pErr){body.innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load — check console.</p></div>';status('Error');console.error(pErr);return;}
-
-  PROFILES_CACHE = profiles || [];
-
+  PROFILES_CACHE=profiles||[];
   const qmap={};
   (logs||[]).forEach(l=>{
     if(!qmap[l.discord_id])qmap[l.discord_id]={p:0,t:0};
     if(l.type==='punishment')qmap[l.discord_id].p++;
     if(l.type==='ticket')qmap[l.discord_id].t++;
   });
-
   const staff=PROFILES_CACHE.filter(p=>p.discord_id&&p.smpfinder_rank);
   if(!staff.length){body.innerHTML='<div class="empty"><div class="empty-ic">🔗</div><p>No staff with a Discord ID and rank set yet.<br>Go to Manage Users to add them.</p></div>';status('Ready','ok');return;}
-
   let met=0;
   staff.forEach(p=>{
     const tg=TARGETS[p.smpfinder_rank]||TARGETS.junior_staff,q=qmap[p.discord_id]||{p:0,t:0};
     if(q.p>=tg.p&&q.t>=tg.t)met++;
   });
-
   let html=`
   <div class="stats">
     <div class="stat" style="--c:var(--green)"><div class="stat-n">${met}</div><div class="stat-l">Quota met</div></div>
@@ -695,11 +796,9 @@ async function loadQuota(){
     <span>${fd(start)} — ${fd(end)}</span>
     <span style="margin-left:auto;color:var(--t3);font-size:11px">Resets Sun 12AM EST</span>
   </div>`;
-
   const grouped={};
   RORDER.forEach(r=>grouped[r]=[]);
   staff.forEach(p=>{if(grouped[p.smpfinder_rank])grouped[p.smpfinder_rank].push(p);});
-
   RORDER.forEach(rank=>{
     const grp=grouped[rank];if(!grp?.length)return;
     html+=`<div class="rdiv">${RLABELS[rank]||rank}</div><div class="qg">`;
@@ -734,12 +833,11 @@ async function loadQuota(){
     });
     html+='</div>';
   });
-
   body.innerHTML=html;
   status('Ready','ok');
 }
 
-// ── MEMBER MODAL (quota card edit) ──
+// ── MEMBER MODAL ──
 function openMemberModal(uid,discord,rawName,pun,tix,rank,woff){
   document.getElementById('mm-uid').value=uid;
   document.getElementById('mm-discord').value=discord;
@@ -759,10 +857,8 @@ async function saveMember(){
   const tix=Math.max(0,parseInt(document.getElementById('mm-tix').value||'0'));
   const rank=document.getElementById('mm-rank').value;
   status('Saving…','busy');
-
   const{error:rErr}=await db.from('profiles').update({smpfinder_rank:rank||null}).eq('id',uid);
   if(rErr){toast('Rank update failed: '+rErr.message,'er');status('Ready','ok');return;}
-
   if(discord){
     const{start,end}=weekBounds(woff);
     await db.from('quota_logs').delete().eq('discord_id',discord).eq('project','smpfinder').gte('logged_at',start).lte('logged_at',end);
@@ -772,7 +868,6 @@ async function saveMember(){
     for(let i=0;i<tix;i++)rows.push({discord_id:discord,type:'ticket',project:'smpfinder',logged_at:mid});
     if(rows.length){const{error:iErr}=await db.from('quota_logs').insert(rows);if(iErr)console.error('log insert:',iErr);}
   }
-
   closeModal('mo-member');
   toast('Member updated.','ok');
   status('Ready','ok');
@@ -799,25 +894,14 @@ async function removeMember(){
 async function loadUsers(){
   const body=document.getElementById('users-body');
   body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div></td></tr>';
-
   const{data:profiles,error}=await db.from('profiles').select('id,display_name,email,role,discord_id,smpfinder_rank').order('display_name');
-  if(error||!profiles){
-    body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load.</p></div></td></tr>';
-    console.error(error);return;
-  }
-  if(!profiles.length){
-    body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">👤</div><p>No users found.</p></div></td></tr>';return;
-  }
-
+  if(error||!profiles){body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load.</p></div></td></tr>';console.error(error);return;}
+  if(!profiles.length){body.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ic">👤</div><p>No users found.</p></div></td></tr>';return;}
   PROFILES_CACHE=profiles;
-
   body.innerHTML=profiles.map(p=>{
     const rn=NR(p.role);
     const rawName=p.display_name||(p.email||'').split('@')[0];
-    const dataAttr=esc(JSON.stringify({
-      id:p.id,display_name:p.display_name||'',email:p.email||'',
-      discord_id:p.discord_id||'',smpfinder_rank:p.smpfinder_rank||'',role:rn
-    }));
+    const dataAttr=esc(JSON.stringify({id:p.id,display_name:p.display_name||'',email:p.email||'',discord_id:p.discord_id||'',smpfinder_rank:p.smpfinder_rank||'',role:rn}));
     return `<tr>
       <td><div class="u-name">${esc(rawName)}</div><div class="u-email">${esc(p.email||'')}</div></td>
       <td><span class="pill p-${rn}">${RL(p.role)}</span></td>
@@ -830,8 +914,7 @@ async function loadUsers(){
 
 function openUserModal(btn){
   let p;
-  try{p=JSON.parse(btn.getAttribute('data-user'));}
-  catch(e){toast('Could not read user data.','er');return;}
+  try{p=JSON.parse(btn.getAttribute('data-user'));}catch(e){toast('Could not read user data.','er');return;}
   document.getElementById('mu-uid').value=p.id;
   document.getElementById('mu-dname').value=p.display_name||'';
   document.getElementById('mu-discord').value=p.discord_id||'';
@@ -849,15 +932,12 @@ async function saveUserEdit(){
   const role=document.getElementById('mu-role').value;
   if(!dname){toast('Display name is required.','er');return;}
   status('Saving…','busy');
-
   const update={display_name:dname,discord_id:discord||null,smpfinder_rank:rank||null,role};
   const{error}=await db.from('profiles').update(update).eq('id',uid);
   if(error){toast('Failed: '+error.message,'er');console.error(error);status('Ready','ok');return;}
-
   const{data:ea}=await db.from('project_access').select('id').eq('user_id',uid).eq('project','smpfinder').maybeSingle();
   if(ea) await db.from('project_access').update({role}).eq('user_id',uid).eq('project','smpfinder');
   else   await db.from('project_access').insert({user_id:uid,project:'smpfinder',role});
-
   closeModal('mo-user');
   toast('User updated.','ok');
   status('Ready','ok');
@@ -871,133 +951,83 @@ async function createUser(){
   const discord=document.getElementById('nu-discord').value.trim();
   const rank=document.getElementById('nu-rank').value;
   const role=document.getElementById('nu-role').value;
-
   if(!dname){toast('Display name is required.','er');return;}
   if(!email){toast('Email is required.','er');return;}
   if(!pw||pw.length<8){toast('Password must be at least 8 characters.','er');return;}
-
   status('Creating…','busy');
-
   const{data:sd,error:se}=await db.auth.signUp({email,password:pw});
   if(se||!sd?.user){toast('Sign-up failed: '+(se?.message||'Unknown'),'er');status('Ready','ok');return;}
-
   const uid=sd.user.id;
   const profileRow={id:uid,email,display_name:dname,role,discord_id:discord||null,smpfinder_rank:rank||null};
-
   const{error:upErr}=await db.from('profiles').upsert(profileRow,{onConflict:'id'});
-  if(upErr){
-    const{error:insErr}=await db.from('profiles').insert(profileRow);
-    if(insErr){toast('Profile save failed: '+insErr.message,'er');console.error(insErr);status('Ready','ok');return;}
-  }
-
+  if(upErr){const{error:insErr}=await db.from('profiles').insert(profileRow);if(insErr){toast('Profile save failed: '+insErr.message,'er');status('Ready','ok');return;}}
   const{error:accErr}=await db.from('project_access').upsert({user_id:uid,project:'smpfinder',role},{onConflict:'user_id,project'});
   if(accErr)console.warn('project_access upsert:',accErr);
-
   ['nu-dname','nu-email','nu-pw','nu-discord'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('nu-rank').value='';
   document.getElementById('nu-role').value='staff';
-
   toast(`${dname} created. They must verify their email before signing in.`,'ok');
   status('Ready','ok');
   loadUsers();
 }
 
 // ── ROSTER ──
-const ROSTER_ORDER = [
-  {key:'owner',        label:'Owner',      color:'#ff4757', bg:'rgba(255,71,87,.85)'},
-  {key:'manager',      label:'Manager',    color:'#f6c90e', bg:'rgba(246,201,14,.85)'},
-  {key:'head_admin',   label:'Head Admin', color:'#a855f7', bg:'rgba(168,85,247,.85)'},
-  {key:'senior_admin', label:'Sr. Admin',  color:'#6c5ce7', bg:'rgba(108,92,231,.85)'},
-  {key:'admin',        label:'Admin',      color:'#ff6b81', bg:'rgba(255,107,129,.85)'},
-  {key:'senior_mod',   label:'Sr. Mod',    color:'#c084fc', bg:'rgba(192,132,252,.85)'},
-  {key:'mod',          label:'Mod',        color:'#74b9ff', bg:'rgba(116,185,255,.85)'},
-  {key:'helper',       label:'Helper',     color:'#00d68f', bg:'rgba(0,214,143,.85)'},
-  {key:'junior_staff', label:'Jr. Staff',  color:'#8e9baa', bg:'rgba(142,155,170,.85)'},
+const ROSTER_ORDER=[
+  {key:'owner',        label:'Owner',      color:'#ff4757',bg:'rgba(255,71,87,.85)'},
+  {key:'manager',      label:'Manager',    color:'#f6c90e',bg:'rgba(246,201,14,.85)'},
+  {key:'head_admin',   label:'Head Admin', color:'#a855f7',bg:'rgba(168,85,247,.85)'},
+  {key:'senior_admin', label:'Sr. Admin',  color:'#6c5ce7',bg:'rgba(108,92,231,.85)'},
+  {key:'admin',        label:'Admin',      color:'#ff6b81',bg:'rgba(255,107,129,.85)'},
+  {key:'senior_mod',   label:'Sr. Mod',    color:'#c084fc',bg:'rgba(192,132,252,.85)'},
+  {key:'mod',          label:'Mod',        color:'#74b9ff',bg:'rgba(116,185,255,.85)'},
+  {key:'helper',       label:'Helper',     color:'#00d68f',bg:'rgba(0,214,143,.85)'},
+  {key:'junior_staff', label:'Jr. Staff',  color:'#8e9baa',bg:'rgba(142,155,170,.85)'},
 ];
 
 async function loadRoster(){
-  const body = document.getElementById('roster-body');
-  body.innerHTML = '<div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div>';
+  const body=document.getElementById('roster-body');
+  body.innerHTML='<div class="empty"><div class="empty-ic">&#9203;</div><p>Loading&hellip;</p></div>';
   status('Loading…','busy');
-
-  const {data:profiles, error} = await db
-    .from('profiles')
-    .select('id,display_name,discord_id,smpfinder_rank,roster_rank,timezone,region,useable_email,hired_at,eval_date,role')
-    .order('display_name');
-
-  if(error){
-    body.innerHTML='<div class="empty"><div class="empty-ic">&#9888;</div><p>Failed to load roster.</p></div>';
-    status('Error'); console.error(error); return;
-  }
-
-  const active = (profiles||[]).filter(p => p.roster_rank || p.smpfinder_rank);
-
-  if(!active.length){
-    body.innerHTML='<div class="empty"><div class="empty-ic">&#128101;</div><p>No staff on the roster yet.<br>Staff run <strong>/register</strong> on Discord after being hired.</p></div>';
-    status('Ready','ok'); return;
-  }
-
-  const grouped = {};
-  ROSTER_ORDER.forEach(r => grouped[r.key] = []);
-  active.forEach(p => {
-    const rk = p.roster_rank || p.smpfinder_rank || 'junior_staff';
-    if(grouped[rk]) grouped[rk].push(p);
-    else grouped['junior_staff'].push(p);
-  });
-
-  let html = '';
-  ROSTER_ORDER.forEach(tier => {
-    const members = grouped[tier.key];
-    if(!members || !members.length) return;
-
-    html += '<div class="roster-tier">';
-    html += '<div class="tier-hd">';
-    html += '<div class="tier-icon" style="background:'+tier.bg+'">'+esc(tier.label.substring(0,2).toUpperCase())+'</div>';
-    html += '<div class="tier-name">'+esc(tier.label)+'</div>';
-    html += '<div class="tier-count">'+members.length+'</div>';
-    html += '<div class="tier-line"></div>';
-    html += '</div><div class="roster-grid">';
-
-    members.forEach(p => {
-      const rawName = p.display_name || 'Unknown';
-      const init    = rawName.substring(0,2).toUpperCase();
-      const hasInfo = p.timezone || p.region || p.useable_email;
-      const hiredStr = p.hired_at
-        ? new Date(p.hired_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
-        : null;
-
-      let evalHtml = '';
-      if(tier.key === 'junior_staff' && p.eval_date){
-        const evalDt   = new Date(p.eval_date);
-        const daysLeft = Math.ceil((evalDt - new Date()) / 86400000);
-        const evalStr  = evalDt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        const lbl      = daysLeft > 0 ? 'Eval in '+daysLeft+' day'+(daysLeft!==1?'s':'') : 'Eval overdue';
-        evalHtml = '<div class="rc-eval">&#128197; '+evalStr+' &mdash; '+lbl+'</div>';
+  const{data:profiles,error}=await db.from('profiles').select('id,display_name,discord_id,smpfinder_rank,roster_rank,timezone,region,useable_email,hired_at,eval_date,role').order('display_name');
+  if(error){body.innerHTML='<div class="empty"><div class="empty-ic">&#9888;</div><p>Failed to load roster.</p></div>';status('Error');console.error(error);return;}
+  const active=(profiles||[]).filter(p=>p.roster_rank||p.smpfinder_rank);
+  if(!active.length){body.innerHTML='<div class="empty"><div class="empty-ic">&#128101;</div><p>No staff on the roster yet.<br>Staff run <strong>/register</strong> on Discord after being hired.</p></div>';status('Ready','ok');return;}
+  const grouped={};
+  ROSTER_ORDER.forEach(r=>grouped[r.key]=[]);
+  active.forEach(p=>{const rk=p.roster_rank||p.smpfinder_rank||'junior_staff';if(grouped[rk])grouped[rk].push(p);else grouped['junior_staff'].push(p);});
+  let html='';
+  ROSTER_ORDER.forEach(tier=>{
+    const members=grouped[tier.key];if(!members||!members.length)return;
+    html+='<div class="roster-tier"><div class="tier-hd">';
+    html+=`<div class="tier-icon" style="background:${tier.bg}">${esc(tier.label.substring(0,2).toUpperCase())}</div>`;
+    html+=`<div class="tier-name">${esc(tier.label)}</div><div class="tier-count">${members.length}</div><div class="tier-line"></div></div><div class="roster-grid">`;
+    members.forEach(p=>{
+      const rawName=p.display_name||'Unknown';
+      const init=rawName.substring(0,2).toUpperCase();
+      const hasInfo=p.timezone||p.region||p.useable_email;
+      const hiredStr=p.hired_at?new Date(p.hired_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):null;
+      let evalHtml='';
+      if(tier.key==='junior_staff'&&p.eval_date){
+        const evalDt=new Date(p.eval_date);
+        const daysLeft=Math.ceil((evalDt-new Date())/86400000);
+        const evalStr=evalDt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const lbl=daysLeft>0?'Eval in '+daysLeft+' day'+(daysLeft!==1?'s':''):'Eval overdue';
+        evalHtml=`<div class="rc-eval">&#128197; ${evalStr} &mdash; ${lbl}</div>`;
       }
-
-      html += '<div class="rc">';
-      html += '<div class="rc-accent" style="background:'+tier.color+'"></div>';
-      html += '<div class="rc-hd">';
-      html += '<div class="rc-av" style="background:'+tier.bg+'">'+esc(init)+'</div>';
-      html += '<div><div class="rc-name">'+esc(rawName)+'</div><div class="rc-rank">'+esc(tier.label)+'</div></div>';
-      html += '</div>';
-
+      html+=`<div class="rc"><div class="rc-accent" style="background:${tier.color}"></div><div class="rc-hd"><div class="rc-av" style="background:${tier.bg}">${esc(init)}</div><div><div class="rc-name">${esc(rawName)}</div><div class="rc-rank">${esc(tier.label)}</div></div></div>`;
       if(hasInfo){
-        if(p.timezone)      html += '<div class="rc-row"><span>Timezone</span><strong>'+esc(p.timezone)+'</strong></div>';
-        if(p.region)        html += '<div class="rc-row"><span>Region</span><strong>'+esc(p.region)+'</strong></div>';
-        if(p.useable_email) html += '<div class="rc-row"><span>Email</span><strong>'+esc(p.useable_email)+'</strong></div>';
-        if(hiredStr)        html += '<div class="rc-row"><span>Hired</span><strong>'+hiredStr+'</strong></div>';
+        if(p.timezone)html+=`<div class="rc-row"><span>Timezone</span><strong>${esc(p.timezone)}</strong></div>`;
+        if(p.region)html+=`<div class="rc-row"><span>Region</span><strong>${esc(p.region)}</strong></div>`;
+        if(p.useable_email)html+=`<div class="rc-row"><span>Email</span><strong>${esc(p.useable_email)}</strong></div>`;
+        if(hiredStr)html+=`<div class="rc-row"><span>Hired</span><strong>${hiredStr}</strong></div>`;
       } else {
-        html += '<div class="no-reg">&#9888;&#65039; Hasn\'t run <strong>/register</strong> yet.</div>';
+        html+='<div class="no-reg">&#9888;&#65039; Hasn\'t run <strong>/register</strong> yet.</div>';
       }
-
-      html += evalHtml + '</div>';
+      html+=evalHtml+'</div>';
     });
-
-    html += '</div></div>';
+    html+='</div></div>';
   });
-
-  body.innerHTML = html || '<div class="empty"><div class="empty-ic">&#128101;</div><p>No staff found.</p></div>';
+  body.innerHTML=html||'<div class="empty"><div class="empty-ic">&#128101;</div><p>No staff found.</p></div>';
   status('Ready','ok');
 }
 
@@ -1099,6 +1129,180 @@ async function deleteStrike(id){
   await db.from('strikes').delete().eq('id',id);
   toast('Deleted.','ok');
   loadStrikes();
+}
+
+// ── LOA ──
+async function loadLOA(){
+  document.getElementById('loa-body').innerHTML='<div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div>';
+  status('Loading…','busy');
+  const{data,error}=await db.from('loa_requests').select('*').order('created_at',{ascending:false});
+  if(error){document.getElementById('loa-body').innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load.</p></div>';status('Error');console.error(error);return;}
+  LOA_DATA=data||[];
+  renderLOA();
+  status('Ready','ok');
+}
+
+function renderLOA(){
+  const filter=document.getElementById('loa-filter')?.value||'all';
+  const filtered=filter==='all'?LOA_DATA:LOA_DATA.filter(r=>r.status===filter);
+  document.getElementById('ls-pending').textContent=LOA_DATA.filter(r=>r.status==='pending').length;
+  document.getElementById('ls-approved').textContent=LOA_DATA.filter(r=>r.status==='approved').length;
+  document.getElementById('ls-denied').textContent=LOA_DATA.filter(r=>r.status==='denied').length;
+  document.getElementById('ls-total').textContent=LOA_DATA.length;
+  if(!filtered.length){document.getElementById('loa-body').innerHTML='<div class="empty"><div class="empty-ic">🏖</div><p>No LOA requests found for this filter.</p></div>';return;}
+  const html=filtered.map(r=>{
+    const name=esc(r.display_name||'Unknown');
+    const init=(r.display_name||'??').substring(0,2).toUpperCase();
+    const rank=r.rank||'unknown';
+    const rankLabel=esc(RLABELS[rank]||rank);
+    const isPending=r.status==='pending';
+    const actionBtns=isPending
+      ?`<button class="btn btn-approve btn-xs" onclick="openDecision('loa','${r.id}','${esc(r.discord_id||'')}','${esc(r.display_name||'')}','approve')">✓ Approve</button>
+         <button class="btn btn-danger btn-xs"  onclick="openDecision('loa','${r.id}','${esc(r.discord_id||'')}','${esc(r.display_name||'')}','deny')">✗ Deny</button>`
+      :`<span style="font-size:11px;color:var(--t3)">Decided ${fdt(r.decided_at||r.updated_at)}</span>`;
+    return `<div class="req-card status-${r.status}">
+      <div class="req-hd">
+        <div class="req-av">${init}</div>
+        <div><div class="req-name">${name}</div><div class="req-meta">${esc(r.discord_id||'—')} · Submitted ${fdt(r.created_at)}</div></div>
+        <span class="req-badge"><span class="badge badge-${r.status}">${r.status}</span></span>
+      </div>
+      <div class="req-body">
+        <div class="req-field"><div class="req-field-lbl">Rank</div><div class="req-field-val"><span class="pill p-${rank}">${rankLabel}</span></div></div>
+        <div class="req-field"><div class="req-field-lbl">Start Date</div><div class="req-field-val">${esc(r.start_date||'—')}</div></div>
+        <div class="req-field"><div class="req-field-lbl">End Date</div><div class="req-field-val">${esc(r.end_date||'—')}</div></div>
+        ${r.coverage?`<div class="req-field"><div class="req-field-lbl">Coverage</div><div class="req-field-val">${esc(r.coverage)}</div></div>`:''}
+        <div class="req-field full"><div class="req-field-lbl">Reason</div><div class="req-field-val">${esc(r.reason||'—')}</div></div>
+        ${r.decision_note?`<div class="req-field full"><div class="req-field-lbl">Decision note sent</div><div class="req-field-val" style="color:var(--t2)">${esc(r.decision_note)}</div></div>`:''}
+      </div>
+      <div class="req-foot">
+        <span class="req-foot-info">${r.decided_by?`Decided by ${esc(r.decided_by)}`:'Awaiting review'}</span>
+        ${actionBtns}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('loa-body').innerHTML=`<div class="req-grid">${html}</div>`;
+}
+
+// ── PROMOTIONS ──
+async function loadPromotions(){
+  document.getElementById('promo-body').innerHTML='<div class="empty"><div class="empty-ic">⏳</div><p>Loading…</p></div>';
+  status('Loading…','busy');
+  const{data,error}=await db.from('promotion_nominations').select('*').order('created_at',{ascending:false});
+  if(error){document.getElementById('promo-body').innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><p>Failed to load.</p></div>';status('Error');console.error(error);return;}
+  PROMO_DATA=data||[];
+  renderPromotions();
+  status('Ready','ok');
+}
+
+function renderPromotions(){
+  const filter=document.getElementById('promo-filter')?.value||'all';
+  const filtered=filter==='all'?PROMO_DATA:PROMO_DATA.filter(r=>r.status===filter);
+  document.getElementById('ps-pending').textContent=PROMO_DATA.filter(r=>r.status==='pending').length;
+  document.getElementById('ps-approved').textContent=PROMO_DATA.filter(r=>r.status==='approved').length;
+  document.getElementById('ps-denied').textContent=PROMO_DATA.filter(r=>r.status==='denied').length;
+  document.getElementById('ps-total').textContent=PROMO_DATA.length;
+  if(!filtered.length){document.getElementById('promo-body').innerHTML='<div class="empty"><div class="empty-ic">⭐</div><p>No nominations found for this filter.</p></div>';return;}
+  const quotaClass={yes:'qc-yes',mostly:'qc-mostly',sometimes:'qc-sometimes',no:'qc-no'};
+  const html=filtered.map(r=>{
+    const name=esc(r.display_name||'Unknown');
+    const init=(r.display_name||'??').substring(0,2).toUpperCase();
+    const currRank=r.current_rank||'unknown';
+    const nomRank=r.nominated_rank||'unknown';
+    const currLabel=esc(RLABELS[currRank]||currRank);
+    const nomLabel=esc(RLABELS[nomRank]||nomRank);
+    const isPending=r.status==='pending';
+    const qKey=r.quota_met||'no';
+    const qLabel=QUOTA_MAP[qKey]||qKey;
+    const actionBtns=isPending
+      ?`<button class="btn btn-approve btn-xs" onclick="openDecision('promotion','${r.id}','${esc(r.discord_id||'')}','${esc(r.display_name||'')}','approve')">✓ Approve</button>
+         <button class="btn btn-danger btn-xs"  onclick="openDecision('promotion','${r.id}','${esc(r.discord_id||'')}','${esc(r.display_name||'')}','deny')">✗ Deny</button>`
+      :`<span style="font-size:11px;color:var(--t3)">Decided ${fdt(r.decided_at||r.updated_at)}</span>`;
+    return `<div class="req-card status-${r.status}">
+      <div class="req-hd">
+        <div class="req-av" style="background:linear-gradient(135deg,#f6c90e,#ff8c00)">${init}</div>
+        <div><div class="req-name">${name}</div><div class="req-meta">${esc(r.discord_id||'—')} · Nominated by ${esc(r.nominator_name||'—')} · ${fdt(r.created_at)}</div></div>
+        <span class="req-badge"><span class="badge badge-${r.status}">${r.status}</span></span>
+      </div>
+      <div class="req-body">
+        <div class="req-field">
+          <div class="req-field-lbl">Promotion</div>
+          <div class="req-field-val"><div class="promo-arrow"><span class="pill p-${currRank}">${currLabel}</span><span class="arrow-sep">→</span><span class="pill p-${nomRank}">${nomLabel}</span></div></div>
+        </div>
+        <div class="req-field"><div class="req-field-lbl">Quota Performance</div><div class="req-field-val"><span class="quota-chip ${quotaClass[qKey]||'qc-no'}">${esc(qLabel)}</span></div></div>
+        <div class="req-field"><div class="req-field-lbl">Nominated By</div><div class="req-field-val">${esc(r.nominator_name||'—')}</div></div>
+        <div class="req-field full"><div class="req-field-lbl">Reason for Nomination</div><div class="req-field-val">${esc(r.reason||'—')}</div></div>
+        <div class="req-field full"><div class="req-field-lbl">Key Strengths</div><div class="req-field-val">${esc(r.strengths||'—')}</div></div>
+        ${r.concerns?`<div class="req-field full"><div class="req-field-lbl">Concerns / Areas for Growth</div><div class="req-field-val" style="color:var(--yellow)">${esc(r.concerns)}</div></div>`:''}
+        ${r.decision_note?`<div class="req-field full"><div class="req-field-lbl">Decision note sent</div><div class="req-field-val" style="color:var(--t2)">${esc(r.decision_note)}</div></div>`:''}
+      </div>
+      <div class="req-foot">
+        <span class="req-foot-info">${r.decided_by?`Decided by ${esc(r.decided_by)}`:'Awaiting review'}</span>
+        ${actionBtns}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('promo-body').innerHTML=`<div class="req-grid">${html}</div>`;
+}
+
+// ── DECISION MODAL (LOA + Promotions) ──
+function openDecision(type, id, discordId, name, action){
+  document.getElementById('mo-id').value=id;
+  document.getElementById('mo-type').value=type;
+  document.getElementById('mo-discord-id').value=discordId;
+  document.getElementById('mo-action').value=action;
+  document.getElementById('mo-rec-name').value=name;
+  const isApprove=action==='approve';
+  const confirmBtn=document.getElementById('mo-confirm-btn');
+  confirmBtn.className=`btn btn-sm ${isApprove?'btn-approve':'btn-danger'}`;
+  confirmBtn.textContent=isApprove?'✓ Approve & log DM':'✗ Deny & log DM';
+  if(type==='loa'){
+    const rec=LOA_DATA.find(r=>r.id===id);
+    document.getElementById('mo-title').textContent=isApprove?`Approve LOA — ${name}`:`Deny LOA — ${name}`;
+    document.getElementById('mo-summary').innerHTML=rec
+      ?`<strong>${esc(name)}</strong> is requesting LOA from <strong>${esc(rec.start_date)}</strong> to <strong>${esc(rec.end_date)}</strong>.<br>Reason: ${esc(rec.reason)}`:'';
+    document.getElementById('mo-msg').value=isApprove
+      ?`Hey ${name}! Your Leave of Absence request from ${rec?.start_date||'—'} to ${rec?.end_date||'—'} has been approved. Enjoy your time off — we'll see you when you're back! ✅`
+      :`Hey ${name}, unfortunately your Leave of Absence request has been denied at this time. Please reach out to management if you have any questions.`;
+    document.getElementById('mo-hint').textContent=isApprove
+      ?'Approving logs this decision and your message. Send the DM manually via Discord or wire up the bot\'s pending_dms table to deliver it automatically.'
+      :'Denying logs this decision and your message for the record.';
+  } else {
+    const rec=PROMO_DATA.find(r=>r.id===id);
+    const currLabel=RLABELS[rec?.current_rank]||rec?.current_rank||'—';
+    const nomLabel=RLABELS[rec?.nominated_rank]||rec?.nominated_rank||'—';
+    document.getElementById('mo-title').textContent=isApprove?`Approve Promotion — ${name}`:`Deny Promotion — ${name}`;
+    document.getElementById('mo-summary').innerHTML=rec
+      ?`<strong>${esc(name)}</strong> has been nominated for promotion from <strong>${esc(currLabel)}</strong> to <strong>${esc(nomLabel)}</strong> by <strong>${esc(rec.nominator_name)}</strong>.`:'';
+    document.getElementById('mo-msg').value=isApprove
+      ?`Congratulations ${name}! 🎉 We're pleased to let you know that you've been promoted to **${nomLabel}**. Your hard work and dedication have not gone unnoticed — keep it up!`
+      :`Hey ${name}, we've reviewed the promotion nomination submitted for you and have decided not to move forward at this time. Keep meeting quota and showing your commitment — we'll revisit this in the future!`;
+    document.getElementById('mo-hint').textContent=isApprove
+      ?'Approving logs the decision. Remember to also update their rank via Manage Users or /setrank on Discord.'
+      :'Denying archives the nomination so it won\'t appear in the pending queue.';
+  }
+  document.getElementById('mo-decision').classList.add('on');
+}
+
+async function confirmDecision(){
+  const id=document.getElementById('mo-id').value;
+  const type=document.getElementById('mo-type').value;
+  const action=document.getElementById('mo-action').value;
+  const msg=document.getElementById('mo-msg').value.trim();
+  const name=document.getElementById('mo-rec-name').value;
+  const decider=PROF?.display_name||ME?.email||'Management';
+  if(!msg){toast('Please write a message before confirming.','er');return;}
+  const table=type==='loa'?'loa_requests':'promotion_nominations';
+  const status_val=action==='approve'?'approved':'denied';
+  status('Saving…','busy');
+  const{error}=await db.from(table).update({
+    status:status_val,decision_note:msg,decided_by:decider,decided_at:new Date().toISOString()
+  }).eq('id',id);
+  if(error){toast('Failed to save: '+error.message,'er');status('Ready','ok');return;}
+  closeModal('mo-decision');
+  toast(`${action==='approve'?'Approved':'Denied'} — ${name}.`,'ok');
+  status('Ready','ok');
+  if(type==='loa') loadLOA();
+  else loadPromotions();
 }
 </script>
 </body>
